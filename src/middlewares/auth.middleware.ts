@@ -1,0 +1,188 @@
+import { checkSchema } from 'express-validator';
+import HTTP_STATUS from '~/constants/httpStatus';
+import { APP_MESSAGES } from '~/constants/message';
+import { AppError } from '~/models/Error';
+import { UserPayload, VerifyResult, verifyToken } from '~/utils/jwt';
+import { validate } from '~/utils/validation';
+import { NextFunction, Request, Response } from 'express';
+import { hashPassword, verifyPassword } from '~/utils/crypto';
+import { wrap } from 'module';
+import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
+import { UserStatus } from '~/constants/enum';
+import { User } from '~/domain/databases/entity/User';
+import { Session } from '~/domain/databases/entity/Sesstion';
+import { ParamsValidation } from '~/validations/email.validation';
+import AuthServices from '~/services/auth.services';
+import ServerCodes from '~/constants/server_codes';
+
+export const signUpValidation = [
+  validate(
+    checkSchema({
+      email: ParamsValidation.email,
+      password: ParamsValidation.password,
+      confirmPassword: {
+        ...ParamsValidation.password,
+        custom: {
+          options: (value, { req }) => {
+            if (value !== req.body.password) {
+              throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+            }
+            return true;
+          },
+        },
+      },
+    }),
+  ),
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password } = req.body;
+    const userService = new AuthServices();
+    const user = await userService.checkUserExistByEmail(email);
+    if (user) {
+      return res.status(HTTP_STATUS.CONFLICT).json({
+        status: 'error',
+        code: ServerCodes.AuthCode.EMAIL_ALREADY_EXISTS,
+        message: APP_MESSAGES.ERROR_MESSAGE.EMAIL_ALREADY_EXISTS,
+      });
+    }
+    next();
+  },
+];
+export const signInValidation = [
+  validate(
+    checkSchema({
+      email: ParamsValidation.email,
+      password: ParamsValidation.password,
+    }),
+  ),
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password } = req.body;
+    const userService = new AuthServices();
+    const user = await userService.checkUserExistByEmail(email);
+    if (user === undefined || user === null) {
+      return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
+    }
+    if (user.status === UserStatus.unverified) {
+      return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+    }
+    const isMatch = verifyPassword(password, user.password);
+    if (!isMatch) {
+      return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
+    }
+    next();
+  },
+];
+
+export const tokenValidation = validate(
+  checkSchema({
+    Authorization: {
+      in: ['headers'],
+      notEmpty: {
+        errorMessage: APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
+      },
+      trim: true,
+      custom: {
+        options: async (value, { req }) => {
+          const accessToken = value.split(' ')[1];
+          if (!accessToken) {
+            return false;
+          }
+          const result = await verifyToken(accessToken, process.env.JWT_SECRET_KEY as string);
+          if (!result) {
+            throw new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED);
+          }
+          if (result.expired || !result.payload) {
+            throw new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401);
+          }
+          (req as Request).verifyResult = result;
+          return true;
+        },
+      },
+    },
+  }),
+);
+
+export const protect = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const { payload, expired } = req.verifyResult as VerifyResult;
+
+  if (payload !== null && !expired) {
+    // req.user = await UserModel.findById((payload as UserPayload).id);
+    // if (req.user === null || req.user === undefined) {
+    //   return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
+    // }
+    // if (req.user.status === UserStatus.unverified) {
+    //   return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+    // }
+    // return next();
+    const userRepo = User.getRepository();
+    const user = await userRepo.findOne({ where: { id: (payload as UserPayload).id } });
+    if (user !== null) {
+      if (user.status === UserStatus.unverified) {
+        return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+      } else {
+        return next();
+      }
+    } else {
+      return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
+    }
+  }
+  if (expired) {
+    return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
+  }
+  return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+});
+
+export const refreshTokenValidation = validate(
+  checkSchema({
+    refreshToken: {
+      in: ['body'],
+      notEmpty: {
+        errorMessage: APP_MESSAGES.REFRESH_TOKEN_IS_REQUIRED,
+      },
+      trim: true,
+      custom: {
+        errorMessage: APP_MESSAGES.REFRESH_TOKEN_IS_REQUIRED,
+        options: async (value, { req }) => {
+          const result = await verifyToken(value, process.env.JWT_SECRET_KEY as string);
+          if (!result.payload) {
+            throw new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED);
+          }
+          if (result.expired) {
+            throw new AppError(APP_MESSAGES.REFRESH_TOKEN_IS_EXPIRED, 401);
+          }
+          //   const check = await RefreshToken.findOne({ token: value });
+          //   if (!check) {
+          //     throw new AppError(APP_MESSAGES.REFRESH_TOKEN_IS_EXPIRED, 401);
+          //   }
+          //   (req as Request).verifyResultRefreshToken = result;
+          //   return true;
+          const session = await Session.findOne({ where: { id: (result.payload as UserPayload).session_id } });
+          if (session !== null) {
+            if (session.expiration_date < new Date()) {
+              throw new AppError(APP_MESSAGES.REFRESH_TOKEN_IS_EXPIRED, 401);
+            }
+            (req as Request).verifyResultRefreshToken = result;
+            return true;
+          } else {
+            throw new AppError(APP_MESSAGES.REFRESH_TOKEN_IS_EXPIRED, 401);
+          }
+        },
+      },
+    },
+  }),
+);
+
+export const changePasswordValidation = validate(
+  checkSchema({
+    newPassword: {
+      in: ['body'],
+      isLength: {
+        errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
+        options: { min: 8, max: 32 },
+      },
+      trim: true,
+      notEmpty: {
+        errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
+      },
+    },
+  }),
+);

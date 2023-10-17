@@ -1,0 +1,30 @@
+{
+  "id": "b1cfbe2c-03b6-4936-8107-9cb2e5c874e7",
+  "status": "active",
+  "is_identity_verified": true,
+  "role": "user",
+  "email": "exampleuser@example.com",
+  "password": "hashed_password_here",
+  "address": {
+    "street": "123 Main Street",
+    "city": "Exampleville",
+    "state": "CA",
+    "zip": "12345"
+  },
+  "first_name": "John",
+  "last_name": "Doe",
+  "gender": true,
+  "avatar": "avatar_url_here",
+  "dob": "1990-01-15",
+  "phone": "123-456-7890",
+  "last_active_at": "2023-10-16T10:00:00Z",
+  "confirmation_token": "confirmation_token_here",
+  "comfirmation_at": "2023-10-16T10:30:00Z",
+  "recovery_token": "recovery_token_here",
+  "recovery_sent_at": "2023-10-16T11:00:00Z",
+  "created_at": "2023-10-16T09:00:00Z",
+  "updated_at": "2023-10-16T09:30:00Z",
+  "banned_util": null,
+  "ban_reason": null,
+  "is_active": true
+}
