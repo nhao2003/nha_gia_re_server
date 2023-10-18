@@ -1,5 +1,5 @@
 // import RefreshToken from "~/models/database/RefreshToken";
-import { Jwt, JwtPayload } from 'jsonwebtoken';
+import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { OTPTypes, UserStatus } from '~/constants/enum';
 import { Session } from '~/domain/databases/entity/Sesstion';
 import { User } from '~/domain/databases/entity/User';
@@ -7,20 +7,6 @@ import { MyRepository } from '~/repositories/my_repository';
 import { hashPassword, hashString } from '~/utils/crypto';
 import { UserPayload, VerifyResult, signToken, verifyToken } from '~/utils/jwt';
 import { parseTimeToMilliseconds } from '~/utils/time';
-
-export const generateToken = (id: string, session_id: string) => {
-  return signToken({
-    payload: { id, session_id },
-    expiresIn: process.env.JWT_TOKEN_EXPIRES_IN as string,
-  });
-};
-
-export const generateRefreshToken = async (user_id: string, session_id: string) => {
-  return await signToken({
-    payload: { user_id, session_id },
-    expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string,
-  });
-};
 
 type SignInResult = {
   access_token: string;
@@ -35,6 +21,20 @@ class AuthServices {
     this.userRepository = MyRepository.userRepository();
     this.otpRepository = MyRepository.otpRepository();
     this.sessionRepository = MyRepository.sessionRepository();
+  }
+
+  private generateToken(user_id: string, session_id: string): Promise<string> {
+    return signToken({
+      payload: { user_id, session_id },
+      expiresIn: process.env.JWT_TOKEN_EXPIRES_IN as string,
+    });
+  }
+
+  private async generateRefreshToken(user_id: string, session_id: string): Promise<string> {
+    return await signToken({
+      payload: { user_id, session_id },
+      expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string,
+    });
   }
 
   /**
@@ -69,18 +69,19 @@ class AuthServices {
    * @returns Comfirmation token
    */
   public async signUp(email: string, password: string): Promise<string> {
-    const user = await this.userRepository.insert({ email, password });
+    const user = await this.userRepository.insert({ email, password: hashPassword(password) });
     const user_id = user.identifiers[0].id;
     const otp_code = await this.generateOTPCode(OTPTypes.account_activation, user_id);
     return otp_code;
   }
 
   public async createSession(user_id: string): Promise<SignInResult> {
-    const session = new Session();
-    session.user_id = user_id;
-    this.sessionRepository.save(session);
-    const refresh_token = await generateRefreshToken(user_id, session.id);
-    const access_token = await generateToken(user_id, session.id);
+    const session = await this.sessionRepository.insert({
+      user_id,
+      expiration_date: new Date(Date.now() + parseTimeToMilliseconds(process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string)),
+    });
+    const refresh_token = await this.generateRefreshToken(user_id, session.identifiers[0].id);
+    const access_token = await this.generateToken(user_id, session.identifiers[0].id);
     return { access_token, refresh_token };
   }
 
@@ -91,12 +92,13 @@ class AuthServices {
   }
 
   public async verifyOTPCode(user_id: string, otp_code: string, type: string): Promise<boolean> {
+    const token = hashString((otp_code + process.env.OTP_SECRET_KEY) as string);
     const otp = await this.otpRepository.findOne({
       where: {
         user_id,
-        token: hashString((otp_code + process.env.OTP_SECRET_KEY) as string),
+        token,
         type,
-        expiration_time: 'CURRENT_TIMESTAMP < expiration_time',
+        expiration_time: MoreThanOrEqual(new Date()),
         is_used: false,
         is_active: true,
       },
@@ -126,49 +128,35 @@ class AuthServices {
     const user = await this.userRepository.findOne({ where: { email } });
     return user;
   }
+  async checkUserExistByID(id: string): Promise<User | undefined> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    return user;
+  }
 
   //Get user by email and password
   async getUserByEmailAndPassword(email: string, password: string): Promise<User | undefined | null> {
     const user = await this.userRepository.findOne({ where: { email, password: hashPassword(password) } });
     return user;
   }
-  async generateToken(id: string, rti: string) {
-    return signToken({
-      payload: { id, rti },
-      expiresIn: process.env.JWT_TOKEN_EXPIRES_IN as string,
-    });
-  }
 
-  async generateRefreshToken(id: string) {
-    const refreshToken = await signToken({
-      payload: { id },
-      expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string,
-    });
-
-    //JWT_REFRESH_TOKEN_EXPIRES_IN=1y
-
-    const expiresAt = new Date(
-      Date.now() + parseTimeToMilliseconds(process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string),
-    );
-
-    // const createdRefreshToken = await RefreshToken.create({
-    //   token: refreshToken,
-    //   user_id: id,
-    //   expires_at: expiresAt
-    // });
-
-    // return createdRefreshToken;
-  }
-
-  async signOut(refreshToken: string) {
-    if (!refreshToken) {
-      throw new Error('Refresh token is required');
+  async signOut(session_id: string) {
+    const session = await this.sessionRepository.findOne({ where: { id: session_id } });
+    if (session) {
+      //Delete session
+      await this.sessionRepository.delete({ id: session.id });
     }
-    // await RefreshToken.deleteOne({ token: refreshToken });
   }
-  //   async signOutAll(uid: string) {
-  //     await RefreshToken.deleteMany({ user_id: uid });
-  //   }
+  async signOutAll(user_id: string) {
+    //Delete all session of user
+    await this.sessionRepository.delete({ user_id });
+  }
+
+  async checkSessionExist(session_id: string): Promise<Session | undefined> {
+    const session = await this.sessionRepository.findOne({
+      where: { id: session_id, expiration_date: MoreThanOrEqual(new Date()) },
+    });
+    return session;
+  }
 }
 
 export default AuthServices;

@@ -15,62 +15,104 @@ import { ParamsValidation } from '~/validations/email.validation';
 import AuthServices from '~/services/auth.services';
 import ServerCodes from '~/constants/server_codes';
 
-export const signUpValidation = [
-  validate(
+export class AuthValidation {
+  public static readonly signUpValidation = [
+    validate(
+      checkSchema({
+        email: ParamsValidation.email,
+        password: ParamsValidation.password,
+        confirmPassword: {
+          ...ParamsValidation.password,
+          custom: {
+            options: (value, { req }) => {
+              if (value !== req.body.password) {
+                throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+              }
+              return true;
+            },
+          },
+        },
+      }),
+    ),
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { email, password } = req.body;
+      const userService = new AuthServices();
+      const user = await userService.checkUserExistByEmail(email);
+      if (user) {
+        return res.status(HTTP_STATUS.CONFLICT).json({
+          status: 'error',
+          code: ServerCodes.AuthCode.EMAIL_ALREADY_EXISTS,
+          message: APP_MESSAGES.ERROR_MESSAGE.EMAIL_ALREADY_EXISTS,
+        });
+      }
+      next();
+    },
+  ];
+  public static readonly signInValidation = [
+    validate(
+      checkSchema({
+        email: ParamsValidation.email,
+        password: ParamsValidation.password,
+      }),
+    ),
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { email, password } = req.body;
+      const userService = new AuthServices();
+      const user = await userService.checkUserExistByEmail(email);
+      if (user === undefined || user === null) {
+        return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
+      }
+      if (user.status === UserStatus.unverified) {
+        return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+      }
+      const isMatch = verifyPassword(password, user.password);
+      if (!isMatch) {
+        return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
+      }
+      next();
+    },
+  ];
+  
+  public static readonly acctiveAccountValidation = validate(
     checkSchema({
       email: ParamsValidation.email,
       password: ParamsValidation.password,
-      confirmPassword: {
-        ...ParamsValidation.password,
-        custom: {
-          options: (value, { req }) => {
-            if (value !== req.body.password) {
-              throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
-            }
-            return true;
-          },
+      code: {
+        in: ['body'],
+        notEmpty: {
+          errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.OTP_CODE_IS_REQUIRED,
+        },
+        trim: true,
+        isString: {
+          errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.OTP_CODE_IS_REQUIRED,
         },
       },
     }),
-  ),
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password } = req.body;
-    const userService = new AuthServices();
-    const user = await userService.checkUserExistByEmail(email);
-    if (user) {
-      return res.status(HTTP_STATUS.CONFLICT).json({
-        status: 'error',
-        code: ServerCodes.AuthCode.EMAIL_ALREADY_EXISTS,
-        message: APP_MESSAGES.ERROR_MESSAGE.EMAIL_ALREADY_EXISTS,
-      });
+  );
+
+  public static readonly checkUserSignedIn = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { access_token } = req.body;
+    const result = await verifyToken(access_token, process.env.JWT_SECRET_KEY as string);
+    if (!result) {
+      return next(new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED));
     }
+    if (result.expired || !result.payload) {
+      return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
+    }
+    const authServices = new AuthServices();
+    const session = await authServices.checkSessionExist((result.payload as UserPayload).session_id);
+    if (session === null || session === undefined) {
+      return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+    }
+    const user = await authServices.checkUserExistByID(session.user_id);
+    if (user === null || user === undefined) {
+      return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+    }
+    req.user = user;
+    req.session = session;
     next();
-  },
-];
-export const signInValidation = [
-  validate(
-    checkSchema({
-      email: ParamsValidation.email,
-      password: ParamsValidation.password,
-    }),
-  ),
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password } = req.body;
-    const userService = new AuthServices();
-    const user = await userService.checkUserExistByEmail(email);
-    if (user === undefined || user === null) {
-      return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
-    }
-    if (user.status === UserStatus.unverified) {
-      return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
-    }
-    const isMatch = verifyPassword(password, user.password);
-    if (!isMatch) {
-      return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
-    }
-    next();
-  },
-];
+  });
+}
 
 export const tokenValidation = validate(
   checkSchema({

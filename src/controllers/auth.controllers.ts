@@ -5,7 +5,6 @@ import { AppError } from "~/models/Error";
 import { generateCode, hashPassword, hashString, verifyPassword } from "~/utils/crypto";
 import { APP_MESSAGES } from "~/constants/message";
 import { UserPayload, VerifyResult, signToken, verifyToken } from "~/utils/jwt";
-import { generateRefreshToken, generateToken } from "~/services/auth.services";
 import { UserStatus } from "~/constants/enum";
 import { sendConfirmationEmail, sendEmail, sendRecoveryPasswordEmail } from "~/services/mail.services";
 import authServices from "~/services/auth.services";
@@ -55,27 +54,27 @@ export const signIn = wrapRequestHandler(async (req: Request, res: Response, nex
   session.expiration_date = new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000);
   session.updated_at = session.starting_date;
   await sessionRepo.save(session);
-  const refreshToken = await generateRefreshToken(user.id, session.id);
-  const token = await generateToken(user.id, session.id);
-  res.status(200).json({
-    status: "success",
-    result: {
-      token,
-      refreshToken
-    }
-  });
+  // const refreshToken = await generateRefreshToken(user.id, session.id);
+  // const token = await generateToken(user.id, session.id);
+  // res.status(200).json({
+  //   status: "success",
+  //   result: {
+  //     token,
+  //     refreshToken
+  //   }
+  // });
 });
 
 export const refreshToken = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
   const result: VerifyResult = req.verifyResultRefreshToken as VerifyResult;
   const userPayLoad = result.payload as UserPayload;
-  const token = await generateToken((result.payload as UserPayload).id, userPayLoad.id);
-  res.status(200).json({
-    status: "success",
-    result: {
-      token: token
-    }
-  });
+  // const token = await generateToken((result.payload as UserPayload).id, userPayLoad.id);
+  // res.status(200).json({
+  //   status: "success",
+  //   result: {
+  //     token: token
+  //   }
+  // });
   return;
 });
 

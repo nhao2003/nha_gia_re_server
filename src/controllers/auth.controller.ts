@@ -66,6 +66,14 @@ import ServerCodes from '~/constants/server_codes';
       }
     });
   });
+
+  public signOut = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+    await this.authServices.signOut(req.session!.id);
+    res.status(200).json({
+      status: 'success',
+      message: APP_MESSAGES.SIGN_OUT_SUCCESSFULLY,
+    });
+  });
 }
 
 export default new AuthController();
