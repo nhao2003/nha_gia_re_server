@@ -14,6 +14,5 @@ export enum Role {
 
 export enum OTPTypes {
   account_activation = "account_activation",
-  password_reset = "password_reset",
-  email_verification = "email_verification"
+  password_recovery = "password_recovery"
 }

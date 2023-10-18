@@ -7,10 +7,10 @@ class MyRepository {
   public static userRepository(): Repository<User> {
     return User.getRepository();
   }
-  public static otpRepository(): Repository<BaseEntity> {
+  public static otpRepository(): Repository<OTP> {
     return OTP.getRepository();
   }
-  public static sessionRepository(): Repository<BaseEntity> {
+  public static sessionRepository(): Repository<Session> {
     return Session.getRepository();
   }
 }

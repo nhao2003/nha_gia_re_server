@@ -15,7 +15,7 @@ export class ParamsValidation {
     },
     trim: true,
   };
-  public static  password: ParamSchema =  {
+  public static password: ParamSchema = {
     in: ['body'],
     isLength: {
       errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
@@ -24,6 +24,29 @@ export class ParamsValidation {
     trim: true,
     notEmpty: {
       errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
+    },
+  };
+
+  public static confirm_new_password: ParamSchema = {
+    ...ParamsValidation.password,
+    custom: {
+      options: (value, { req }) => {
+        if (value !== req.body.new_password) {
+          throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+        }
+        return true;
+      },
+    },
+  };
+
+  public static code: ParamSchema = {
+    in: ['body'],
+    notEmpty: {
+      errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.OTP_CODE_IS_REQUIRED,
+    },
+    trim: true,
+    isString: {
+      errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.OTP_CODE_IS_REQUIRED,
     },
   };
 }

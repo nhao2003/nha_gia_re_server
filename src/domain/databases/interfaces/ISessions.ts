@@ -4,4 +4,5 @@ export interface ISessions {
   starting_date: Date;
   expiration_date: Date;
   updated_at: Date;
+  is_active: boolean;
 }

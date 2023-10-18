@@ -19,6 +19,7 @@ const handleUserInputError = (error: any): AppError => {
 };
 
 const handleDevelopmentError = (err: any, res: Response) => {
+  console.log(err);
   res.status(err.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
     status: err.status,
     error: err,

@@ -1,5 +1,5 @@
 // import RefreshToken from "~/models/database/RefreshToken";
-import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { OTPTypes, UserStatus } from '~/constants/enum';
 import { Session } from '~/domain/databases/entity/Sesstion';
 import { User } from '~/domain/databases/entity/User';
@@ -16,13 +16,19 @@ type SignInResult = {
 class AuthServices {
   private userRepository: any;
   private otpRepository: any;
-  private sessionRepository: any;
+  private sessionRepository: Repository<Session>;
   constructor() {
     this.userRepository = MyRepository.userRepository();
     this.otpRepository = MyRepository.otpRepository();
     this.sessionRepository = MyRepository.sessionRepository();
   }
 
+  /**
+   *
+   * @param user_id ID of user
+   * @param session_id ID of session
+   * @returns Access token
+   */
   private generateToken(user_id: string, session_id: string): Promise<string> {
     return signToken({
       payload: { user_id, session_id },
@@ -51,7 +57,7 @@ class AuthServices {
   ): Promise<string> {
     const otp_code = Math.floor(100000 + Math.random() * 900000).toString();
     console.log(otp_code);
-    const token = hashString((otp_code + process.env.OTP_SECRET_KEY) as string);
+    const token = hashString((otp_code + process.env.OTP_SECRET_KEY + type) as string);
     // Save OTP code to database
     await this.otpRepository.insert({
       type,
@@ -78,7 +84,9 @@ class AuthServices {
   public async createSession(user_id: string): Promise<SignInResult> {
     const session = await this.sessionRepository.insert({
       user_id,
-      expiration_date: new Date(Date.now() + parseTimeToMilliseconds(process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string)),
+      expiration_date: new Date(
+        Date.now() + parseTimeToMilliseconds(process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string),
+      ),
     });
     const refresh_token = await this.generateRefreshToken(user_id, session.identifiers[0].id);
     const access_token = await this.generateToken(user_id, session.identifiers[0].id);
@@ -91,8 +99,21 @@ class AuthServices {
     return await this.createSession(user.id);
   }
 
+  public async grantNewAccessToken(refresh_token: string): Promise<string | null | undefined> {
+    const { payload, expired } = await verifyToken(refresh_token);
+    if (expired) return null;
+    const { user_id, session_id } = payload as UserPayload;
+    const session = await this.sessionRepository.findOne({
+      where: { id: session_id, user_id, expiration_date: MoreThanOrEqual(new Date()) },
+    });
+    if (session === null || session === undefined) return session;
+    session.updated_at = new Date();
+    await this.sessionRepository.save(session);
+    return this.generateToken(user_id, session_id);
+  }
+
   public async verifyOTPCode(user_id: string, otp_code: string, type: string): Promise<boolean> {
-    const token = hashString((otp_code + process.env.OTP_SECRET_KEY) as string);
+    const token = hashString((otp_code + process.env.OTP_SECRET_KEY + type) as string);
     const otp = await this.otpRepository.findOne({
       where: {
         user_id,
@@ -151,12 +172,33 @@ class AuthServices {
     await this.sessionRepository.delete({ user_id });
   }
 
-  async checkSessionExist(session_id: string): Promise<Session | undefined> {
+  async checkSessionExist(session_id: string): Promise<Session | undefined | null> {
     const session = await this.sessionRepository.findOne({
       where: { id: session_id, expiration_date: MoreThanOrEqual(new Date()) },
     });
     return session;
   }
+
+  async changePassword(user_id: string, password: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({ where: { id: user_id } });
+    if (user) {
+      user.password = hashPassword(password);
+      await this.userRepository.save(user);
+      return true;
+    } else {
+      return false;
+    }
+  }
+  async forgetPassword(email: string): Promise<string | null | undefined> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (user) {
+      const otp_code = await this.generateOTPCode(OTPTypes.password_recovery, user.id);
+      return otp_code;
+    } else {
+      return null;
+    }
+  }
+
 }
 
 export default AuthServices;

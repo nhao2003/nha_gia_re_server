@@ -41,7 +41,7 @@ export const signToken = ({
   });
 };
 
-export function verifyToken(token: string, secretKey: string) {
+export function verifyToken(token: string, secretKey: string = process.env.JWT_SECRET_KEY as string) {
   return new Promise<VerifyResult>((resolve) => {
     jwt.verify(token, secretKey, (error, payload) => {
       resolve({ payload: payload, expired: error?.name === 'TokenExpiredError' });

@@ -19,6 +19,9 @@ export class Session extends BaseEntity implements ISessions {
   @Column({ type:'timestamp without time zone', default: () => 'CURRENT_TIMESTAMP'})
   updated_at!: Date;
 
+  @Column({ type: 'boolean', default: 'true'})
+  is_active!: boolean;
+
   // Many-to-One relationship with User
   @ManyToOne(() => User, (user) => user.sessions)
   @JoinColumn({ name: 'user_id' })

@@ -72,46 +72,80 @@ export class AuthValidation {
       next();
     },
   ];
-  
+
   public static readonly acctiveAccountValidation = validate(
     checkSchema({
       email: ParamsValidation.email,
       password: ParamsValidation.password,
-      code: {
+      code: ParamsValidation.code,
+    }),
+  );
+
+  public static readonly accessTokenValidation = [
+    validate(
+      checkSchema({
+        Authorization: {
+          in: ['headers'],
+          notEmpty: {
+            errorMessage: APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
+          },
+          trim: true,
+        },
+      }),
+    ),
+    async (req: Request, res: Response, next: NextFunction) => {
+      const authorization = req.headers.authorization;
+      const access_token = authorization?.split(' ')[1];
+      if (!access_token) {
+        return next(new AppError(APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED, HTTP_STATUS.UNAUTHORIZED));
+      }
+      const result = await verifyToken(access_token, process.env.JWT_SECRET_KEY as string);
+      if (!result) {
+        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED));
+      }
+      if (result.expired || !result.payload) {
+        return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
+      }
+      const authServices = new AuthServices();
+      const session = await authServices.checkSessionExist((result.payload as UserPayload).session_id);
+      if (session === null || session === undefined) {
+        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+      }
+      const user = await authServices.checkUserExistByID(session.user_id);
+      if (user === null || user === undefined) {
+        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+      }
+      req.user = user;
+      req.session = session;
+      next();
+    },
+  ];
+
+  public static readonly refreshTokenValidation = validate(
+    checkSchema({
+      refresh_token: {
         in: ['body'],
         notEmpty: {
-          errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.OTP_CODE_IS_REQUIRED,
+          errorMessage: APP_MESSAGES.REFRESH_TOKEN_IS_REQUIRED,
         },
         trim: true,
-        isString: {
-          errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.OTP_CODE_IS_REQUIRED,
-        },
+        isString: true,
       },
     }),
   );
 
-  public static readonly checkUserSignedIn = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const { access_token } = req.body;
-    const result = await verifyToken(access_token, process.env.JWT_SECRET_KEY as string);
-    if (!result) {
-      return next(new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED));
-    }
-    if (result.expired || !result.payload) {
-      return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
-    }
-    const authServices = new AuthServices();
-    const session = await authServices.checkSessionExist((result.payload as UserPayload).session_id);
-    if (session === null || session === undefined) {
-      return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
-    }
-    const user = await authServices.checkUserExistByID(session.user_id);
-    if (user === null || user === undefined) {
-      return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
-    }
-    req.user = user;
-    req.session = session;
-    next();
-  });
+  public static readonly forgotPasswordValidation = validate(
+    checkSchema({
+      email: ParamsValidation.email,
+    }),
+  );
+
+  public static readonly verifyRecoveryTokenValidation = validate(
+    checkSchema({
+      email: ParamsValidation.email,
+      code: ParamsValidation.code,
+    }),
+  );
 }
 
 export const tokenValidation = validate(
@@ -172,46 +206,6 @@ export const protect = wrapRequestHandler(async (req: Request, res: Response, ne
   }
   return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
 });
-
-export const refreshTokenValidation = validate(
-  checkSchema({
-    refreshToken: {
-      in: ['body'],
-      notEmpty: {
-        errorMessage: APP_MESSAGES.REFRESH_TOKEN_IS_REQUIRED,
-      },
-      trim: true,
-      custom: {
-        errorMessage: APP_MESSAGES.REFRESH_TOKEN_IS_REQUIRED,
-        options: async (value, { req }) => {
-          const result = await verifyToken(value, process.env.JWT_SECRET_KEY as string);
-          if (!result.payload) {
-            throw new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED);
-          }
-          if (result.expired) {
-            throw new AppError(APP_MESSAGES.REFRESH_TOKEN_IS_EXPIRED, 401);
-          }
-          //   const check = await RefreshToken.findOne({ token: value });
-          //   if (!check) {
-          //     throw new AppError(APP_MESSAGES.REFRESH_TOKEN_IS_EXPIRED, 401);
-          //   }
-          //   (req as Request).verifyResultRefreshToken = result;
-          //   return true;
-          const session = await Session.findOne({ where: { id: (result.payload as UserPayload).session_id } });
-          if (session !== null) {
-            if (session.expiration_date < new Date()) {
-              throw new AppError(APP_MESSAGES.REFRESH_TOKEN_IS_EXPIRED, 401);
-            }
-            (req as Request).verifyResultRefreshToken = result;
-            return true;
-          } else {
-            throw new AppError(APP_MESSAGES.REFRESH_TOKEN_IS_EXPIRED, 401);
-          }
-        },
-      },
-    },
-  }),
-);
 
 export const changePasswordValidation = validate(
   checkSchema({
