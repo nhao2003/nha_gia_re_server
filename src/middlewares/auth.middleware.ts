@@ -11,7 +11,7 @@ import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { UserStatus } from '~/constants/enum';
 import { User } from '~/domain/databases/entity/User';
 import { Session } from '~/domain/databases/entity/Sesstion';
-import { ParamsValidation } from '~/validations/email.validation';
+import { ParamsValidation } from '~/validations/params_validation';
 import AuthServices from '~/services/auth.services';
 import ServerCodes from '~/constants/server_codes';
 

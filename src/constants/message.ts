@@ -46,6 +46,8 @@ export const APP_MESSAGES = {
   VALIDATION_MESSAGE: {
     PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH: "Password and confirm password do not match",
     OTP_CODE_IS_REQUIRED: "OTP code is required",
+    PHONE_IS_REQUIRED: "Phone is required",
+    PHONE_IS_INVALID: "Phone is invalid",
   },
 
   ERROR_MESSAGE: {

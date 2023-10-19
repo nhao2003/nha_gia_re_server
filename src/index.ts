@@ -2,7 +2,7 @@ import { AppDataSource } from './app/database';
 // dotenv config
 import dotenv from 'dotenv';
 dotenv.config({ path: './.env'});
-AppDataSource.initialize().then((data) => {
+AppDataSource.initialize().then(() => {
   console.log('Database connected');
   const app = require('./app/app').default;
   app.listen(3000, () => {

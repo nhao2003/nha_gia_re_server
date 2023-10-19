@@ -1,11 +1,12 @@
 {
+  "exclude": ["./coverage", "./dist", "tests", "jest.config.ts"], // Đường dẫn exclude cho các file không cần build
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "module": "NodeNext", // Quy định output module được sử dụng
     "moduleResolution": "NodeNext",
-    "target": "ES2022", // Target output cho code
-    "outDir": "dist", // Đường dẫn output cho thư mục build
+    "target": "ESNext", // Target output cho code
+    "outDir": "./dist", // Đường dẫn output cho thư mục build
     "esModuleInterop": true,
     "strict": true /* Enable all strict type-checking options. */,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
@@ -15,10 +16,8 @@
     }
   },
   "ts-node": {
-    "require": ["tsconfig-paths/register"]
+    "require": ["tsconfig-paths/register"],
   },
   "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
-  "include": ["src/**/*"], // Đường dẫn include cho các file cần build
-
-
+  "include": ["src/**/*", "tests/unit/filterBody.test.ts"], // Đường dẫn include cho các file cần build
 }

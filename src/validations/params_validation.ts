@@ -49,4 +49,42 @@ export class ParamsValidation {
       errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.OTP_CODE_IS_REQUIRED,
     },
   };
+
+  public static phone: ParamSchema = {
+    in: ['body'],
+    trim: true,
+    isString: {
+      errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.PHONE_IS_REQUIRED,
+    },
+    isMobilePhone: {
+      errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.PHONE_IS_INVALID,
+    },
+  };
+
+  public static address: ParamSchema = {
+    in: ['body'],
+  };
+
+  public static date: ParamSchema = {
+    in: ['body'],
+    isDate: true,
+  };
+
+  public static name: ParamSchema = {
+    in: ['body'],
+    trim: true,
+    isString: {
+      errorMessage: 'Name is not valid',
+    },
+    isLength: {
+      errorMessage: 'Name must be at least 1 characters and less than 50 characters',
+      options: { min: 1, max: 50 },
+    },
+  };
+
+  public static gender: ParamSchema = {
+    isBoolean: {
+      errorMessage: 'Gender is boolean',
+    }
+  };
 }
