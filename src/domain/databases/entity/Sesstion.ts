@@ -1,25 +1,26 @@
-import { BaseEntity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Entity } from "typeorm";
-import { ISessions } from "../interfaces/ISessions";
-import { User } from "./User";
+import { BaseEntity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Entity } from 'typeorm';
+import { ISession } from '../interfaces/ISession';
+import { User } from './User';
+import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
 
 @Entity('sessions')
-export class Session extends BaseEntity implements ISessions {
-  @PrimaryGeneratedColumn('uuid')
+export class Session extends BaseEntity implements ISession {
+  @PrimaryGeneratedColumn(PostgresDataType.uuid)
   id!: string;
 
-  @Column('uuid')
+  @Column(PostgresDataType.uuid)
   user_id!: string;
 
-  @Column({ type:'timestamp without time zone', default: () => 'CURRENT_TIMESTAMP'})
+  @Column({ type: PostgresDataType.timestamp_without_timezone, default: DatabaseDefaultValues.now })
   starting_date!: Date;
 
-  @Column({ type:'timestamp without time zone', default: () => 'CURRENT_TIMESTAMP + INTERVAL \'90 days\''})
+  @Column({ type: PostgresDataType.timestamp_without_timezone })
   expiration_date!: Date;
 
-  @Column({ type:'timestamp without time zone', default: () => 'CURRENT_TIMESTAMP'})
+  @Column({ type: PostgresDataType.timestamp_without_timezone, default: DatabaseDefaultValues.now })
   updated_at!: Date;
 
-  @Column({ type: 'boolean', default: 'true'})
+  @Column({ type: PostgresDataType.boolean, default: 'true' })
   is_active!: boolean;
 
   // Many-to-One relationship with User

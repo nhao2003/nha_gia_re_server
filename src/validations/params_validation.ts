@@ -87,4 +87,11 @@ export class ParamsValidation {
       errorMessage: 'Gender is boolean',
     }
   };
+
+  public static uuid: ParamSchema = {
+    in: ['params'],
+    isUUID: {
+      errorMessage: APP_MESSAGES.VALIDATION_MESSAGE.IS_INVALID_ID,
+    },
+  };
 }

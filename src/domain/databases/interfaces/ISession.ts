@@ -1,4 +1,4 @@
-export interface ISessions {
+export interface ISession {
   id: string;
   user_id: string;
   starting_date: Date;

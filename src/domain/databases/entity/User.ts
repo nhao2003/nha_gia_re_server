@@ -1,75 +1,87 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BaseEntity, OneToMany } from 'typeorm';
 import { IUser } from '../interfaces/IUser';
-import { OTP } from './Otp';
+import { OTP } from './OTP';
 import { Session } from './Sesstion';
-import { hashPassword } from '~/utils/crypto';
 import { DefaultValue } from '~/constants/defaultValue';
 import { Role, UserStatus } from '~/constants/enum';
+import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
 
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'varchar', length: 50, default: UserStatus.unverified })
+  @Column({ type: PostgresDataType.varchar, length: 50, default: UserStatus.unverified, enum: UserStatus })
   status!: string;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: PostgresDataType.boolean, default: false })
   is_identity_verified!: boolean;
 
-  @Column({ type: 'varchar', default: Role.user })
+  @Column({ type: PostgresDataType.varchar, default: Role.user })
   role!: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column({ type: PostgresDataType.varchar, length: 255, unique: true })
   email!: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: PostgresDataType.varchar, length: 255 })
   password!: string;
 
-  @Column('jsonb', { nullable: true })
+  @Column(PostgresDataType.jsonb, { nullable: true })
   address: any;
 
-  @Column({ type: 'varchar', length: 50, default: DefaultValue.UNKNOW })
+  @Column({ type: PostgresDataType.varchar, length: 50, default: DefaultValue.UNKNOW })
   first_name!: string;
 
-  @Column({ type: 'varchar', length: 50, default: DefaultValue.UNKNOW })
+  @Column({ type: PostgresDataType.varchar, length: 50, default: DefaultValue.UNKNOW })
   last_name!: string;
 
-  @Column({ type: 'boolean', default: 'false' })
+  @Column({ type: PostgresDataType.boolean, default: 'false' })
   gender!: boolean;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: PostgresDataType.text, nullable: true })
   avatar!: string;
 
-  @Column({ type: 'date', default: new Date('01/01/1970') })
+  @Column({ type: PostgresDataType.date, nullable: true })
   dob!: Date;
 
-  @Column({ type: 'varchar', default: DefaultValue.UNKNOW })
+  @Column({ type: PostgresDataType.varchar, default: DefaultValue.UNKNOW })
   phone!: string;
 
-  @Column({ type: 'timestamptz', default: new Date() })
+  @Column({ type: PostgresDataType.timestamp_without_timezone, default: DatabaseDefaultValues.now })
   last_active_at!: Date;
 
-  @CreateDateColumn({ type: 'timestamptz', default: new Date() })
+  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone, default: DatabaseDefaultValues.now })
   created_at!: Date;
 
-  @Column('timestamptz', { nullable: true })
+  @Column(PostgresDataType.timestamp_without_timezone, { nullable: true })
   updated_at!: Date;
 
-  @Column('timestamptz', { nullable: true })
+  @Column(PostgresDataType.timestamp_without_timezone, { nullable: true })
   banned_util!: Date;
 
-  @Column('text', { nullable: true })
+  @Column(PostgresDataType.text, { nullable: true })
   ban_reason!: string;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: PostgresDataType.boolean, default: false })
   is_active!: boolean;
 
   // One-to-Many relationship with OTP
   @OneToMany(() => OTP, (otp) => otp.user)
   otps!: OTP[];
 
-  //One-to-Many relationship with Session
-  @OneToMany(() => Session, (session) => session.user)
+  // One-to-Many relationship with Session
+  @OneToMany(() => Session, (session) => session.user,)
   sessions!: Session[];
+
+  // Method
+  toJSON(): Record<string, any> {
+    const user: Record<string, any> = { ...this };
+    delete user.password;
+    delete user.is_active;
+    delete user.banned_util;
+    delete user.ban_reason;
+    delete user.sessions;
+    delete user.otps;
+    return user;
+  }
 }

@@ -1,16 +1,14 @@
-// blogs.ts
 interface Blog {
   id: string;
-  created_at: Date;
   title: string;
   short_description: string;
   author: string;
   thumbnail: string;
   content_link: string;
   is_active: boolean;
+  created_at: Date;
 }
 
-// comments.ts
 interface Comment {
   id: string;
   parent_id: string | null;
@@ -22,16 +20,23 @@ interface Comment {
   is_active: boolean;
 }
 
-// developers.ts
-interface Developer {
+interface Conversation {
   id: string;
-  name: string;
-  description: string;
-  images: string[];
+  created_at: Date;
+  last_messsage_id: string;
   is_active: boolean;
 }
 
-// discount_codes.ts
+interface Developer {
+  id: string;
+  description: string;
+  images: string[];
+  created_at: Date;
+  is_active: boolean;
+  name: string;
+}
+
+// Tạo các interfaces cho các bảng khác tương tự
 interface DiscountCode {
   id: string;
   package_id: string;
@@ -40,10 +45,10 @@ interface DiscountCode {
   starting_date: Date;
   expiration_date: Date;
   description: string;
+  created_at: Date;
   is_active: boolean;
 }
 
-// membership_packages.ts
 interface MembershipPackage {
   id: string;
   name: string;
@@ -53,28 +58,38 @@ interface MembershipPackage {
   post_approval_priority: boolean;
   display_priority: boolean;
   is_active: boolean;
-}
-
-// conversations.ts
-interface Conversation {
-  id: string;
   created_at: Date;
-  last_messsage_id: string;
-  is_active: boolean;
 }
 
-// messsages.ts
 interface Message {
   id: string;
   conversation_id: string;
   sender_id: string;
   content_type: string;
-  content: any; // Use the appropriate type for your content
+  content: any; // Kiểu dữ liệu content có thể là bất kỳ
   sent_at: Date;
   is_active: boolean;
 }
 
-// project_scale.ts
+interface OTP {
+  id: string;
+  type: string;
+  issued_at: Date;
+  expiration_time: Date;
+  token: string;
+  user_id: string;
+  is_used: boolean;
+  is_active: boolean;
+}
+
+interface Participant {
+  conversation_id: string;
+  user_id: string;
+  joined_at: Date;
+  read_last_message_at: Date | null;
+  is_active: boolean;
+}
+
 interface ProjectScale {
   id: string;
   unit_id: string;
@@ -82,7 +97,6 @@ interface ProjectScale {
   scale: number;
 }
 
-// projects.ts
 interface Project {
   id: string;
   developer_id: string | null;
@@ -90,8 +104,8 @@ interface Project {
   total_area: number | null;
   starting_date: Date | null;
   completion_date: Date | null;
-  address: any; // Define an appropriate type for your address JSON
-  address_point: string | null;
+  address: any; // Kiểu dữ liệu address có thể là bất kỳ
+  address_point: any; // Kiểu dữ liệu address_point có thể là bất kỳ
   progression: string;
   status: string;
   images: string[];
@@ -99,48 +113,53 @@ interface Project {
   is_active: boolean;
 }
 
-// property_types.ts
 interface PropertyType {
   id: string;
   name: string;
   is_active: boolean;
 }
 
-// property_types_projects.ts
 interface PropertyTypeProject {
   projects_id: string;
   property_types_id: string;
 }
 
-// real_estate_posts.ts
 interface RealEstatePost {
   id: string;
   user_id: string;
-  project_id: string;
+  project_id: string | null;
   type_id: string;
-  unit_id: string;
   status: string;
   title: string;
   description: string;
   area: number;
-  address: any; // Define an appropriate type for your address JSON
-  address_point: string | null;
+  address: any; // Kiểu dữ liệu address có thể là bất kỳ
+  address_point: any; // Kiểu dữ liệu address_point có thể là bất kỳ
   price: number;
-  desposit: number | null;
+  deposit: number | null;
   is_lease: boolean;
   posted_date: Date;
   expiry_date: Date;
   images: string[];
   videos: string[];
-  is_pro_seller: boolean[];
-  info_message: string;
+  is_pro_seller: boolean;
   is_priority: boolean;
-  features: any; // Define an appropriate type for your features JSON
+  features: any; // Kiểu dữ liệu features có thể là bất kỳ
   post_approval_priority: boolean;
+  is_active: boolean;
+  unit_id: string;
+  info_message: any; // Kiểu dữ liệu info_message có thể là bất kỳ
+}
+
+interface Session {
+  id: string;
+  user_id: string;
+  starting_date: Date;
+  expiration_date: Date;
+  updated_at: Date;
   is_active: boolean;
 }
 
-// subscription.ts
 interface Subscription {
   id: string;
   user_id: string;
@@ -152,7 +171,6 @@ interface Subscription {
   is_active: boolean;
 }
 
-// transactions.ts
 interface Transaction {
   id: string;
   user_id: string;
@@ -166,20 +184,17 @@ interface Transaction {
   is_active: boolean;
 }
 
-// units.ts
 interface Unit {
   id: string;
   unit_name: string;
 }
 
-// user_blog_favorites.ts
 interface UserBlogFavorite {
   user_id: string;
   blog_id: string;
   timestamp: Date;
 }
 
-// user_blog_view.ts
 interface UserBlogView {
   id: string;
   user_id: string;
@@ -187,28 +202,24 @@ interface UserBlogView {
   view_timestamp: Date;
 }
 
-// user_comment_likes.ts
 interface UserCommentLike {
-  user_id: string;
   comment_id: string;
+  user_id: string;
   timestamp: Date;
 }
 
-// user_post_favorite.ts
 interface UserPostFavorite {
   users_id: string;
   real_estate_posts_id: string;
   like_timestamp: Date;
 }
 
-// user_post_views.ts
 interface UserPostView {
   real_estate_posts_id: string;
   users_id: string;
   view_timestamp: Date;
 }
 
-// users.ts
 interface User {
   id: string;
   status: string;
@@ -216,21 +227,18 @@ interface User {
   role: string;
   email: string;
   password: string;
-  address: any; // Define an appropriate type for your address JSON
+  address: any; // Kiểu dữ liệu address có thể là bất kỳ
   first_name: string;
   last_name: string;
   gender: boolean;
-  avatar: string | null;
+  avatar: string;
   dob: Date;
-  phone: string | null;
+  phone: string;
+  ban_reason: string | null;
+  is_active: boolean;
   last_active_at: Date;
-  confirmation_token: string | null;
-  comfirmation_at: Date | null;
-  recovery_token: string | null;
-  recovery_sent_at: Date | null;
   created_at: Date;
   updated_at: Date | null;
   banned_util: Date | null;
-  ban_reason: string | null;
-  is_active: boolean;
 }
+

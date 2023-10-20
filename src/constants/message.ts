@@ -48,6 +48,7 @@ export const APP_MESSAGES = {
     OTP_CODE_IS_REQUIRED: "OTP code is required",
     PHONE_IS_REQUIRED: "Phone is required",
     PHONE_IS_INVALID: "Phone is invalid",
+    IS_INVALID_ID: 'ID is not valid',
   },
 
   ERROR_MESSAGE: {

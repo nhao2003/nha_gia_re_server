@@ -16,3 +16,17 @@ export enum OTPTypes {
   account_activation = "account_activation",
   password_recovery = "password_recovery"
 }
+
+export enum PostStatus {
+  pending = "pending",
+  approved = "approved",
+  rejected = "rejected",
+  hided = "hided"
+}
+export enum PropertyTypes {
+  apartment = 'apartment',
+  land = 'land',
+  office = 'office',
+  motel = 'motel',
+  house = 'house',
+}

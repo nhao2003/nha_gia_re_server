@@ -1,9 +1,11 @@
-export interface IOtp {
-    id: string;
-    user_id: string;
-    token: string;
-    issued_at: Date;
-    expiration_time: Date;
-    is_used: boolean;
-    is_active: boolean;
-    }
+interface IOTP {
+  id: string;
+  type: string;
+  issued_at: Date;
+  expiration_time: Date;
+  token: string;
+  user_id: string;
+  is_used: boolean;
+  is_active: boolean;
+}
+export default IOTP;

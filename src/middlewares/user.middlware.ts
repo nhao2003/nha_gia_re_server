@@ -13,5 +13,11 @@ export class UserValidation {
             last_name: ParamsValidation.name,
             gender: ParamsValidation.gender,
         })
-    )
+    );
+
+    public static readonly getUserProfileValidation = validate(
+        checkSchema({
+            id: ParamsValidation.uuid,
+        })
+    );
 }

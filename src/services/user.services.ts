@@ -8,8 +8,17 @@ class UserServices {
     this.userRepository = MyRepository.userRepository();
   }
   async updateUserInfo(user_id: string, data: any): Promise<boolean> {
-    await this.userRepository.update({ id: user_id }, data);
+
+    await this.userRepository.update({ id: user_id }, {
+      ...data,
+      updated_at: new Date(),
+    });
     return true;
+  }
+
+  async getUserInfo(id: string, is_active: boolean = true): Promise<User | null> {
+    const user = await this.userRepository.findOne({where: {id, is_active}});
+    return user;
   }
 }
 
