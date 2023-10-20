@@ -8,7 +8,8 @@ const router = Router();
 router
   .route('/create')
   .post(AuthValidation.accessTokenValidation, PostController.createPost);
-// router.route(':/id').get(UserValidation.getPostValidation, userControllers.getPost)
+router.route('/').get(PostController.getAllPost);
+router.route('/:id').get(PostController.getPostById);
 // .patch(AuthValidation.accessTokenValidation, UserValidation.updatePostValidation, userControllers.updatePost)
 // .delete(AuthValidation.accessTokenValidation, UserValidation.deletePostValidation, userControllers.deletePost);
 

@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { FindManyOptions, MoreThanOrEqual, Repository } from 'typeorm';
 import { PostStatus } from '~/constants/enum';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import { MyRepository } from '~/repositories/my_repository';
@@ -22,8 +22,14 @@ class PostServices {
     return data;
   }
 
-  async getPost(id: any): Promise<RealEstatePost | undefined | null> {
-    const post = await this.postRepository.findOne(id);
+  async getPostById(id: any): Promise<RealEstatePost | undefined | null> {
+    const post = await this.postRepository.findOne({
+      where: {
+        id,
+        expiry_date: MoreThanOrEqual(new Date()),
+        is_active: true,
+      },
+    });
     return post;
   }
   async updatePost(id: any, data: any) {
@@ -39,12 +45,23 @@ class PostServices {
     return id;
   }
 
-  async getPosts() {
-    return [];
+  async getPosts(page: number) {
+    //Using pagination
+    const posts = await this.postRepository
+      .createQueryBuilder()
+      .skip((page - 1) * 10)
+      .take(10)
+      .addOrderBy('posted_date', 'DESC')
+      .andWhere('expiry_date >= :expiry_date', { expiry_date: new Date() })
+      .andWhere('is_active = :is_active', { is_active: true })
+      .getMany();
+    return posts;
   }
 
-  async getPostsByUser(user_id: any) {
-    return user_id;
+  async getPostsByUser(user_id: any, page: number) {
+    const posts = await this.postRepository.query(
+      `SELECT * FROM real_estate_posts WHERE user_id = '${user_id}' LIMIT 10 OFFSET ${page * 10}`,
+    );
   }
 
   async getPostsByProject(project_id: any) {

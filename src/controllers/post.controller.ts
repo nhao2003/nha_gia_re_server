@@ -35,6 +35,16 @@ class PostController {
     const post = await PostServices.createPost(data);
     res.status(200).json(post);
   });
+
+  getAllPost = wrapRequestHandler(async (req: any, res: any) => {
+    const post = await PostServices.getPosts(req.query.page);
+    res.status(200).json(post);
+  });
+
+  getPostById = wrapRequestHandler(async (req: any, res: any) => {
+    const post = await PostServices.getPostById(req.params.id);
+    res.status(200).json(post);
+  });
 }
 
 export default new PostController();

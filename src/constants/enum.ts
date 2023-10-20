@@ -30,3 +30,64 @@ export enum PropertyTypes {
   motel = 'motel',
   house = 'house',
 }
+
+export enum ApartmentTypes {
+  apartment = 'apartment',
+  duplex = 'duplex',
+  officetel = 'officetel',
+  service = 'service',
+  dormitory = 'dormitory',
+  penhouse = 'penhouse',
+}
+
+export enum LandTypes {
+  residential = 'residential',
+  commercial = 'commercial',
+  industrial = 'industrial',
+  agricultural = 'agricultural',
+}
+
+export enum OfficeTypes {
+  office = 'office',
+  officetel = 'officetel',
+  shophouse = 'shophouse',
+  comercialspace = 'comercialspace',
+}
+
+export enum HouseTypes {
+  townhouse = 'townhouse',
+  villa = 'villa',
+  alleyhouse = 'alleyhouse',
+  frontagehouse = 'frontagehouse',
+}
+
+export enum FurnitureStatus {
+  empty = 'empty',
+  basic = 'basic',
+  full = 'full',
+  high_end = 'high_end',
+}
+
+export enum Direction {
+  east = 'east',
+  west = 'west',
+  south = 'south',
+  north = 'north',
+  north_east = 'north_east',
+  north_west = 'north_west',
+  south_east = 'south_east',
+  south_west = 'south_west',
+}
+
+export enum LegalDocumentStatus {
+  waiting_for_certificates = 'waiting_for_certificates',
+  have_certificates = 'have_certificates',
+  other_documents = 'other_documents',
+}
+
+export enum MessageTypes {
+  text = 'text',
+  media = 'media',
+  location = 'location',
+  post = 'post',
+}
