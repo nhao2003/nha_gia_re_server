@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, JoinColumn } from 'typeorm';
 import IRealEstatePost from '../interfaces/IRealEstatePost';
 import { PostgresDataType } from '../constants/database_constants';
+import { CreateDateColumn } from 'typeorm';
 
 @Entity('real_estate_posts')
 export class RealEstatePost extends BaseEntity implements IRealEstatePost {
@@ -46,7 +47,7 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @Column(PostgresDataType.boolean)
   is_lease!: boolean;
 
-  @Column({ type: PostgresDataType.timestamp_without_timezone, default: () => 'CURRENT_TIMESTAMP'})
+  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone})
   posted_date!: Date;
 
   @Column(PostgresDataType.timestamp_without_timezone)

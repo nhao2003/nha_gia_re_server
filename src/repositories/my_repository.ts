@@ -1,5 +1,5 @@
 import { BaseEntity, Repository } from 'typeorm';
-import { OTP } from '~/domain/databases/entity/OTP';
+import { OTP } from '~/domain/databases/entity/Otp';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import { Session } from '~/domain/databases/entity/Sesstion';
 import { User } from '~/domain/databases/entity/User';

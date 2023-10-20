@@ -1,11 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BaseEntity, OneToMany } from 'typeorm';
 import { IUser } from '../interfaces/IUser';
-import { OTP } from './OTP';
 import { Session } from './Sesstion';
 import { DefaultValue } from '~/constants/defaultValue';
 import { Role, UserStatus } from '~/constants/enum';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
-
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -47,10 +45,10 @@ export class User extends BaseEntity implements IUser {
   @Column({ type: PostgresDataType.varchar, default: DefaultValue.UNKNOW })
   phone!: string;
 
-  @Column({ type: PostgresDataType.timestamp_without_timezone, default: DatabaseDefaultValues.now })
+  @Column({ type: PostgresDataType.timestamp_without_timezone, default:() => DatabaseDefaultValues.now })
   last_active_at!: Date;
 
-  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone, default: DatabaseDefaultValues.now })
+  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone, default:() => DatabaseDefaultValues.now })
   created_at!: Date;
 
   @Column(PostgresDataType.timestamp_without_timezone, { nullable: true })
@@ -64,14 +62,6 @@ export class User extends BaseEntity implements IUser {
 
   @Column({ type: PostgresDataType.boolean, default: false })
   is_active!: boolean;
-
-  // One-to-Many relationship with OTP
-  @OneToMany(() => OTP, (otp) => otp.user)
-  otps!: OTP[];
-
-  // One-to-Many relationship with Session
-  @OneToMany(() => Session, (session) => session.user,)
-  sessions!: Session[];
 
   // Method
   toJSON(): Record<string, any> {

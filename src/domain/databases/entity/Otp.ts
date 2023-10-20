@@ -2,6 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, JoinColu
 import { User } from './User';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
 import IOTP from '../interfaces/IOTP';
+import { CreateDateColumn } from 'typeorm';
+import { OneToMany } from 'typeorm';
 
 @Entity('otps')
 export class OTP extends BaseEntity implements IOTP {
@@ -11,7 +13,7 @@ export class OTP extends BaseEntity implements IOTP {
   @Column({ type: PostgresDataType.varchar, length: 50 })
   type!: string;
 
-  @Column({ type: PostgresDataType.timestamp_without_timezone, default: () => DatabaseDefaultValues.now })
+  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone })
   issued_at!: Date;
 
   // Default expiration time is 10 minutes
@@ -29,9 +31,4 @@ export class OTP extends BaseEntity implements IOTP {
 
   @Column({ type: PostgresDataType.boolean, default: 'true' })
   is_active!: boolean;
-
-  // Many-to-One relationship with User
-  @ManyToOne(() => User, (user) => user.otps)
-  @JoinColumn({ name: 'user_id' })
-  user!: User;
 }

@@ -16,7 +16,7 @@ export class Developer extends BaseEntity implements IDeveveloper {
   @Column(PostgresDataType.varchar, { array: true })
   images!: string[];
 
-  @Column({ type: PostgresDataType.timestamp_without_timezone, default: DatabaseDefaultValues.now })
+  @Column({ type: PostgresDataType.timestamp_without_timezone, default: () => DatabaseDefaultValues.now })
   created_at!: Date;
 
   @Column({ type: PostgresDataType.boolean, default: true })

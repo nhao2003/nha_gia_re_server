@@ -5,7 +5,6 @@ interface ISubscription {
   transaction_id: string | null;
   starting_date: Date;
   expiration_date: Date;
-  trans_id: string;
   is_active: boolean;
 }
 export default ISubscription;

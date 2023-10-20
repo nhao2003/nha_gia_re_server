@@ -1,3 +1,4 @@
+
 interface IComment {
   id: string;
   parent_id: string | null;
@@ -6,6 +7,7 @@ interface IComment {
   reply_to_user_id: string | null;
   comment: string;
   timestamp: Date;
+  updated_at: Date;
   is_active: boolean;
 }
 export default IComment;

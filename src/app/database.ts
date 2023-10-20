@@ -6,7 +6,7 @@ const AppDataSource = new DataSource({
     username: 'postgres',
     password: '7554',
     database: 'postgres',
-    synchronize: true,
+    synchronize: false,
     logging: false,
     entities: ['src/domain/databases/entity/*.ts'],
     migrations: [],

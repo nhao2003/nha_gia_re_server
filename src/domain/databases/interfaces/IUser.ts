@@ -1,3 +1,5 @@
+import IOTP from "./IOTP";
+
 export interface IUser {
   id: string;
   status: string;
@@ -18,14 +20,4 @@ export interface IUser {
   banned_util: Date | null;
   ban_reason: string | null;
   is_active: boolean;
-
-  // One-to-Many relationship
-  otps: any; // Define an appropriate type for your otps
-
-  // One-to-Many relationship
-  sessions: any; // Define an appropriate type for your sessions
-
-  // Many-to-Many relationship
-
-  //Methods
 }

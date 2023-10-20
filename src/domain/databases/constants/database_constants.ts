@@ -1,6 +1,5 @@
 
 //Enum data type orm postgres
-
 export enum PostgresDataType {
     varchar = 'varchar',
     integer = 'integer',
@@ -12,11 +11,11 @@ export enum PostgresDataType {
     date = 'date',
     double_precision = 'double precision',
     bigint = 'bigint',
-    point = 'point'
+    point = 'point',
 }
 
-export enum DatabaseDefaultValues {
-    now = 'CURRENT_TIMESTAMP',
-    true = 'true',
-    false = 'false'
+export const  DatabaseDefaultValues = {
+    now: 'CURRENT_TIMESTAMP',
+    true: 'true',
+    false: 'false'
 }
