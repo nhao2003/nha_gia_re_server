@@ -11,6 +11,6 @@ class UserCommentLike extends BaseEntity implements IUserCommentLike {
   user_id!: string;
 
   @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone, comment: 'This is the timestamp of the user comment like.'})
-  timestamp!: Date;
+  like_timestamp!: Date;
 }
 export default UserCommentLike;

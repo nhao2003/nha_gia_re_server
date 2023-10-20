@@ -12,7 +12,7 @@ export class Session extends BaseEntity implements ISession {
   @Column(PostgresDataType.uuid)
   user_id!: string;
 
-  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone})
+  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone, default: () =>  DatabaseDefaultValues.now })
   starting_date!: Date;
 
   @Column({ type: PostgresDataType.timestamp_without_timezone })

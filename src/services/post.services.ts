@@ -2,6 +2,7 @@ import { Repository } from 'typeorm';
 import { PostStatus } from '~/constants/enum';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import { MyRepository } from '~/repositories/my_repository';
+import { parseTimeToMilliseconds } from '~/utils/time';
 
 class PostServices {
   postRepository: Repository<RealEstatePost>;
@@ -12,6 +13,10 @@ class PostServices {
     data = {
       ...data,
       status: PostStatus.pending,
+      //expiry_date 14 days from now
+      expiry_date: new Date(Date.now() + parseTimeToMilliseconds('14d')),
+      is_priority: false,
+      post_approval_priority: false,
     };
     await this.postRepository.insert(data);
     return data;

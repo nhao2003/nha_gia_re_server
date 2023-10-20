@@ -17,7 +17,7 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @Column({ type: PostgresDataType.varchar, length: 50 })
   type_id!: string;
 
-  @Column(PostgresDataType.uuid)
+  @Column({type: PostgresDataType.varchar, length: 50, nullable: true})
   unit_id!: string;
 
   @Column({ type: PostgresDataType.varchar, nullable: true })
@@ -62,8 +62,8 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @Column(PostgresDataType.boolean)
   is_pro_seller!: boolean;
 
-  @Column(PostgresDataType.jsonb)
-  info_message: any;
+  @Column({ type: PostgresDataType.text, nullable: true })
+  info_message: string | null | undefined;
 
   @Column(PostgresDataType.boolean)
   is_priority!: boolean;
@@ -74,7 +74,10 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @Column(PostgresDataType.boolean)
   post_approval_priority!: boolean;
 
-  @Column(PostgresDataType.boolean)
+  @Column(PostgresDataType.integer)
+  update_count!: number;
+
+  @Column({type: PostgresDataType.boolean, default: true})
   is_active!: boolean;
 
   //   // Many-to-One relationship with User

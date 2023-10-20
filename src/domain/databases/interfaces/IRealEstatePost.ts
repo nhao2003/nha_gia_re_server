@@ -18,10 +18,11 @@ interface IRealEstatePost {
   images: string[];
   videos: string[];
   is_pro_seller: boolean;
-  info_message: string;
+  info_message: string | null | undefined;
   is_priority: boolean;
   features: any; // Define an appropriate type for your features JSON
   post_approval_priority: boolean;
+  update_count: number;
   is_active: boolean;
 }
 export default IRealEstatePost;
