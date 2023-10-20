@@ -5,7 +5,7 @@ interface IBlog {
   short_description: string;
   author: string;
   thumbnail: string;
-  content_link: string;
+  content: string;
   is_active: boolean;
 }
 export default IBlog;

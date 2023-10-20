@@ -6,7 +6,7 @@ import { Entity } from 'typeorm';
 
 @Entity('property_types')
 export class PropertyType extends BaseEntity implements IPropertyType {
-  @PrimaryColumn({ type: PostgresDataType.varchar, length: 255 })
+  @PrimaryColumn({ type: PostgresDataType.varchar, length: 50 })
   id!: string;
 
   @Column({ type: PostgresDataType.varchar, length: 255 })

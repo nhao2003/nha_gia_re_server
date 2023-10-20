@@ -26,7 +26,7 @@ class MembershipPackage  extends BaseEntity implements IMembershipPackage{
   @Column({ type: PostgresDataType.boolean })
   display_priority!: boolean;
 
-  @Column({ type: PostgresDataType.boolean })
+  @Column({ type: PostgresDataType.boolean, default: 'true' })
   is_active!: boolean;
 
   @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone })

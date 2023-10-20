@@ -1,11 +1,11 @@
 import { Entity, BaseEntity, Column } from 'typeorm';
 import { IPropertyType } from '../interfaces/IPropertyType';
 import { PostgresDataType } from '../constants/database_constants';
-import { PrimaryGeneratedColumn } from 'typeorm';
+import { PrimaryColumn } from 'typeorm';
 
-@Entity('property_types')
+@Entity('property_types_projects')
 class PropertyType extends BaseEntity implements IPropertyType {
-  @PrimaryGeneratedColumn(PostgresDataType.uuid, {comment: 'This is the Primary Key'})
+  @PrimaryColumn(PostgresDataType.uuid, {comment: 'This is the Primary Key'})
   id!: string;
 
   @Column({type: PostgresDataType.varchar, length: 50, comment: 'This is the Property Type Name'})

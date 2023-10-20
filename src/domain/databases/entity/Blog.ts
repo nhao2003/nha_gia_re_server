@@ -23,7 +23,7 @@ class Blog extends BaseEntity implements IBlog {
   thumbnail!: string;
 
   @Column({ type: PostgresDataType.text })
-  content_link!: string;
+  content!: string;
 
   @Column({ type: PostgresDataType.boolean, default: DatabaseDefaultValues.true })
   is_active!: boolean;

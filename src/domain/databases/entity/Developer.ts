@@ -10,7 +10,7 @@ export class Developer extends BaseEntity implements IDeveveloper {
   @Column({ type: PostgresDataType.varchar, length: 50 })
   name!: string;
 
-  @Column({ type: PostgresDataType.varchar })
+  @Column({ type: PostgresDataType.text })
   description!: string;
 
   @Column(PostgresDataType.varchar, { array: true })
@@ -19,6 +19,6 @@ export class Developer extends BaseEntity implements IDeveveloper {
   @Column({ type: PostgresDataType.timestamp_without_timezone, default: () => DatabaseDefaultValues.now })
   created_at!: Date;
 
-  @Column({ type: PostgresDataType.boolean, default: true })
+  @Column({ type: PostgresDataType.boolean, default: 'true' })
   is_active!: boolean;
 }
