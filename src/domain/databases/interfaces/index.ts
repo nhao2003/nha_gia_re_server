@@ -4,7 +4,7 @@ export * from './IDeveloper';
 export * from './IDiscountCode';
 export * from './IMembershipPackage';
 export * from './IMessage';
-export * from './IOTP';
+export * from './IOtp';
 export * from './IParticipant';
 export * from './IProjectScale';
 export * from './IProject';

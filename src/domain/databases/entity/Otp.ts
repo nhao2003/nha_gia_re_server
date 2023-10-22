@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
-import IOTP from '../interfaces/IOTP';
+import IOTP from '../interfaces/IOtp';
 
 @Entity('otps')
 export class OTP extends BaseEntity implements IOTP {

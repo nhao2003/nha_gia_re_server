@@ -1,5 +1,5 @@
 import Address from "~/domain/typing/address";
-import IOTP from "./IOTP";
+import IOTP from "./IOtp";
 
 export interface IUser {
   id: string;
