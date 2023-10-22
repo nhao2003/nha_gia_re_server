@@ -7,7 +7,7 @@ class Blog extends BaseEntity implements IBlog {
   @PrimaryGeneratedColumn(PostgresDataType.uuid)
   id!: string;
 
-  @Column({ type: PostgresDataType.timestamp_without_timezone, default: () => DatabaseDefaultValues.now })
+  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone, default: () => DatabaseDefaultValues.now })
   created_at!: Date;
 
   @Column({ type: PostgresDataType.varchar, length: 255 })

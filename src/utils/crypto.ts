@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import AppConfig from "~/constants/configs";
 
 export function hashString(content: string, algorithm: string = "sha256"): string {
   return createHash(algorithm).update(content).digest("hex");
@@ -9,7 +10,7 @@ export function verifyString(content: string, hash: string, algorithm: string = 
 }
 
 export function hashPassword(password: string): string {
-  return hashString(password + process.env.PASSWORD_SECRET);
+  return hashString(password + AppConfig.PASSWORD_SECRET_KEY);
 }
 
 export function verifyPassword(password: string, hash: string): boolean {
