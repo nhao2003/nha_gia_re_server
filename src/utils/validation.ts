@@ -7,6 +7,7 @@ import { AppError } from "~/models/Error";
 
 export const validate = (validation: RunnableValidationChains<ValidationChain>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
+    const body = req.body;
     await validation.run(req);
     const errors = validationResult(req);
     if (errors.isEmpty()) {

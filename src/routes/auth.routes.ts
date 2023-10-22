@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import AuthController from '~/controllers/auth.controller';
 import { AuthValidation } from '~/middlewares/auth.middleware';
-
 const router = Router();
 router.route('/sign-up').post(AuthValidation.signUpValidation, AuthController.signUp);
 router.route('/active-account').get(AuthValidation.acctiveAccountValidation, AuthController.activeAccount);

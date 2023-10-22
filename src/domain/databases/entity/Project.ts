@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
 import IProject from '../interfaces/IProject';
 import { PostgresDataType } from '../constants/database_constants';
+import Address from '~/domain/typing/address';
 
 @Entity('projects')
 export class Project extends BaseEntity implements IProject {
@@ -23,7 +24,7 @@ export class Project extends BaseEntity implements IProject {
   completion_date!: Date;
 
   @Column({ type: PostgresDataType.date, nullable: true })
-  address: any;
+  address!: Address;
 
   @Column({ type: PostgresDataType.point, nullable: true })
   address_point: any;

@@ -1,3 +1,4 @@
+import Address from "~/domain/typing/address";
 import IOTP from "./IOTP";
 
 export interface IUser {
@@ -7,7 +8,7 @@ export interface IUser {
   role: string;
   email: string;
   password: string;
-  address: any; // Define an appropriate type for your address JSON
+  address: Address; // Define an appropriate type for your address JSON
   first_name: string;
   last_name: string;
   gender: boolean;

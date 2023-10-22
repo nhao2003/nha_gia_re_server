@@ -6,7 +6,7 @@ import { CreateDateColumn } from 'typeorm';
 @Entity('user_post_favorites')
 class UserPostFavorite extends BaseEntity implements IUserPostFavorite {
   @Column({ primary: true, type: PostgresDataType.uuid, comment: 'This is the User ID.' })
-  users_id!: string;
+  user_id!: string;
 
   @Column({ primary: true, type: PostgresDataType.uuid, comment: 'This is the Real Estate Post ID.'})
   real_estate_posts_id!: string;

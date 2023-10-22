@@ -1,3 +1,5 @@
+import Address from "~/domain/typing/address";
+
 interface IRealEstatePost {
   id: string;
   user_id: string;
@@ -8,7 +10,7 @@ interface IRealEstatePost {
   title: string;
   description: string;
   area: number;
-  address: any; // Define an appropriate type for your address JSON
+  address: Address; // Define an appropriate type for your address JSON
   address_point: string | null;
   price: number;
   desposit: number | null;

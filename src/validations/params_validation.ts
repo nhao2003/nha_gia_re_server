@@ -2,6 +2,7 @@ import { ValidationChain, body } from 'express-validator';
 import { DefaultSchemaKeys, ParamSchema, Schema } from 'express-validator/src/middlewares/schema';
 import { APP_MESSAGES } from '~/constants/message';
 import { User } from '~/domain/databases/entity/User';
+import Address from '~/domain/typing/address';
 import { AppError } from '~/models/Error';
 
 export class ParamsValidation {
@@ -63,6 +64,20 @@ export class ParamsValidation {
 
   public static address: ParamSchema = {
     in: ['body'],
+    notEmpty: {
+      errorMessage: 'Address is required',
+    },
+    custom: {
+      options: (value: Address) => {
+        try {
+          Address.fromJSON(value);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      },
+      errorMessage: 'Address is not valid.',
+    },
   };
 
   public static date: ParamSchema = {

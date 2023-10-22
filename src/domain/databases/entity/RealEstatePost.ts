@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, JoinColu
 import IRealEstatePost from '../interfaces/IRealEstatePost';
 import { PostgresDataType } from '../constants/database_constants';
 import { CreateDateColumn } from 'typeorm';
+import Address from '~/domain/typing/address';
 
 @Entity('real_estate_posts')
 export class RealEstatePost extends BaseEntity implements IRealEstatePost {
@@ -33,7 +34,7 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   area!: number;
 
   @Column(PostgresDataType.jsonb)
-  address: any;
+  address!: Address;
 
   @Column(PostgresDataType.point, { nullable: true })
   address_point!: string;

@@ -4,6 +4,7 @@ import { Session } from './Sesstion';
 import { DefaultValue } from '~/constants/defaultValue';
 import { Role, UserStatus } from '~/constants/enum';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
+import Address from '~/domain/typing/address';
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -25,7 +26,7 @@ export class User extends BaseEntity implements IUser {
   password!: string;
 
   @Column(PostgresDataType.jsonb, { nullable: true })
-  address: any;
+  address!: Address;
 
   @Column({ type: PostgresDataType.varchar, length: 50, default: DefaultValue.UNKNOW })
   first_name!: string;

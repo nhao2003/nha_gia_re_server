@@ -11,7 +11,7 @@ export class UserValidation {
             dob: ParamsValidation.date,
             first_name: ParamsValidation.name,
             last_name: ParamsValidation.name,
-            gender: ParamsValidation.gender,
+            gender: ParamsValidation.gender
         })
     );
 

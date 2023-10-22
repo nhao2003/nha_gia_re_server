@@ -1,3 +1,5 @@
+import Address from "~/domain/typing/address";
+
 interface IProject {
   id: string;
   developer_id: string | null;
@@ -5,7 +7,7 @@ interface IProject {
   total_area: number | null;
   starting_date: Date | null;
   completion_date: Date | null;
-  address: any; // Kiểu dữ liệu address có thể là bất kỳ
+  address: Address; // Kiểu dữ liệu address có thể là bất kỳ
   address_point: any; // Kiểu dữ liệu address_point có thể là bất kỳ
   progression: string;
   status: string;
