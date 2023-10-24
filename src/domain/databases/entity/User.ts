@@ -62,9 +62,6 @@ export class User extends BaseEntity implements IUser {
   @Column(PostgresDataType.text, { nullable: true })
   ban_reason!: string;
 
-  @Column({ type: PostgresDataType.boolean, default: false })
-  is_active!: boolean;
-
   @OneToMany(() => RealEstatePost, (real_estate_posts) => real_estate_posts.user)
   posts!: RealEstatePost[];
 

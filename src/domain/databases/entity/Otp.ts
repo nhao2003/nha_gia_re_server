@@ -25,7 +25,4 @@ export class OTP extends BaseEntity implements IOTP {
 
   @Column({ type: PostgresDataType.boolean, default: 'false' })
   is_used!: boolean;
-
-  @Column({ type: PostgresDataType.boolean, default: 'true' })
-  is_active!: boolean;
 }

@@ -5,10 +5,6 @@ import { Equal, Not, In, MoreThan, LessThan, LessThanOrEqual } from 'typeorm';
 import * as ok from 'typeorm';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { AppError } from '~/models/Error';
-type WhereType = {
-  where: Brackets | string | ObjectLiteral | ObjectLiteral[];
-  parameters?: any;
-};
 
 class AdminController {
   private static getOperatorValue = (originalValue: string) => {
@@ -259,191 +255,86 @@ class AdminController {
     }
     throw new AppError('Invalid operator', 400);
   };
-  private static buildQuery = (req: Request) => {
-    const {
-      page,
-      type_id,
-      status,
-      posted_date,
-      expiry_date,
-      price,
-      desposit,
-      is_lease,
-      priority_level,
-      project_id,
-      is_pro_seller,
-      sort_fields,
-      sort_orders,
-      province_code,
-      district_code,
-      ward_code,
-    } = req.query;
-    const pageParam = Number(page) || 1; // Trang hiện tại
-
-    let where: any = {};
-
-    if (type_id) {
-      where.type_id = this.getOperatorValue(type_id as string);
-    }
-
-    if (status) {
-      where.status = this.getOperatorValue(status as string);
-    }
-
-    if (posted_date) {
-      where.posted_date = this.getOperatorValue(posted_date as string);
-    }
-
-    if (expiry_date) {
-      where.expiry_date = this.getOperatorValue(expiry_date as string);
-    }
-
-    if (price) {
-      where.price = this.getOperatorValue(price as string);
-    }
-
-    if (desposit) {
-      where.desposit = this.getOperatorValue(desposit as string);
-    }
-
-    if (is_lease) {
-      where.is_lease = this.getOperatorValue(is_lease as string);
-    }
-
-    if (priority_level) {
-      where.is_priority = this.getOperatorValue(priority_level as string);
-    }
-
-    if (project_id) {
-      // where.project_id = this.getOperatorValue(project_id as string);
-    }
-
-    if (is_pro_seller) {
-      where.is_pro_seller = this.getOperatorValue(is_pro_seller as string);
-    }
-
-    const address: {
-      [key: string]: Number;
-    } = {};
-    if (province_code) {
-      address.province_code = Number(province_code);
-    }
-    if (district_code) {
-      address.district_code = Number(district_code);
-    }
-    if (ward_code) {
-      address.ward_code = Number(ward_code);
-    }
-    where.address = JsonContains(address);
-
-    const order: any = {};
-    if (sort_fields && sort_orders) {
-      const fields = sort_fields.toString().split(',');
-      const orders = sort_orders.toString().split(',');
-      fields.forEach((field: string, index: number) => {
-        if (orders[index] === 'asc' || orders[index] === 'desc') {
-          const typeormSortOrder = orders[index].toLowerCase() === 'asc' ? 'ASC' : 'DESC';
-          order[`RealEstatePost.${field}`] = typeormSortOrder;
-        }
-      });
-    }
-
-    return {
-      pageParam,
-      where,
-      order,
-    };
-  };
 
   private static jsonBuildObject = (column: string, query: any, table?: string): string[] => {
     let where: string[] = [];
-  
+
     const map: {
       [key: string]: string;
     } = {};
     const keys: string[] = Object.keys(query).filter((key) => key.startsWith(column));
-  
+
     keys.forEach((key) => {
-      map[key.split('.')[1]] = key;
+      map[key.split('.')[1]] = query[key];
     });
-  
+
     // Each key, value in address object, build query string
     Object.keys(map).forEach((key) => {
       where.push(
-        `${table ? table + '.' : ''}${column} ->> '${key}' ${this.getOperatorValueString(
-          query[map[key]] as string,
-        )}`,
+        `${table ? table + '.' : ''}${column} ->> '${key}' ${this.getOperatorValueString(map[key] as string)}`,
       );
     });
-  
+
     return where;
   };
-  
+
+  private static buildPostQuery = (query: any): string[] => {
+    const where: string[] = [];
+
+    //Get all keys start with post
+    const keys: string[] = Object.keys(query).filter((key) => key.startsWith('post.'));
+
+    const map: {
+      [key: string]: string;
+    } = {};
+
+    keys.forEach((key) => {
+      //Remove post. from key. Don't use split('.') because key may contain '.'
+      map[key.replace('post.', '')] = query[key];
+    });
+
+    where.push(...this.jsonBuildObject('address', map));
+    where.push(...this.jsonBuildObject('features', map));
+    Object.keys(map).forEach((key) => {
+      const condition = !(key.startsWith('address') || key.startsWith('features'));
+      if (condition) where.push(`${key} ${this.getOperatorValueString(map[key]as string)}`);
+    });
+
+    return where;
+  };
+
+  private static buildUserQuery = (query: any): string[] => {
+    const where: string[] = [];
+    //Get all keys start with post
+    const keys: string[] = Object.keys(query).filter((key) => key.startsWith('user.'));
+
+    const map: {
+      [key: string]: string;
+    } = {};
+
+    keys.forEach((key) => {
+      //Remove post. from key. Don't use split('.') because key may contain '.'
+      map[key.replace('user.', '')] = query[key];
+    });
+
+    where.push(...this.jsonBuildObject('address', map));
+    Object.keys(map).forEach((key) => {
+      const condition = !key.startsWith('address');
+      if (condition) where.push(`${key} ${this.getOperatorValueString(map[key]as string)}`);
+    });
+
+    return where;
+  };
 
   private static buildQuery2 = (req: Request) => {
     const {
       page,
-      type_id,
-      status,
-      posted_date,
-      expiry_date,
-      price,
-      desposit,
-      is_lease,
-      priority_level,
-      project_id,
-      is_pro_seller,
       sort_fields,
       sort_orders,
-      province_code,
-      district_code,
-      ward_code,
     } = req.query;
-    const pageParam = Number(page) || 1; // Trang hiện tại
-
-    let where: string[] = [];
-
-    if (type_id) {
-      where.push(`type_id ${this.getOperatorValueString(type_id as string, 'text')}`);
-    }
-
-    if (status) {
-      where.push(`status ${this.getOperatorValueString(status as string)}`);
-    }
-
-    if (posted_date) {
-      where.push(`posted_date ${this.getOperatorValueString(posted_date as string)}`);
-    }
-
-    if (expiry_date) {
-      where.push(`expiry_date ${this.getOperatorValueString(expiry_date as string)}`);
-    }
-
-    if (price) {
-      where.push(`price ${this.getOperatorValueString(price as string)}`);
-    }
-
-    if (desposit) {
-      where.push(`desposit ${this.getOperatorValueString(desposit as string)}`);
-    }
-
-    if (is_lease) {
-      where.push(`is_lease ${this.getOperatorValueString(is_lease as string)}`);
-    }
-
-    if (priority_level) {
-      where.push(`is_priority ${this.getOperatorValueString(priority_level as string)}`);
-    }
-
-    if (project_id) {
-      // where.project_id = this.getOperatorValue(project_id as string);
-    }
-
-    if (is_pro_seller) {
-      where.push(`is_pro_seller ${this.getOperatorValueString(is_pro_seller as string)}`);
-    }
-    where.push(...this.jsonBuildObject('address', req.query));
-    where.push(...this.jsonBuildObject('features', req.query));
+    const pageParam = Number(page) || 1;
+    const postWhere: string[] = this.buildPostQuery(req.query);
+    const userWhere: string[] = this.buildUserQuery(req.query);
 
     const order: any = {};
     if (sort_fields && sort_orders) {
@@ -459,13 +350,14 @@ class AdminController {
 
     return {
       pageParam,
-      where,
+      postWhere,
+      userWhere,
       order,
     };
   };
   static readonly getPosts = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { pageParam, where, order } = this.buildQuery2(req);
-    const posts = await AdminService.getPostApproval(pageParam, where, order);
+    const { pageParam, postWhere, userWhere, order } = this.buildQuery2(req);
+    const posts = await AdminService.getPostApproval(pageParam, postWhere, order, userWhere);
     return res.json(posts);
   });
 

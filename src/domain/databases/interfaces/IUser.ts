@@ -20,5 +20,4 @@ export interface IUser {
   updated_at: Date | null;
   banned_util: Date | null;
   ban_reason: string | null;
-  is_active: boolean;
 }

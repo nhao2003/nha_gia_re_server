@@ -6,6 +6,5 @@ interface IOTP {
   token: string;
   user_id: string;
   is_used: boolean;
-  is_active: boolean;
 }
 export default IOTP;

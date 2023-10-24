@@ -17,7 +17,7 @@ class UserServices {
   }
 
   async getUserInfo(id: string, is_active: boolean = true): Promise<User | null> {
-    const user = await this.userRepository.findOne({where: {id, is_active}});
+    const user = await this.userRepository.findOne({where: {id}});
     return user;
   }
 }

@@ -12,23 +12,24 @@ class AdminService {
     this.postRepo = MyRepository.postRepository();
   }
   // post approval
-  async getPostApproval(page: number,where: any, order: any) {
+  async getPostApproval(page: number, postWhere: string[], order: any, userWhere: string[] | null) {
     page = page || 1;
     let query = this.postRepo
       .createQueryBuilder()
-      // .where(where)
-      // .where('RealEstatePost.status = :status', { status: PostStatus.pending })
-      // // .andWhere('RealEstatePost.address ->> \'province_code\' = :province_code', { province_code: 2 })
-      // // .andWhere('RealEstatePost.address ->> \'province_code\' BETWEEN \'2\' AND \'3\'')
-      // .andWhere('RealEstatePost.address ->> \'province_code\' IN (\'2\', \'3\')')
       .leftJoinAndSelect('RealEstatePost.user', 'user')
       .orderBy(order)
       .skip((page - 1) * 10)
       .take(10);
 
-    where.forEach((item: string) => {
+    postWhere.forEach((item: string) => {
       query = query.andWhere(`RealEstatePost.${item}`);
     });
+
+    if (userWhere) {
+      userWhere.forEach((item: string) => {
+        query = query.andWhere(`user.${item}`);
+      });
+    }
 
     const getSql = query.getSql();
     console.log(getSql);
@@ -51,7 +52,6 @@ class AdminService {
     await this.postRepo.update(id, { is_active: false });
     return id;
   }
-
 }
 
 export default new AdminService();
