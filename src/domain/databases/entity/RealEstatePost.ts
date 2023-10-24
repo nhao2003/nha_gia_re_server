@@ -3,6 +3,7 @@ import IRealEstatePost from '../interfaces/IRealEstatePost';
 import { PostgresDataType } from '../constants/database_constants';
 import { CreateDateColumn } from 'typeorm';
 import Address from '~/domain/typing/address';
+import { User } from './User';
 
 @Entity('real_estate_posts')
 export class RealEstatePost extends BaseEntity implements IRealEstatePost {
@@ -18,7 +19,7 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @Column({ type: PostgresDataType.varchar, length: 50 })
   type_id!: string;
 
-  @Column({type: PostgresDataType.varchar, length: 50, nullable: true})
+  @Column({ type: PostgresDataType.varchar, length: 50, nullable: true })
   unit_id!: string;
 
   @Column({ type: PostgresDataType.varchar, nullable: true })
@@ -43,12 +44,12 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   price!: number;
 
   @Column(PostgresDataType.bigint, { nullable: true })
-  desposit!: number;
+  deposit!: number;
 
   @Column(PostgresDataType.boolean)
   is_lease!: boolean;
 
-  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone})
+  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone })
   posted_date!: Date;
 
   @Column(PostgresDataType.timestamp_without_timezone)
@@ -66,8 +67,8 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @Column({ type: PostgresDataType.text, nullable: true })
   info_message: string | null | undefined;
 
-  @Column(PostgresDataType.boolean)
-  is_priority!: boolean;
+  @Column({ type: PostgresDataType.text, default: 0 })
+  priority_level!: number;
 
   @Column(PostgresDataType.jsonb)
   features: any;
@@ -78,13 +79,13 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @Column(PostgresDataType.integer)
   update_count!: number;
 
-  @Column({type: PostgresDataType.boolean, default: true})
+  @Column({ type: PostgresDataType.boolean, default: true })
   is_active!: boolean;
 
-  //   // Many-to-One relationship with User
-  //   @ManyToOne(() => User, (user) => user.real_estate_posts)
-  //   @JoinColumn({ name: 'user_id' })
-  //   user: User;
+  // Many-to-One relationship with User
+  @ManyToOne(() => User, (user) => user.posts)
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
 
   //   // Many-to-One relationship with Project
   //   @ManyToOne(() => Project, (project) => project.real_estate_posts)

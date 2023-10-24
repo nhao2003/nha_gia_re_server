@@ -1,6 +1,6 @@
 export class AppError extends Error {
   status: string;
-  statusCode: number;
+  statusCode: number = 500;
   isOperational: boolean;
   details?: any;
   constructor(message: string, statusCode: number, details?: any) {

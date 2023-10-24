@@ -2,10 +2,12 @@ import { checkSchema } from 'express-validator';
 import { PropertyTypes } from '~/constants/enum';
 import { PropertyFeatures } from '~/domain/typing/Features';
 import Address from '~/domain/typing/address';
+import postServices from '~/services/post.services';
 import { validate } from '~/utils/validation';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { ParamsValidation } from '~/validations/params_validation';
-
+import { Request, Response, NextFunction } from 'express';
+import { AppError } from '~/models/Error';
 class PostValidation {
   public static createPostValidation = [
     validate(
@@ -141,7 +143,7 @@ class PostValidation {
             errorMessage: 'Videos is not valid.',
           },
         },
-  
+
         is_pro_seller: {
           in: ['body'],
           trim: true,
@@ -164,8 +166,8 @@ class PostValidation {
     wrapRequestHandler(async (req, res, next) => {
       const data = {
         type_id: req.body.type_id,
-        ...req.body.features
-      }
+        ...req.body.features,
+      };
       try {
         PropertyFeatures.fromJson(data);
         next();
@@ -173,6 +175,31 @@ class PostValidation {
         next(error);
       }
     }),
-  ]
+  ];
+
+  public static checkPostExist = [
+    validate(
+      checkSchema({
+        id: {
+          in: ['params'],
+          notEmpty: {
+            errorMessage: 'Post id is required',
+          },
+          trim: true,
+          isUUID: {
+            errorMessage: 'Post id is not valid',
+          },
+        },
+      }),
+    ),
+    wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+      const post = await postServices.checkPostExist(req.params.id);
+      console.log(post);
+      if (post === null || post === undefined) next(new AppError('Post is not exist', 404));
+      if (req.user!.id !== post!.user_id) next(new AppError('You are not authorized to perform this action', 403));
+      req.post = post;
+      next();
+    }),
+  ];
 }
 export { PostValidation };

@@ -13,7 +13,7 @@ interface IRealEstatePost {
   address: Address; // Define an appropriate type for your address JSON
   address_point: string | null;
   price: number;
-  desposit: number | null;
+  deposit: number | null;
   is_lease: boolean;
   posted_date: Date;
   expiry_date: Date;
@@ -21,7 +21,7 @@ interface IRealEstatePost {
   videos: string[];
   is_pro_seller: boolean;
   info_message: string | null | undefined;
-  is_priority: boolean;
+  priority_level: number;
   features: any; // Define an appropriate type for your features JSON
   post_approval_priority: boolean;
   update_count: number;

@@ -8,5 +8,6 @@ declare module "express" {
     session?: Session;
     verifyResult?: VerifyResult;
     verifyResultRefreshToken?: VerifyResult;
+    post?: RealEstatePost;
   }
 }

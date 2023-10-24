@@ -1,5 +1,5 @@
 import { FindManyOptions, MoreThanOrEqual, Repository } from 'typeorm';
-import { PostStatus } from '~/constants/enum';
+import { PostStatus, UserStatus } from '~/constants/enum';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import { MyRepository } from '~/repositories/my_repository';
 import { parseTimeToMilliseconds } from '~/utils/time';
@@ -32,29 +32,34 @@ class PostServices {
     });
     return post;
   }
-  async updatePost(id: any, data: any) {
+  async updatePost(id: string, data: any): Promise<any> {
     data = {
       ...data,
-      updated_at: new Date(),
     };
-
-    return data;
+    const result = await this.postRepository.update(id, data);
+    return result;
   }
 
-  async deletePost(id: any) {
+  async deletePost(id: string) {
+    await this.postRepository.update(id, { is_active: false });
     return id;
   }
 
   async getPosts(page: number) {
-    //Using pagination
-    const posts = await this.postRepository
+    page = page || 1;
+    const query = this.postRepository
       .createQueryBuilder()
       .skip((page - 1) * 10)
       .take(10)
-      .addOrderBy('posted_date', 'DESC')
+      .addOrderBy('RealEstatePost.posted_date', 'DESC')
       .andWhere('expiry_date >= :expiry_date', { expiry_date: new Date() })
-      .andWhere('is_active = :is_active', { is_active: true })
-      .getMany();
+      .andWhere('RealEstatePost.is_active = :is_active', { is_active: true })
+      .leftJoinAndSelect('RealEstatePost.user', 'user')
+      .andWhere('user.status = :status', { status: UserStatus.not_update })
+      const getSql = query.getSql();
+      console.log(getSql);
+    const posts = await query.getMany();
+
     return posts;
   }
 
@@ -70,6 +75,15 @@ class PostServices {
 
   async getPostsByType(type_id: any) {
     return type_id;
+  }
+
+  async checkPostExist(id: string) {
+    const post = await this.postRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    return post;
   }
 }
 

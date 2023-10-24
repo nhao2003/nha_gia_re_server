@@ -7,6 +7,7 @@ interface IDiscountCode {
   expiration_date: Date;
   description: string;
   created_at: Date;
+  limited_quantity: number | null;
   is_active: boolean;
 }
 export default IDiscountCode;

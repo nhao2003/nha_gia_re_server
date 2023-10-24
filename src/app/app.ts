@@ -5,7 +5,7 @@ import postRoutes from '../routes/post.routes';
 import { Request, Response } from 'express';
 import { User } from '~/domain/databases/entity/User';
 import { errorHandler } from '~/middlewares/error.middleware';
-import { body } from 'express-validator';
+import adminRoutes from '../routes/admin.routes';
 import bodyParser from 'body-parser';
 const app = express();
 
@@ -16,6 +16,7 @@ app.use(express.static('public'));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/posts', postRoutes);
+app.use('/api/v1/admin', adminRoutes);
 app.get('/', (req, res) => {
   User.find()
     .then((units) => {

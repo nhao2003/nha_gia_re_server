@@ -5,6 +5,7 @@ import { DefaultValue } from '~/constants/defaultValue';
 import { Role, UserStatus } from '~/constants/enum';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
 import Address from '~/domain/typing/address';
+import { RealEstatePost } from './RealEstatePost';
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -22,7 +23,7 @@ export class User extends BaseEntity implements IUser {
   @Column({ type: PostgresDataType.varchar, length: 255, unique: true })
   email!: string;
 
-  @Column({ type: PostgresDataType.varchar, length: 255 })
+  @Column({ type: PostgresDataType.varchar, length: 255, select: false })
   password!: string;
 
   @Column(PostgresDataType.jsonb, { nullable: true })
@@ -63,6 +64,9 @@ export class User extends BaseEntity implements IUser {
 
   @Column({ type: PostgresDataType.boolean, default: false })
   is_active!: boolean;
+
+  @OneToMany(() => RealEstatePost, (real_estate_posts) => real_estate_posts.user)
+  posts!: RealEstatePost[];
 
   // Method
   toJSON(): Record<string, any> {

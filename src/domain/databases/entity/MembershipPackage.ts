@@ -23,8 +23,8 @@ class MembershipPackage  extends BaseEntity implements IMembershipPackage{
   @Column({ type: PostgresDataType.boolean })
   post_approval_priority!: boolean;
 
-  @Column({ type: PostgresDataType.boolean })
-  display_priority!: boolean;
+  @Column({ type: PostgresDataType.integer })
+  display_priority_point!: number;
 
   @Column({ type: PostgresDataType.boolean, default: 'true' })
   is_active!: boolean;

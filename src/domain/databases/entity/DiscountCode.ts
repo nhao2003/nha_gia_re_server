@@ -28,6 +28,9 @@ class DiscountCode extends BaseEntity implements IDiscountCode {
   
     @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone})
     created_at!: Date;
+
+    @Column({ type: PostgresDataType.integer, nullable: true})
+    limited_quantity!: number | null;
   
     @Column({ type: PostgresDataType.boolean, default: 'true'})
     is_active!: boolean;
