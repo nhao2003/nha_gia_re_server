@@ -9,4 +9,6 @@ router.route('/posts/:id/approve').post(AdminController.approvePost);
 router.route('/posts/:id/reject').post(AdminController.rejectPost);
 router.route('/posts/:id/delete').post(AdminController.deletePost);
 
+router.route('/users').get(AdminController.getUsers);
+
 export default router;

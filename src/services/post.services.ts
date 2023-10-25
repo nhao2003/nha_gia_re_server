@@ -1,7 +1,9 @@
 import { FindManyOptions, MoreThanOrEqual, Repository } from 'typeorm';
 import { PostStatus, UserStatus } from '~/constants/enum';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
+import { PostQuery } from '~/models/PostQuery';
 import { MyRepository } from '~/repositories/my_repository';
+import { buildOrder, buildQuery } from '~/utils/build_query';
 import { parseTimeToMilliseconds } from '~/utils/time';
 
 class PostServices {
@@ -55,11 +57,74 @@ class PostServices {
       .andWhere('expiry_date >= :expiry_date', { expiry_date: new Date() })
       .andWhere('RealEstatePost.is_active = :is_active', { is_active: true })
       .leftJoinAndSelect('RealEstatePost.user', 'user')
-      .andWhere('user.status = :status', { status: UserStatus.not_update })
-      const getSql = query.getSql();
-      console.log(getSql);
+      .andWhere('user.status = :status', { status: UserStatus.not_update });
+    const getSql = query.getSql();
+    console.log(getSql);
     const posts = await query.getMany();
 
+    return posts;
+  }
+
+  buildPostQuery(query: { [key: string]: any }): PostQuery {
+    const { page, sort_fields, sort_orders } = query;
+    const pageParam = Number(page) || 1;
+
+    const postQueries: {
+      [key: string]: string;
+    } = {};
+
+    const userQueries: {
+      [key: string]: string;
+    } = {};
+
+    Object.keys(query)
+      .filter((key) => key.startsWith('post.'))
+      .forEach((key) => {
+        postQueries[key.replace('post.', '')] = query[key] as string;
+      });
+
+    Object.keys(query)
+      .filter((key) => key.startsWith('user.'))
+      .forEach((key) => {
+        userQueries[key.replace('user.', '')] = query[key] as string;
+      });
+
+    const postWhere: string[] = buildQuery(postQueries, ['address', 'features']);
+    const userWhere: string[] = buildQuery(userQueries, ['address']);
+
+    const order = buildOrder(sort_fields, sort_orders, 'RealEstatePost');
+
+    return {
+      page: pageParam,
+      postWhere,
+      userWhere,
+      order,
+    };
+  }
+
+  async getPostsByQuery(postQuery: PostQuery) {
+    const page = postQuery.page || 1;
+    let query = this.postRepository
+      .createQueryBuilder()
+      .leftJoinAndSelect('RealEstatePost.user', 'user')
+      .orderBy(postQuery.order)
+      .skip((page - 1) * 10)
+      .take(10);
+
+    if (postQuery.postWhere) {
+      postQuery.postWhere.forEach((item: string) => {
+        query = query.andWhere(`RealEstatePost.${item}`);
+      });
+    }
+    if (postQuery.userWhere) {
+      postQuery.userWhere.forEach((item: string) => {
+        query = query.andWhere(`user.${item}`);
+      });
+    }
+
+    const getSql = query.getSql();
+    console.log(getSql);
+    const posts = await query.getMany();
     return posts;
   }
 
