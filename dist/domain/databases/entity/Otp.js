@@ -21,7 +21,6 @@ let OTP = class OTP extends typeorm_1.BaseEntity {
     token;
     user_id;
     is_used;
-    is_active;
 };
 exports.OTP = OTP;
 __decorate([
@@ -52,10 +51,6 @@ __decorate([
     (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.boolean, default: 'false' }),
     __metadata("design:type", Boolean)
 ], OTP.prototype, "is_used", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.boolean, default: 'true' }),
-    __metadata("design:type", Boolean)
-], OTP.prototype, "is_active", void 0);
 exports.OTP = OTP = __decorate([
     (0, typeorm_1.Entity)('otps')
 ], OTP);

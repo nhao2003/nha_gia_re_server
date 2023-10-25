@@ -17,6 +17,7 @@ const typeorm_1 = require("typeorm");
 const database_constants_1 = require("../constants/database_constants");
 const typeorm_2 = require("typeorm");
 const address_1 = __importDefault(require("../../../domain/typing/address"));
+const User_1 = require("./User");
 let RealEstatePost = class RealEstatePost extends typeorm_1.BaseEntity {
     id;
     user_id;
@@ -30,7 +31,7 @@ let RealEstatePost = class RealEstatePost extends typeorm_1.BaseEntity {
     address;
     address_point;
     price;
-    desposit;
+    deposit;
     is_lease;
     posted_date;
     expiry_date;
@@ -38,11 +39,13 @@ let RealEstatePost = class RealEstatePost extends typeorm_1.BaseEntity {
     videos;
     is_pro_seller;
     info_message;
-    is_priority;
+    priority_level;
     features;
     post_approval_priority;
     update_count;
     is_active;
+    // Many-to-One relationship with User
+    user;
 };
 exports.RealEstatePost = RealEstatePost;
 __decorate([
@@ -96,7 +99,7 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)(database_constants_1.PostgresDataType.bigint, { nullable: true }),
     __metadata("design:type", Number)
-], RealEstatePost.prototype, "desposit", void 0);
+], RealEstatePost.prototype, "deposit", void 0);
 __decorate([
     (0, typeorm_1.Column)(database_constants_1.PostgresDataType.boolean),
     __metadata("design:type", Boolean)
@@ -126,9 +129,9 @@ __decorate([
     __metadata("design:type", Object)
 ], RealEstatePost.prototype, "info_message", void 0);
 __decorate([
-    (0, typeorm_1.Column)(database_constants_1.PostgresDataType.boolean),
-    __metadata("design:type", Boolean)
-], RealEstatePost.prototype, "is_priority", void 0);
+    (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.text, default: 0 }),
+    __metadata("design:type", Number)
+], RealEstatePost.prototype, "priority_level", void 0);
 __decorate([
     (0, typeorm_1.Column)(database_constants_1.PostgresDataType.jsonb),
     __metadata("design:type", Object)
@@ -145,6 +148,11 @@ __decorate([
     (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.boolean, default: true }),
     __metadata("design:type", Boolean)
 ], RealEstatePost.prototype, "is_active", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => User_1.User, (user) => user.posts),
+    (0, typeorm_1.JoinColumn)({ name: 'user_id' }),
+    __metadata("design:type", User_1.User)
+], RealEstatePost.prototype, "user", void 0);
 exports.RealEstatePost = RealEstatePost = __decorate([
     (0, typeorm_1.Entity)('real_estate_posts')
 ], RealEstatePost);

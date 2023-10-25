@@ -21,6 +21,7 @@ let DiscountCode = class DiscountCode extends typeorm_1.BaseEntity {
     expiration_date;
     description;
     created_at;
+    limited_quantity;
     is_active;
 };
 __decorate([
@@ -55,6 +56,10 @@ __decorate([
     (0, typeorm_1.CreateDateColumn)({ type: database_constants_1.PostgresDataType.timestamp_without_timezone }),
     __metadata("design:type", Date)
 ], DiscountCode.prototype, "created_at", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.integer, nullable: true }),
+    __metadata("design:type", Object)
+], DiscountCode.prototype, "limited_quantity", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.boolean, default: 'true' }),
     __metadata("design:type", Boolean)

@@ -18,6 +18,7 @@ const defaultValue_1 = require("../../../constants/defaultValue");
 const enum_1 = require("../../../constants/enum");
 const database_constants_1 = require("../constants/database_constants");
 const address_1 = __importDefault(require("../../../domain/typing/address"));
+const RealEstatePost_1 = require("./RealEstatePost");
 let User = class User extends typeorm_1.BaseEntity {
     id;
     status;
@@ -37,7 +38,7 @@ let User = class User extends typeorm_1.BaseEntity {
     updated_at;
     banned_util;
     ban_reason;
-    is_active;
+    posts;
     // Method
     toJSON() {
         const user = { ...this };
@@ -72,7 +73,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.varchar, length: 255 }),
+    (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.varchar, length: 255, select: false }),
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([
@@ -124,9 +125,9 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "ban_reason", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.boolean, default: false }),
-    __metadata("design:type", Boolean)
-], User.prototype, "is_active", void 0);
+    (0, typeorm_1.OneToMany)(() => RealEstatePost_1.RealEstatePost, (real_estate_posts) => real_estate_posts.user),
+    __metadata("design:type", Array)
+], User.prototype, "posts", void 0);
 exports.User = User = __decorate([
     (0, typeorm_1.Entity)('users')
 ], User);

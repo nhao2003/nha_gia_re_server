@@ -1,12 +1,17 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PostValidation = void 0;
 const express_validator_1 = require("express-validator");
 const enum_1 = require("../constants/enum");
 const Features_1 = require("../domain/typing/Features");
+const post_services_1 = __importDefault(require("../services/post.services"));
 const validation_1 = require("../utils/validation");
 const wrapRequestHandler_1 = require("../utils/wrapRequestHandler");
 const params_validation_1 = require("../validations/params_validation");
+const Error_1 = require("../models/Error");
 class PostValidation {
     static createPostValidation = [
         (0, validation_1.validate)((0, express_validator_1.checkSchema)({
@@ -170,7 +175,7 @@ class PostValidation {
         (0, wrapRequestHandler_1.wrapRequestHandler)(async (req, res, next) => {
             const data = {
                 type_id: req.body.type_id,
-                ...req.body.features
+                ...req.body.features,
             };
             try {
                 Features_1.PropertyFeatures.fromJson(data);
@@ -179,6 +184,30 @@ class PostValidation {
             catch (error) {
                 next(error);
             }
+        }),
+    ];
+    static checkPostExist = [
+        (0, validation_1.validate)((0, express_validator_1.checkSchema)({
+            id: {
+                in: ['params'],
+                notEmpty: {
+                    errorMessage: 'Post id is required',
+                },
+                trim: true,
+                isUUID: {
+                    errorMessage: 'Post id is not valid',
+                },
+            },
+        })),
+        (0, wrapRequestHandler_1.wrapRequestHandler)(async (req, res, next) => {
+            const post = await post_services_1.default.checkPostExist(req.params.id);
+            console.log(post);
+            if (post === null || post === undefined)
+                next(new Error_1.AppError('Post is not exist', 404));
+            if (req.user.id !== post.user_id)
+                next(new Error_1.AppError('You are not authorized to perform this action', 403));
+            req.post = post;
+            next();
         }),
     ];
 }

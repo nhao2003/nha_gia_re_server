@@ -19,7 +19,7 @@ let MembershipPackage = class MembershipPackage extends typeorm_1.BaseEntity {
     price_per_month;
     monthy_post_limit;
     post_approval_priority;
-    display_priority;
+    display_priority_point;
     is_active;
     created_at;
 };
@@ -48,9 +48,9 @@ __decorate([
     __metadata("design:type", Boolean)
 ], MembershipPackage.prototype, "post_approval_priority", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.boolean }),
-    __metadata("design:type", Boolean)
-], MembershipPackage.prototype, "display_priority", void 0);
+    (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.integer }),
+    __metadata("design:type", Number)
+], MembershipPackage.prototype, "display_priority_point", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: database_constants_1.PostgresDataType.boolean, default: 'true' }),
     __metadata("design:type", Boolean)

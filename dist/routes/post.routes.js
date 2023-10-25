@@ -13,7 +13,9 @@ router
     .route('/create')
     .post(auth_middleware_1.AuthValidation.accessTokenValidation, post_middleware_1.PostValidation.createPostValidation, post_controller_1.default.createPost);
 router.route('/').get(post_controller_1.default.getAllPost);
-router.route('/:id').get(post_controller_1.default.getPostById);
-// .patch(AuthValidation.accessTokenValidation, UserValidation.updatePostValidation, userControllers.updatePost)
-// .delete(AuthValidation.accessTokenValidation, UserValidation.deletePostValidation, userControllers.deletePost);
+router
+    .route('/:id')
+    .get(post_controller_1.default.getPostById)
+    .patch(auth_middleware_1.AuthValidation.accessTokenValidation, post_middleware_1.PostValidation.checkPostExist, post_controller_1.default.updatePost)
+    .delete(auth_middleware_1.AuthValidation.accessTokenValidation, post_middleware_1.PostValidation.checkPostExist, post_controller_1.default.deletePost);
 exports.default = router;

@@ -104,12 +104,10 @@ class AuthServices {
                 type,
                 expiration_time: (0, typeorm_1.MoreThanOrEqual)(new Date()),
                 is_used: false,
-                is_active: true,
             },
         });
         if (otp) {
             otp.is_used = true;
-            otp.is_active = false;
             await this.otpRepository.save(otp);
             return true;
         }
