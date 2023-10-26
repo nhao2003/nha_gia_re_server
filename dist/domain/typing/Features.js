@@ -30,8 +30,9 @@ class Motel {
         this.furniture_status = furniture_status;
     }
     static fromJson(json) {
-        if (!json.water_price || !json.electric_price || !json.furniture_status)
+        if (json.water_price == null || json.electric_price == null || json.furniture_status == null) {
             throw new Error('Invalid motel');
+        }
         return new Motel(json.water_price, json.electric_price, json.furniture_status);
     }
 }
@@ -62,7 +63,7 @@ class Apartment {
         this.show_apartment_number = show_apartment_number;
     }
     static fromJson(json) {
-        return new Apartment(json.apartment_type, json.is_hand_over, json.num_of_bed_rooms, json.furniture_status, json.num_of_toilets, json.balcony_direction, json.block, json.floor, json.legal_document_status, json.apartment_number, json.show_apartment_number);
+        return new Apartment(json.apartment_type, json.is_hand_over, json.num_of_bed_rooms, json.furniture_status ?? null, json.num_of_toilets ?? null, json.balcony_direction ?? null, json.block ?? null, json.floor ?? null, json.legal_document_status ?? null, json.apartment_number ?? null, json.show_apartment_number ?? null);
     }
 }
 exports.Apartment = Apartment;
@@ -88,7 +89,7 @@ class Office {
         this.furniture_status = furniture_status;
     }
     static fromJson(json) {
-        return new Office(json.office_type, json.is_facade, json.main_door_direction, json.block, json.floor, json.legal_document_status, json.office_number, json.show_office_number, json.furniture_status);
+        return new Office(json.office_type, json.is_facade ?? null, json.main_door_direction ?? null, json.block ?? null, json.floor ?? null, json.legal_document_status ?? null, json.office_number ?? null, json.show_office_number ?? null, json.furniture_status ?? null);
     }
 }
 exports.Office = Office;
@@ -122,7 +123,7 @@ class House {
         this.furniture_status = furniture_status;
     }
     static fromJson(json) {
-        return new House(json.house_type, json.num_of_bed_rooms, json.is_widens_towards_the_back, json.num_of_toilets, json.num_of_floors, json.main_door_direction, json.width, json.length, json.area_used, json.legal_document_status, json.house_number, json.show_house_number, json.furniture_status);
+        return new House(json.house_type, json.num_of_bed_rooms, json.is_widens_towards_the_back ?? null, json.num_of_toilets ?? null, json.num_of_floors ?? null, json.main_door_direction ?? null, json.width ?? null, json.length ?? null, json.area_used ?? null, json.legal_document_status ?? null, json.house_number ?? null, json.show_house_number ?? null, json.furniture_status ?? null);
     }
 }
 exports.House = House;
@@ -152,7 +153,7 @@ class Land {
         this.show_land_lot_code = show_land_lot_code;
     }
     static fromJson(json) {
-        return new Land(json.land_type, json.land_lot_code, json.subdivision_name, json.is_facade, json.has_wide_alley, json.is_widens_towards_the_back, json.land_direction, json.width, json.length, json.legal_document_status, json.show_land_lot_code);
+        return new Land(json.land_type, json.land_lot_code ?? null, json.subdivision_name ?? null, json.is_facade ?? null, json.has_wide_alley ?? null, json.is_widens_towards_the_back ?? null, json.land_direction ?? null, json.width ?? null, json.length ?? null, json.legal_document_status ?? null, json.show_land_lot_code ?? null);
     }
 }
 exports.Land = Land;

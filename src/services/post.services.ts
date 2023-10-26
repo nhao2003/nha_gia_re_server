@@ -102,7 +102,7 @@ class PostServices {
     };
   }
 
-  async getPostsByQuery(postQuery: PostQuery) {
+  async getPostsByQuery(postQuery: PostQuery, user_id: string | null = null) {
     const page = postQuery.page || 1;
     let query = this.postRepository
       .createQueryBuilder()
@@ -120,6 +120,18 @@ class PostServices {
       postQuery.userWhere.forEach((item: string) => {
         query = query.andWhere(`user.${item}`);
       });
+    }
+    if (user_id) {
+      //Check if user has liked the post. Set is_liked = true if yes and false if no
+      query = query.leftJoinAndMapOne(
+        'RealEstatePost.is_liked',
+        'RealEstatePost.likes',
+        'likes',
+        'likes.user_id = :user_id',
+        {
+          user_id,
+        },
+      );
     }
 
     const getSql = query.getSql();

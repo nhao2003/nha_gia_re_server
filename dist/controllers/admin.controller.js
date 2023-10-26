@@ -10,7 +10,7 @@ const wrapRequestHandler_1 = require("../utils/wrapRequestHandler");
 class AdminController {
     getPosts = (0, wrapRequestHandler_1.wrapRequestHandler)(async (req, res) => {
         const query = post_services_1.default.buildPostQuery(req.query);
-        const posts = await post_services_1.default.getPostsByQuery(query);
+        const posts = await post_services_1.default.getPostsByQuery(query, req.user?.id);
         return res.json(posts);
     });
     approvePost = (0, wrapRequestHandler_1.wrapRequestHandler)(async (req, res) => {

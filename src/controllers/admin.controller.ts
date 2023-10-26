@@ -8,7 +8,7 @@ class AdminController {
 
   public readonly getPosts = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = PostServices.buildPostQuery(req.query);
-    const posts = await PostServices.getPostsByQuery(query);
+    const posts = await PostServices.getPostsByQuery(query, req.user?.id);
     return res.json(posts);
   });
 

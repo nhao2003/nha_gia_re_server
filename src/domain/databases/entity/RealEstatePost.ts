@@ -4,6 +4,7 @@ import { PostgresDataType } from '../constants/database_constants';
 import { CreateDateColumn } from 'typeorm';
 import Address from '~/domain/typing/address';
 import { User } from './User';
+import { OneToMany } from 'typeorm/browser';
 
 @Entity('real_estate_posts')
 export class RealEstatePost extends BaseEntity implements IRealEstatePost {
@@ -87,18 +88,4 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @JoinColumn({ name: 'user_id' })
   user!: User;
 
-  //   // Many-to-One relationship with Project
-  //   @ManyToOne(() => Project, (project) => project.real_estate_posts)
-  //   @JoinColumn({ name: 'project_id' })
-  //   project: Project;
-
-  //   // Many-to-One relationship with PropertyType
-  //   @ManyToOne(() => PropertyType, (property_type) => property_type.real_estate_posts)
-  //   @JoinColumn({ name: 'type_id' })
-  //   property_type: PropertyType;
-
-  //   // Many-to-One relationship with Unit
-  //   @ManyToOne(() => Unit, (unit) => unit.real_estate_posts)
-  //   @JoinColumn({ name: 'unit_id' })
-  //   unit: Unit;
 }

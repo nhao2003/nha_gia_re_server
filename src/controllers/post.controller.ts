@@ -63,8 +63,9 @@ class PostController {
   });
 
   getAllPost = wrapRequestHandler(async (req: any, res: any) => {
-    const post = await PostServices.getPosts(req.query.page);
-    res.status(200).json(post);
+    const query = PostServices.buildPostQuery(req.query);
+    const posts = await PostServices.getPostsByQuery(query, req.user?.id);
+    return res.json(posts);
   });
 
   getPostById = wrapRequestHandler(async (req: any, res: any) => {

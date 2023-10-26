@@ -61,8 +61,9 @@ class PostController {
         res.status(200).json({ message: 'Delete success' });
     });
     getAllPost = (0, wrapRequestHandler_1.wrapRequestHandler)(async (req, res) => {
-        const post = await post_services_1.default.getPosts(req.query.page);
-        res.status(200).json(post);
+        const query = post_services_1.default.buildPostQuery(req.query);
+        const posts = await post_services_1.default.getPostsByQuery(query, req.user?.id);
+        return res.json(posts);
     });
     getPostById = (0, wrapRequestHandler_1.wrapRequestHandler)(async (req, res) => {
         const id = req.params.id;
