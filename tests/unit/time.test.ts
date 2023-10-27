@@ -1,6 +1,7 @@
 import { parseTimeToMilliseconds } from "../../src/utils/time";
 
 describe("parseTimeToMilliseconds", () => {
+
   it("should parse time string in seconds", () => {
     const result = parseTimeToMilliseconds("10s");
     expect(result).toBe(10000);
@@ -22,7 +23,7 @@ describe("parseTimeToMilliseconds", () => {
   });
 
   it("should parse time string in months", () => {
-    const result = parseTimeToMilliseconds("6mo");
+    const result = parseTimeToMilliseconds("6M");
     expect(result).toBe(15552000000);
   });
 
@@ -36,6 +37,6 @@ describe("parseTimeToMilliseconds", () => {
   });
 
   it("should throw an error for invalid time unit", () => {
-    expect(() => parseTimeToMilliseconds("10x")).toThrow("Invalid time unit");
+    expect(() => parseTimeToMilliseconds("10x")).toThrow("Invalid time string");
   });
 });

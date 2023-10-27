@@ -1,31 +1,25 @@
-import HTTP_STATUS from "~/constants/httpStatus";
-import { AppError } from "~/models/Error";
-
 export function parseTimeToMilliseconds(timeString: string): number {
-  const match = timeString.match(/^(\d+)([smhdMy])$/i);
-
+  const timeRegex = /^(\d+)([smhdMy])$/;
+  const match = timeString.match(timeRegex);
   if (!match) {
     throw new Error("Invalid time string");
   }
-
-  const value = parseInt(match[1], 10);
-  const unit = match[2].toLowerCase();
-
-  // Chuyển đổi thành miliseconds dựa vào đơn vị
+  const [, time, unit] = match;
+  const timeInt = parseInt(time);
   switch (unit) {
     case "s":
-      return value * 1000; // Giây
+      return timeInt * 1000;
     case "m":
-      return value * 60 * 1000; // Phút
+      return timeInt * 60 * 1000;
     case "h":
-      return value * 60 * 60 * 1000; // Giờ
+      return timeInt * 60 * 60 * 1000;
     case "d":
-      return value * 24 * 60 * 60 * 1000; // Ngày
-    case "mo":
-      return value * 30 * 24 * 60 * 60 * 1000; // Tháng (ước tính)
+      return timeInt * 24 * 60 * 60 * 1000;
+    case "M":
+      return timeInt * 30 * 24 * 60 * 60 * 1000;
     case "y":
-      return value * 365 * 24 * 60 * 60 * 1000; // Năm (ước tính)
+      return timeInt * 365 * 24 * 60 * 60 * 1000;
     default:
-      throw new AppError("Invalid time unit", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      throw new Error("Invalid time string");
   }
 }

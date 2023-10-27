@@ -1,6 +1,8 @@
 import { FindManyOptions, MoreThanOrEqual, Repository } from 'typeorm';
 import { PostStatus, UserStatus } from '~/constants/enum';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
+import UserPostFavorite from '~/domain/databases/entity/UserPostFavorite';
+import UserPostView from '~/domain/databases/entity/UserPostView';
 import { PostQuery } from '~/models/PostQuery';
 import { MyRepository } from '~/repositories/my_repository';
 import { buildOrder, buildQuery } from '~/utils/build_query';
@@ -8,8 +10,12 @@ import { parseTimeToMilliseconds } from '~/utils/time';
 
 class PostServices {
   postRepository: Repository<RealEstatePost>;
+  postFavoriteRepository: Repository<UserPostFavorite>;
+  postViewRepository: Repository<UserPostView>;
   constructor() {
     this.postRepository = MyRepository.postRepository();
+    this.postFavoriteRepository = MyRepository.userPostFavoriteRepository();
+    this.postViewRepository = MyRepository.userPostViewRepository();
   }
   async createPost(data: Record<string, any>) {
     data = {
@@ -24,7 +30,7 @@ class PostServices {
     return data;
   }
 
-  async getPostById(id: any): Promise<RealEstatePost | undefined | null> {
+  async getPostById(id: any): Promise<RealEstatePost | null> {
     const post = await this.postRepository.findOne({
       where: {
         id,
@@ -118,21 +124,14 @@ class PostServices {
     }
     if (postQuery.userWhere) {
       postQuery.userWhere.forEach((item: string) => {
-        query = query.andWhere(`user.${item}`);
+        const userWhere = `user.${item}`;
+        query = query.andWhere(userWhere);
       });
     }
-    if (user_id) {
-      //Check if user has liked the post. Set is_liked = true if yes and false if no
-      query = query.leftJoinAndMapOne(
-        'RealEstatePost.is_liked',
-        'RealEstatePost.likes',
-        'likes',
-        'likes.user_id = :user_id',
-        {
-          user_id,
-        },
-      );
-    }
+    // if (user_id) {
+    //Check if user has liked the post. Set is_liked = true if yes and false if no
+    query = query.setParameters({ current_user_id: '9c8e667c-6607-456e-a7e3-90ee02c7966e' });
+    // }
 
     const getSql = query.getSql();
     console.log(getSql);
@@ -162,6 +161,51 @@ class PostServices {
     });
     return post;
   }
+
+  
+  /**
+   * Toggles the favorite status of a post for a given user.
+   * @param user_id - The ID of the user.
+   * @param post_id - The ID of the post.
+   * @returns A boolean indicating whether the post is now favorited or not.
+   */
+  async toggleFavorite(user_id: string, post_id: string) : Promise<boolean> {
+    const favoritePost = await this.postFavoriteRepository.findOne({
+      where: {
+        user_id,
+        real_estate_posts_id: post_id,
+      },
+    });
+    if (favoritePost) {
+      await this.postFavoriteRepository.delete({
+        user_id,
+        real_estate_posts_id: post_id,
+      });
+      return false;
+    } else {
+      await this.postFavoriteRepository.insert({
+        user_id,
+        real_estate_posts_id: post_id,
+      });
+      return true;
+    }
+  }
+
+  // Mark read post
+  async markReadPost(user_id: string, post_id: string) {
+    await this.postViewRepository.insert({
+      user_id,
+      real_estate_posts_id: post_id,
+      view_date: new Date(),
+    }).catch((err) => {
+      // If the post is already marked as read, do nothing
+      if (err.code === '23505') {
+        return;
+      }
+      throw err;
+    });
+  }
+
 }
 
 export default new PostServices();

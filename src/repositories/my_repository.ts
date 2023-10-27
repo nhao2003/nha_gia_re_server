@@ -3,6 +3,8 @@ import { OTP } from '~/domain/databases/entity/Otp';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import { Session } from '~/domain/databases/entity/Sesstion';
 import { User } from '~/domain/databases/entity/User';
+import UserPostFavorite from '~/domain/databases/entity/UserPostFavorite';
+import UserPostView from '~/domain/databases/entity/UserPostView';
 
 class MyRepository {
   public static userRepository(): Repository<User> {
@@ -17,6 +19,13 @@ class MyRepository {
 
   public static postRepository(): Repository<RealEstatePost> {
     return RealEstatePost.getRepository();
+  }
+  public static userPostFavoriteRepository(): Repository<UserPostFavorite> {
+    return UserPostFavorite.getRepository();
+  }
+
+  public static userPostViewRepository(): Repository<UserPostView> {
+    return UserPostView.getRepository();
   }
 }
 

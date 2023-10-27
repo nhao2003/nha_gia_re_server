@@ -4,3 +4,9 @@ export type PostQuery = {
   order: any;
   userWhere: string[];
 };
+
+export type BaseQuery = {
+  page: number;
+  wheres: string[];
+  orders: any;
+};

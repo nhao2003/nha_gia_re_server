@@ -31,10 +31,14 @@ export const APP_MESSAGES = {
   REFRESH_TOKEN_IS_EXPIRED: "Refresh token is expired",
   REFRESH_TOKEN_IS_REQUIRED: "Refresh token is required",
 
+  POST_NOT_FOUND: "Post not found",
 
   SUCCESS_MESSAGE: {
     SIGN_UP_SUCCESSFULLY: "Sign up successfully, please check your email to verify your account",
     SIGN_OUT_SUCCESSFULLY: "Sign out successfully",
+    SIGN_IN_SUCCESSFULLY: "Sign in successfully",
+    ACTIVE_ACCOUNT_SUCCESSFULLY: "Active account successfully",
+    RENEW_ACCESS_TOKEN_SUCCESSFULLY: "Renew access token successfully",
     RESET_PASSWORD_SUCCESSFULLY: "Reset password successfully",
     RECOVERY_EMAIL_SENT: "Recovery email sent",
     SIGN_OUT_ALL_SUCCESSFULLY: "Sign out all successfully",
@@ -42,6 +46,28 @@ export const APP_MESSAGES = {
     FORGOT_PASSWORD_SUCCESSFULLY: "Forgot password successfully",
     YOUR_ACCOUNT_HAS_BEEN_SIGN_OUT_ON_ALL_DEVICES: "Your account has been sign out on all devices",
     YOUR_ACCOUNT_HAS_BEEN_SIGN_OUT_ON_ALL_DEVICES_YOU_CAN_CHANGE_PASSWORD_NOW: "Your account has been sign out on all devices, you can change password now",
+    RESEND_ACTIVATION_CODE_SUCCESSFULLY: "Resend activation code successfully",
+    OTP_CODE_IS_CORRECT: "OTP code is correct",
+
+    // Post
+    CREATE_POST_SUCCESSFULLY: "Create post successfully",
+    UPDATE_POST_SUCCESSFULLY: "Update post successfully",
+    DELETE_POST_SUCCESSFULLY: "Delete post successfully",
+    GET_POST_SUCCESSFULLY: "Get post successfully",
+    MARK_READ_POST_SUCCESSFULLY: "Mark read post successfully",
+    UNFAVORITE_POST_SUCCESSFULLY: "Unfavorite post successfully",
+    FAVORITE_POST_SUCCESSFULLY: "Favorite post successfully",
+
+    // User
+    UPDATE_USER_INFO_SUCCESSFULLY: "Update user info successfully",
+    GET_USER_INFO_SUCCESSFULLY: "Get user info successfully",
+
+    // Admin
+    APPROVE_POST_SUCCESSFULLY: "Approve post successfully",
+    REJECT_POST_SUCCESSFULLY: "Reject post successfully",
+
+    // Developer
+    GET_DEVELOPER_INFO_SUCCESSFULLY: "Get developer info successfully",
   },
   VALIDATION_MESSAGE: {
     PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH: "Password and confirm password do not match",
@@ -57,6 +83,7 @@ export const APP_MESSAGES = {
     YOUR_ACCOUNT_IS_ALREADY_ACTIVE: "Your account is already active",
     REFRESH_TOKEN_IS_EXPIRED: "Refresh token is expired",
     REFRESH_TOKEN_IS_EXPIRED_OR_INVALID: "Refresh token is expired or invalid",
+    RESET_PASSWORD_TOKEN_IS_INVALID: "Reset password token is invalid",
   }
 
 };

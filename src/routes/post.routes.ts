@@ -9,11 +9,18 @@ const router = Router();
 router
   .route('/create')
   .post(AuthValidation.accessTokenValidation, PostValidation.createPostValidation, PostController.createPost);
-router.route('/').get(PostController.getAllPost);
 router
   .route('/:id')
   .get(PostController.getPostById)
   .patch(AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.updatePost)
   .delete(AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.deletePost);
 
+//Mark read post
+router
+  .route('/mark-read/:id')
+  .put(AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.markReadPost);
+router
+  .route('/favorite/:id')
+  .put( AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.favoritePost);
+router.route('/').get(PostController.getAllPost);
 export default router;

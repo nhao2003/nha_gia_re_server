@@ -1,3 +1,4 @@
+import { BaseQuery } from '~/models/PostQuery';
 import { AppError } from '../models/Error';
 
 const getOperatorValueString = (originalValue: string, cast?: string) => {
@@ -25,7 +26,9 @@ const getOperatorValueString = (originalValue: string, cast?: string) => {
   };
 
   const operator = originalValue.split(':')[0];
-  const value = originalValue.split(':')[1];
+  // const value = originalValue.split(':')[1];
+  //Value may contain ':' character, so we need to get the rest of the string
+  const value = originalValue.replace(`${operator}:`, '');
 
   if (operatorMapping[operator]) {
     let query = operatorMapping[operator];
@@ -46,7 +49,7 @@ const getOperatorValueString = (originalValue: string, cast?: string) => {
         'niregex',
       ].includes(operator)
     ) {
-      query += ` '${value}'`;
+      query += ` ${value}`;
     } else if (['in', 'notin'].includes(operator)) {
       query += ` (${value})`;
     } else if (['btw', 'nbtw'].includes(operator)) {
@@ -129,4 +132,17 @@ const buildOrder = (
   return res;
 };
 
-export { buildQuery, getOperatorValueString, buildOrder };
+function buildBaseQuery(query: Record<string, any>) : BaseQuery {
+  const { page, sort_fields, sort_orders } = query;
+  const handleQuery = {
+    ...query,
+  }
+  delete handleQuery.page;
+  delete handleQuery.sort_fields;
+  delete handleQuery.sort_orders;
+  const wheres = buildQuery(handleQuery);
+  const orders = buildOrder(sort_fields, sort_orders);
+  return { page, wheres, orders };
+}
+
+export { buildQuery, getOperatorValueString, buildOrder, buildBaseQuery };

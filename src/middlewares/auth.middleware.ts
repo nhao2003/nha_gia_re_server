@@ -36,8 +36,7 @@ export class AuthValidation {
     ),
     async (req: Request, res: Response, next: NextFunction) => {
       const { email, password } = req.body;
-      const userService = new AuthServices();
-      const user = await userService.checkUserExistByEmail(email);
+      const user = await AuthServices.checkUserExistByEmail(email);
       if (user) {
         return res.status(HTTP_STATUS.CONFLICT).json({
           status: 'error',
@@ -57,18 +56,17 @@ export class AuthValidation {
     ),
     async (req: Request, res: Response, next: NextFunction) => {
       const { email, password } = req.body;
-      const userService = new AuthServices();
-      const user = await userService.checkUserExistByEmail(email);
-      if (user === undefined || user === null) {
+      const { user, password_is_correct } = await AuthServices.getUserByEmailAndPassword(email, password);
+      if (user === null || user === undefined) {
         return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
       }
       if (user.status === UserStatus.unverified) {
         return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
       }
-      const isMatch = verifyPassword(password, user.password);
-      if (!isMatch) {
+      if (password_is_correct === false) {
         return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
       }
+      req.user = user;
       next();
     },
   ];
@@ -78,6 +76,12 @@ export class AuthValidation {
       email: ParamsValidation.email,
       password: ParamsValidation.password,
       code: ParamsValidation.code,
+    }),
+  );
+
+  public static readonly resendActivationCodeValidation = validate(
+    checkSchema({
+      email: ParamsValidation.email,
     }),
   );
 
@@ -106,12 +110,11 @@ export class AuthValidation {
       if (result.expired || !result.payload) {
         return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
       }
-      const authServices = new AuthServices();
-      const session = await authServices.checkSessionExist((result.payload as UserPayload).session_id);
+      const session = await AuthServices.checkSessionExist((result.payload as UserPayload).session_id);
       if (session === null || session === undefined) {
         return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
       }
-      const user = await authServices.checkUserExistByID(session.user_id);
+      const user = await AuthServices.checkUserExistByID(session.user_id);
       if (user === null || user === undefined) {
         return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
       }
@@ -146,79 +149,112 @@ export class AuthValidation {
       code: ParamsValidation.code,
     }),
   );
-}
 
-export const tokenValidation = validate(
-  checkSchema({
-    Authorization: {
-      in: ['headers'],
-      notEmpty: {
-        errorMessage: APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
-      },
-      trim: true,
-      custom: {
-        options: async (value, { req }) => {
-          const accessToken = value.split(' ')[1];
-          if (!accessToken) {
-            return false;
-          }
-          const result = await verifyToken(accessToken, process.env.JWT_SECRET_KEY as string);
-          if (!result) {
-            throw new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED);
-          }
-          if (result.expired || !result.payload) {
-            throw new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401);
-          }
-          (req as Request).verifyResult = result;
-          return true;
+  public static readonly resetPasswordValidation = [
+    validate(
+      checkSchema({
+        email: ParamsValidation.email,
+        code: ParamsValidation.code,
+        new_password: {
+          ...ParamsValidation.password,
+          custom: {
+            options: (value, { req }) => {
+              if (value !== req.body.confirm_password) {
+                throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+              }
+              return true;
+            },
+          },
+        },
+      }),
+    ),
+    // async (req: Request, res: Response, next: NextFunction) => {
+    //   const { email, code } = req.body;
+    //   const userService = new AuthServices();
+    //   const user = await userService.checkUserExistByEmail(email);
+    //   if (user === undefined || user === null) {
+    //     return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
+    //   }
+    //   const otp = await userService.getOTP(user.id, code, 'reset-password');
+    //   if (otp === null) {
+    //     return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+    //   }
+    //   next();
+    // },
+  ];
+
+  tokenValidation = validate(
+    checkSchema({
+      Authorization: {
+        in: ['headers'],
+        notEmpty: {
+          errorMessage: APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const accessToken = value.split(' ')[1];
+            if (!accessToken) {
+              return false;
+            }
+            const result = await verifyToken(accessToken, process.env.JWT_SECRET_KEY as string);
+            if (!result) {
+              throw new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED);
+            }
+            if (result.expired || !result.payload) {
+              throw new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401);
+            }
+            (req as Request).verifyResult = result;
+            return true;
+          },
         },
       },
-    },
-  }),
-);
+    }),
+  );
 
-export const protect = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
-  const { payload, expired } = req.verifyResult as VerifyResult;
+  protect = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { payload, expired } = req.verifyResult as VerifyResult;
 
-  if (payload !== null && !expired) {
-    // req.user = await UserModel.findById((payload as UserPayload).id);
-    // if (req.user === null || req.user === undefined) {
-    //   return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
-    // }
-    // if (req.user.status === UserStatus.unverified) {
-    //   return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
-    // }
-    // return next();
-    const userRepo = User.getRepository();
-    const user = await userRepo.findOne({ where: { id: (payload as UserPayload).id } });
-    if (user !== null) {
-      if (user.status === UserStatus.unverified) {
-        return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+    if (payload !== null && !expired) {
+      // req.user = await UserModel.findById((payload as UserPayload).id);
+      // if (req.user === null || req.user === undefined) {
+      //   return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
+      // }
+      // if (req.user.status === UserStatus.unverified) {
+      //   return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+      // }
+      // return next();
+      const userRepo = User.getRepository();
+      const user = await userRepo.findOne({ where: { id: (payload as UserPayload).id } });
+      if (user !== null) {
+        if (user.status === UserStatus.unverified) {
+          return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+        } else {
+          return next();
+        }
       } else {
-        return next();
+        return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
       }
-    } else {
-      return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
     }
-  }
-  if (expired) {
-    return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
-  }
-  return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
-});
+    if (expired) {
+      return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
+    }
+    return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+  });
 
-export const changePasswordValidation = validate(
-  checkSchema({
-    newPassword: {
-      in: ['body'],
-      isLength: {
-        errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
-        options: { min: 8, max: 32 },
+  changePasswordValidation = validate(
+    checkSchema({
+      newPassword: {
+        in: ['body'],
+        isLength: {
+          errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
+          options: { min: 8, max: 32 },
+        },
+        trim: true,
+        notEmpty: {
+          errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
+        },
       },
-      trim: true,
-      notEmpty: {
-        errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
-      },
-    },
-  }),
-);
+    }),
+  );
+}

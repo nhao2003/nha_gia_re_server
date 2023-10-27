@@ -1,6 +1,7 @@
 // import RefreshToken from "~/models/database/RefreshToken";
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { OTPTypes, UserStatus } from '~/constants/enum';
+import { OTP } from '~/domain/databases/entity/Otp';
 import { Session } from '~/domain/databases/entity/Sesstion';
 import { User } from '~/domain/databases/entity/User';
 import { MyRepository } from '~/repositories/my_repository';
@@ -11,11 +12,12 @@ import { parseTimeToMilliseconds } from '~/utils/time';
 type SignInResult = {
   access_token: string;
   refresh_token: string;
+  session_id: string;
 };
 
 class AuthServices {
-  private userRepository: any;
-  private otpRepository: any;
+  private userRepository: Repository<User>;
+  private otpRepository: Repository<OTP>;
   private sessionRepository: Repository<Session>;
   constructor() {
     this.userRepository = MyRepository.userRepository();
@@ -29,7 +31,7 @@ class AuthServices {
    * @param session_id ID of session
    * @returns Access token
    */
-  private generateToken(user_id: string, session_id: string): Promise<string> {
+  private generateAccessToken(user_id: string, session_id: string): Promise<string> {
     return signToken({
       payload: { user_id, session_id },
       expiresIn: process.env.JWT_TOKEN_EXPIRES_IN as string,
@@ -81,6 +83,18 @@ class AuthServices {
     return otp_code;
   }
 
+  // Resend OTP code if OPT code is expired
+  public async resendOTPCode(email: string): Promise<string | null> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (user === null) return user;
+    if (user.status !== UserStatus.unverified) {
+      throw new Error('User is already active');
+    }
+
+    const otp_code = await this.generateOTPCode(OTPTypes.account_activation, user.id);
+    return otp_code;
+  }
+
   public async createSession(user_id: string): Promise<SignInResult> {
     const session = await this.sessionRepository.insert({
       user_id,
@@ -89,8 +103,8 @@ class AuthServices {
       ),
     });
     const refresh_token = await this.generateRefreshToken(user_id, session.identifiers[0].id);
-    const access_token = await this.generateToken(user_id, session.identifiers[0].id);
-    return { access_token, refresh_token };
+    const access_token = await this.generateAccessToken(user_id, session.identifiers[0].id);
+    return { access_token, refresh_token, session_id: session.identifiers[0].id };
   }
 
   public async signIn(email: string, password: string): Promise<SignInResult | null | undefined> {
@@ -109,10 +123,10 @@ class AuthServices {
     if (session === null || session === undefined) return session;
     session.updated_at = new Date();
     await this.sessionRepository.save(session);
-    return this.generateToken(user_id, session_id);
+    return this.generateAccessToken(user_id, session_id);
   }
 
-  public async verifyOTPCode(user_id: string, otp_code: string, type: string): Promise<boolean> {
+  public async getOTP(user_id: string, otp_code: string, type: string): Promise<OTP | null> {
     const token = hashString((otp_code + process.env.OTP_SECRET_KEY + type) as string);
     const otp = await this.otpRepository.findOne({
       where: {
@@ -123,13 +137,17 @@ class AuthServices {
         is_used: false,
       },
     });
-    if (otp) {
-      otp.is_used = true;
-      await this.otpRepository.save(otp);
-      return true;
-    } else {
+    return otp;
+  }
+
+  public async verifyOTPCodeAndUse(user_id: string, otp_code: string, type: string): Promise<boolean> {
+    const otp = await this.getOTP(user_id, otp_code, type);
+    if (otp === null) {
       return false;
     }
+    otp.is_used = true;
+    await this.otpRepository.save(otp);
+    return true;
   }
 
   public async activeAccount(id: string): Promise<boolean> {
@@ -143,19 +161,33 @@ class AuthServices {
     }
   }
 
-  async checkUserExistByEmail(email: string): Promise<User | undefined> {
+  async checkUserExistByEmail(email: string): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { email } });
     return user;
   }
-  async checkUserExistByID(id: string): Promise<User | undefined> {
+  async checkUserExistByID(id: string): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { id } });
     return user;
   }
 
   //Get user by email and password
-  async getUserByEmailAndPassword(email: string, password: string): Promise<User | undefined | null> {
-    const user = await this.userRepository.findOne({ where: { email, password: hashPassword(password) } });
-    return user;
+  async getUserByEmailAndPassword(
+    email: string,
+    password: string,
+  ): Promise<{
+    user: User | null;
+    password_is_correct: boolean;
+  }> {
+    const user = await this.userRepository
+      .createQueryBuilder()
+      .addSelect('User.password')
+      .where('email = :email', { email })
+      .getOne();
+    if (user === null) {
+      return { user, password_is_correct: false };
+    }
+    const password_is_correct = hashPassword(password) === user.password;
+    return { user, password_is_correct };
   }
 
   async signOut(session_id: string) {
@@ -197,6 +229,14 @@ class AuthServices {
     }
   }
 
+  async generateResetPasswordToken(id: string, session_id: string): Promise<string | null> {
+    const reset_password_token = await signToken({
+      payload: { id, session_id },
+      expiresIn: process.env.RECOVERY_PASSWORD_EXPIRES_IN as string,
+      secretKey: process.env.RECOVERY_PASSWORD_SERECT_KEY as string,
+    });
+    return reset_password_token;
+  }
 }
 
-export default AuthServices;
+export default new AuthServices();

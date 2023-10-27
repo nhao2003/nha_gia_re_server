@@ -2,6 +2,9 @@ import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
 import IProject from '../interfaces/IProject';
 import { PostgresDataType } from '../constants/database_constants';
 import Address from '~/domain/typing/address';
+import { ManyToOne } from 'typeorm';
+import { Developer } from './Developer';
+import { JoinColumn } from 'typeorm';
 
 @Entity('projects')
 export class Project extends BaseEntity implements IProject {
@@ -43,4 +46,7 @@ export class Project extends BaseEntity implements IProject {
 
   @Column({ type: PostgresDataType.boolean, default: true })
   is_active!: boolean;
+
+  @ManyToOne(() => Developer, (developer) => developer.projects)
+  developer!: Developer;
 }

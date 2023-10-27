@@ -8,5 +8,20 @@ const ServerCodes = {
         UserNotActive: 104,
         UserNotUpdateProfile: 105,
     },
+    PostCode: {
+        Success: 200,
+        PostNotFound: 201,
+        PostNotUpdate: 202,
+    },
+    UserCode: {
+        Success: 300,
+        UserNotFound: 301,
+        UserNotUpdate: 302,
+    },
+    AdminCode: {
+        Success: 400,
+        AdminNotFound: 401,
+        AdminNotUpdate: 402,
+    },
 };
 export default ServerCodes;

@@ -1,6 +1,8 @@
 import { Entity, BaseEntity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import IDeveveloper from '../interfaces/IDeveloper';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
+import { OneToMany } from 'typeorm';
+import { Project } from './Project';
 
 @Entity('developers')
 export class Developer extends BaseEntity implements IDeveveloper {
@@ -21,4 +23,7 @@ export class Developer extends BaseEntity implements IDeveveloper {
 
   @Column({ type: PostgresDataType.boolean, default: 'true' })
   is_active!: boolean;
+
+  @OneToMany(() => Project, (project) => project.developer)
+  projects!: Project[];
 }
