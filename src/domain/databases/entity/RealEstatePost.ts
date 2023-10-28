@@ -74,8 +74,8 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @Column(PostgresDataType.jsonb)
   features: any;
 
-  @Column(PostgresDataType.boolean)
-  post_approval_priority!: boolean;
+  @Column(PostgresDataType.integer)
+  post_approval_priority_point!: number;
 
   @Column(PostgresDataType.integer)
   update_count!: number;

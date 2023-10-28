@@ -20,8 +20,8 @@ class MembershipPackage  extends BaseEntity implements IMembershipPackage{
   @Column({ type: PostgresDataType.integer })
   monthy_post_limit!: number;
 
-  @Column({ type: PostgresDataType.boolean })
-  post_approval_priority!: boolean;
+  @Column({ type: PostgresDataType.integer })
+  post_approval_priority_point!: number;
 
   @Column({ type: PostgresDataType.integer })
   display_priority_point!: number;

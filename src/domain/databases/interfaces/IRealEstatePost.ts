@@ -23,7 +23,7 @@ interface IRealEstatePost {
   info_message: string | null | undefined;
   priority_level: number;
   features: any; // Define an appropriate type for your features JSON
-  post_approval_priority: boolean;
+  post_approval_priority_point: number;
   update_count: number;
   is_active: boolean;
 }
