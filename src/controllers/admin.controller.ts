@@ -10,10 +10,12 @@ import { BaseQuery } from '~/models/PostQuery';
 import CommonServices from '~/services/common.services';
 import { Unit } from '~/domain/databases/entity/Unit';
 import { Developer } from '~/domain/databases/entity/Developer';
+import { PropertyType } from '~/domain/databases/entity/PropertyType';
 
 class AdminController {
   private UnitsService = new CommonServices(Unit);
   private DeveloperService = new CommonServices(Developer);
+  private PropertyTypeService = new CommonServices(PropertyType);
   public readonly getUnits = wrapRequestHandler(async (req: Request, res: Response) => {
     const baseQuery = buildBaseQuery(req.query);
     const data = await this.UnitsService.getAllByQuery(baseQuery);
@@ -196,6 +198,64 @@ class AdminController {
     };
     res.status(200).json(appRes);
   });
+
+  public readonly getPropertyTypes = wrapRequestHandler(async (req: Request, res: Response) => {
+    const query = buildBaseQuery(req.query);
+    const propertyTypes = await this.PropertyTypeService.getAllByQuery(query);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.GET_PROPERTY_TYPE_INFO_SUCCESSFULLY,
+      result: propertyTypes,
+    };
+    res.status(200).json(appRes);
+  });
+
+  public readonly createPropertyType = wrapRequestHandler(async (req: Request, res: Response) => {
+    const data = {
+      id: req.body.id,
+      name: req.body.name
+    };
+    const propertyType = await this.PropertyTypeService.create(data);
+
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.CREATE_PROPERTY_TYPE_SUCCESSFULLY,
+      result: propertyType,
+    };
+    res.status(200).json(appRes);
+  });
+
+  public readonly updatePropertyType = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    let data: Record<string, any> = {};
+    if (req.body.name) {
+      data.name = req.body.name;
+    }
+
+    const result = await this.PropertyTypeService.update(id, data);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.UPDATE_PROPERTY_TYPE_SUCCESSFULLY,
+      result: result,
+    };
+    res.status(200).json(appRes);
+  });
+
+  public readonly deletePropertyType = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await this.PropertyTypeService.markDeleted(id);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.DELETE_POST_SUCCESSFULLY,
+      result: result,
+    };
+    res.status(200).json(appRes);
+  });
+
 }
 
 export default new AdminController();

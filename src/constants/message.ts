@@ -48,6 +48,7 @@ export const APP_MESSAGES = {
     YOUR_ACCOUNT_HAS_BEEN_SIGN_OUT_ON_ALL_DEVICES_YOU_CAN_CHANGE_PASSWORD_NOW: "Your account has been sign out on all devices, you can change password now",
     RESEND_ACTIVATION_CODE_SUCCESSFULLY: "Resend activation code successfully",
     OTP_CODE_IS_CORRECT: "OTP code is correct",
+    CREATE_PROPERTY_TYPE_SUCCESSFULLY: "Create property type successfully",
 
     // Post
     CREATE_POST_SUCCESSFULLY: "Create post successfully",
@@ -68,6 +69,15 @@ export const APP_MESSAGES = {
 
     // Developer
     GET_DEVELOPER_INFO_SUCCESSFULLY: "Get developer info successfully",
+
+    // Property type
+    GET_PROPERTY_TYPE_INFO_SUCCESSFULLY: "Get property type info successfully",
+    UPDATE_PROPERTY_TYPE_SUCCESSFULLY: "Update property type successfully",
+
+    // Project
+    GET_PROJECT_SUCCESSFULLY: "Get project successfully",
+    CREATE_PROJECT_SUCCESSFULLY: "Create project successfully",
+    UPDATE_PROJECT_SUCCESSFULLY: "Update project successfully",
   },
   VALIDATION_MESSAGE: {
     PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH: "Password and confirm password do not match",

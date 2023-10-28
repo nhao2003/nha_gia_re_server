@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import AdminController from '~/controllers/admin.controller';
+import projectController from '~/controllers/project.controller';
 import { AuthValidation } from '~/middlewares/auth.middleware';
 
 const router = Router();
@@ -11,15 +12,26 @@ router.route('/posts/:id/delete').post(AdminController.deletePost);
 
 router.route('/users').get(AdminController.getUsers);
 
-router.route('/developers').get(AdminController.getDevelopers)
-    .post(AdminController.createDeveloper);
-router.route('/developers/:id').patch(AdminController.updateDeveloper)
-    .delete(AdminController.deleteDeveloper);
+router.route('/developers').get(AdminController.getDevelopers).post(AdminController.createDeveloper);
+router.route('/developers/:id').patch(AdminController.updateDeveloper).delete(AdminController.deleteDeveloper);
 
 // Units
-router.route('/units').get(AdminController.getUnits)
-    .post(AdminController.createUnit);
-router.route('/units/:id').patch(AdminController.updateUnit)
-    .delete(AdminController.deleteUnit);
+router.route('/units').get(AdminController.getUnits).post(AdminController.createUnit);
+router.route('/units/:id').patch(AdminController.updateUnit).delete(AdminController.deleteUnit);
+
+//PropertyTypes
+router.route('/property-types').get(AdminController.getPropertyTypes).post(AdminController.createPropertyType);
+router
+  .route('/property-types/:id')
+  .patch(AdminController.updatePropertyType)
+  .delete(AdminController.deletePropertyType);
+
+//Projects
+router.route('/projects').get(projectController.getProjects)
+.post(projectController.createProject);
+
+router.route('/projects/:id')
+.patch(projectController.updateProject)
+
 
 export default router;

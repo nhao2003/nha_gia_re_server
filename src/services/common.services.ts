@@ -4,7 +4,7 @@ import { AppDataSource } from '~/app/database';
 import { BaseQuery as BaseQuery } from '~/models/PostQuery';
 import { buildOrder, buildQuery } from '~/utils/build_query';
 class CommonServices {
-  private repository: Repository<any>;
+  protected repository: Repository<any>;
   constructor(entity: any) {
     this.repository = entity.getRepository();
   }
@@ -43,12 +43,19 @@ class CommonServices {
     });
   }
 
-  public async getAllByQuery(query: BaseQuery) {
+  protected getBaseQueryBuilder(query: BaseQuery) {
     let { page, wheres, orders } = query;
     page = Number(page) || 1;
     const skip = (page - 1) * 10;
     const take = 10;
     let devQuery = this.repository.createQueryBuilder().skip(skip).take(take);
+    return devQuery;
+  }
+
+
+  public async getAllByQuery(query: BaseQuery) {
+    let { wheres, orders } = query;
+    let devQuery = this.getBaseQueryBuilder(query);
     if (wheres) {
       wheres.forEach((where) => {
         devQuery = devQuery.andWhere(where);

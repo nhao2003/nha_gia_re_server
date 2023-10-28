@@ -5,6 +5,9 @@ import Address from '~/domain/typing/address';
 import { ManyToOne } from 'typeorm';
 import { Developer } from './Developer';
 import { JoinColumn } from 'typeorm';
+import { OneToMany } from 'typeorm';
+import PropertyTypeProject from './PropertyTypeProject';
+import ProjectScale from './ProjectScale';
 
 @Entity('projects')
 export class Project extends BaseEntity implements IProject {
@@ -48,5 +51,15 @@ export class Project extends BaseEntity implements IProject {
   is_active!: boolean;
 
   @ManyToOne(() => Developer, (developer) => developer.projects)
+  @JoinColumn({ name: 'developer_id' })
   developer!: Developer;
+
+  @OneToMany(() => PropertyTypeProject, (propertyTypeProject) => propertyTypeProject.project)
+  @JoinColumn({ name: 'id' })
+  property_types!: PropertyTypeProject[];
+
+  @OneToMany(() => ProjectScale, (projectScale) => projectScale.project)
+  @JoinColumn({ name: 'id'})
+  scales!: ProjectScale[];
+  
 }
