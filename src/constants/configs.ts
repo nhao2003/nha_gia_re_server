@@ -21,5 +21,8 @@ class AppConfig {
   public readonly  JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
   public readonly  JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
   public readonly  JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN;
+  public readonly CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+  public readonly CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+  public readonly CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 }
 export default new AppConfig();

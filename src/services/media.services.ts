@@ -1,6 +1,7 @@
 import { UploadApiOptions, v2 as cloudinary } from 'cloudinary';
 import ConcurrentQueue from '~/utils/queue';
 import { v4 as uuidv4 } from 'uuid';
+import AppConfig from '../constants/configs';
 class MediaServices {
   private static instance: MediaServices;
   public static getInstance(): MediaServices {
@@ -13,9 +14,9 @@ class MediaServices {
   constructor() {
     cloudinary.config({
       // account_id: process.env.CLOUDINARY_ACCOUNT_ID,
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
+      cloud_name: AppConfig.CLOUDINARY_CLOUD_NAME as string,
+      api_key: AppConfig.CLOUDINARY_API_KEY as string,
+      api_secret: AppConfig.CLOUDINARY_API_SECRET as string,
       secure: true,
     });
     this.queue = new ConcurrentQueue(1);
