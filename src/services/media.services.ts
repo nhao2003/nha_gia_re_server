@@ -13,9 +13,9 @@ class MediaServices {
   constructor() {
     cloudinary.config({
       // account_id: process.env.CLOUDINARY_ACCOUNT_ID,
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'devfdx8fs',
-      api_key: process.env.CLOUDINARY_API_KEY || '891586263536798',
-      api_secret: process.env.CLOUDINARY_API_SECRET || 'RzdaT2bvDC4KZ-BeHlm0ZccPcS0',
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
       secure: true,
     });
     this.queue = new ConcurrentQueue(1);
