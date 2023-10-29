@@ -2,6 +2,7 @@ import express from 'express';
 import authRoutes from '../routes/auth.routes';
 import userRoutes from '../routes/user.routes';
 import postRoutes from '../routes/post.routes';
+import mediaRoutes from '../routes/media.routes';
 import { Request, Response } from 'express';
 import { User } from '~/domain/databases/entity/User';
 import { errorHandler } from '~/middlewares/error.middleware';
@@ -16,6 +17,7 @@ app.use(express.static('public'));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/posts', postRoutes);
+app.use('/api/v1/media', mediaRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.get('/', (req, res) => {
   User.find()
