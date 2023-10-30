@@ -3,6 +3,7 @@ export type PostQuery = {
   postWhere: string[];
   order: any;
   userWhere: string[];
+  search?: string | null;
 };
 
 export type BaseQuery = {

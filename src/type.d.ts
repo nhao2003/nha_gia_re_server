@@ -11,4 +11,3 @@ declare module "express" {
     post?: RealEstatePost;
   }
 }
-declare module 'uuid';

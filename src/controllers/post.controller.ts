@@ -10,6 +10,7 @@ import AppResponse from '~/models/AppRespone';
 import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
 import { PostQuery } from '~/models/PostQuery';
+import { buildOrder } from '~/utils/build_query';
 
 class PostController {
   createPost = wrapRequestHandler(async (req: any, res: any) => {
@@ -105,10 +106,10 @@ class PostController {
     const query: {
       [key: string]: any;
     } = {
-      'post.id': `eq:` + `'` + id + `'`,
-      'post.expiry_date': `gte:'${new Date().toJSON()}'`,
-      'post.is_active': 'eq:true',
-      'user.status': "eq:'verified'",
+      'post.id[eq]': `'` + id + `'`,
+      'post.expiry_date[gte]': `'${new Date().toJSON()}'`,
+      'post.is_active[eq]': 'eq:true',
+      'user.status[eq]': "'verified'",
     };
     const postQuery = PostServices.buildPostQuery(query);
     const post = await PostServices.getPostsByQuery(postQuery);

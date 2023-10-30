@@ -1,4 +1,4 @@
-import { FindManyOptions, MoreThanOrEqual, Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { PostStatus, UserStatus } from '~/constants/enum';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import UserPostFavorite from '~/domain/databases/entity/UserPostFavorite';
@@ -53,58 +53,38 @@ class PostServices {
     return id;
   }
 
-  async getPosts(page: number) {
-    page = page || 1;
-    const query = this.postRepository
-      .createQueryBuilder()
-      .skip((page - 1) * 10)
-      .take(10)
-      .addOrderBy('RealEstatePost.posted_date', 'DESC')
-      .andWhere('expiry_date >= :expiry_date', { expiry_date: new Date() })
-      .andWhere('RealEstatePost.is_active = :is_active', { is_active: true })
-      .leftJoinAndSelect('RealEstatePost.user', 'user')
-      .andWhere('user.status = :status', { status: UserStatus.not_update });
-    const getSql = query.getSql();
-    console.log(getSql);
-    const posts = await query.getMany();
-
-    return posts;
-  }
-
-  buildPostQuery(query: { [key: string]: any }): PostQuery {
-    const { page, sort_fields, sort_orders } = query;
+  buildPostQuery(query: Record<string, any>): PostQuery {
+    const { page, orders, search } = query;
     const pageParam = Number(page) || 1;
-
     const postQueries: {
-      [key: string]: string;
+      [key: string]: any;
     } = {};
 
     const userQueries: {
-      [key: string]: string;
+      [key: string]: any;
     } = {};
-
     Object.keys(query)
-      .filter((key) => key.startsWith('post.'))
+      .filter((key) => key.startsWith('post_'))
       .forEach((key) => {
-        postQueries[key.replace('post.', '')] = query[key] as string;
+        postQueries[key.replace('post_', '')] = query[key];
       });
 
     Object.keys(query)
-      .filter((key) => key.startsWith('user.'))
+      .filter((key) => key.startsWith('user_'))
       .forEach((key) => {
-        userQueries[key.replace('user.', '')] = query[key] as string;
+        userQueries[key.replace('user_', '')] = query[key];
       });
+    const postWhere: string[] = buildQuery(postQueries);
+    const userWhere: string[] = buildQuery(userQueries);
 
-    const postWhere: string[] = buildQuery(postQueries, ['address', 'features']);
-    const userWhere: string[] = buildQuery(userQueries, ['address']);
-
-    const order = buildOrder(sort_fields, sort_orders, 'RealEstatePost');
+    const order = buildOrder(orders, 'RealEstatePost');
 
     return {
       page: pageParam,
       postWhere,
       userWhere,
       order,
+      search,
     };
   }
 
@@ -113,10 +93,8 @@ class PostServices {
     let query = this.postRepository
       .createQueryBuilder()
       .leftJoinAndSelect('RealEstatePost.user', 'user')
-      .orderBy(postQuery.order)
       .skip((page - 1) * 10)
       .take(10);
-
     if (postQuery.postWhere) {
       postQuery.postWhere.forEach((item: string) => {
         query = query.andWhere(`RealEstatePost.${item}`);
@@ -124,25 +102,25 @@ class PostServices {
     }
     if (postQuery.userWhere) {
       postQuery.userWhere.forEach((item: string) => {
-        const userWhere = `user.${item}`;
+        const userWhere = `"user".${item}`;
         query = query.andWhere(userWhere);
       });
     }
-    // if (user_id) {
-    //Check if user has liked the post. Set is_liked = true if yes and false if no
-    query = query.setParameters({ current_user_id: '9c8e667c-6607-456e-a7e3-90ee02c7966e' });
-    // }
+
+    query = query.setParameters({ current_user_id: user_id });
+
+    var { search } = postQuery;
+    if (search) {
+      search = search.replace(/ /g, ' | ');
+      query = query.andWhere(`"RealEstatePost".document @@ to_tsquery('simple', unaccent('${search}'))`);
+      query = query.orderBy(`ts_rank(document, to_tsquery('simple', unaccent('${search}')))`, 'DESC');
+    }
+    query = query.orderBy(postQuery.order);
 
     const getSql = query.getSql();
     console.log(getSql);
     const posts = await query.getMany();
     return posts;
-  }
-
-  async getPostsByUser(user_id: any, page: number) {
-    const posts = await this.postRepository.query(
-      `SELECT * FROM real_estate_posts WHERE user_id = '${user_id}' LIMIT 10 OFFSET ${page * 10}`,
-    );
   }
 
   async getPostsByProject(project_id: any) {
@@ -162,14 +140,13 @@ class PostServices {
     return post;
   }
 
-  
   /**
    * Toggles the favorite status of a post for a given user.
    * @param user_id - The ID of the user.
    * @param post_id - The ID of the post.
    * @returns A boolean indicating whether the post is now favorited or not.
    */
-  async toggleFavorite(user_id: string, post_id: string) : Promise<boolean> {
+  async toggleFavorite(user_id: string, post_id: string): Promise<boolean> {
     const favoritePost = await this.postFavoriteRepository.findOne({
       where: {
         user_id,
@@ -193,19 +170,20 @@ class PostServices {
 
   // Mark read post
   async markReadPost(user_id: string, post_id: string) {
-    await this.postViewRepository.insert({
-      user_id,
-      real_estate_posts_id: post_id,
-      view_date: new Date(),
-    }).catch((err) => {
-      // If the post is already marked as read, do nothing
-      if (err.code === '23505') {
-        return;
-      }
-      throw err;
-    });
+    await this.postViewRepository
+      .insert({
+        user_id,
+        real_estate_posts_id: post_id,
+        view_date: new Date(),
+      })
+      .catch((err) => {
+        // If the post is already marked as read, do nothing
+        if (err.code === '23505') {
+          return;
+        }
+        throw err;
+      });
   }
-
 }
 
 export default new PostServices();

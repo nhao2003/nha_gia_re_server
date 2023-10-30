@@ -1,7 +1,7 @@
 import { BaseQuery } from '~/models/PostQuery';
 import { AppError } from '../models/Error';
 
-const getOperatorValueString = (originalValue: string, cast?: string) => {
+const getOperatorValueString = (operatorAndValue: Record<string, any>): string => {
   const operatorMapping: { [key: string]: string } = {
     eq: '=',
     neq: '<>',
@@ -24,12 +24,19 @@ const getOperatorValueString = (originalValue: string, cast?: string) => {
     iregex: '~*',
     niregex: '!~*',
   };
-
-  const operator = originalValue.split(':')[0];
-  // const value = originalValue.split(':')[1];
-  //Value may contain ':' character, so we need to get the rest of the string
-  const value = originalValue.replace(`${operator}:`, '');
-
+  const operator = Object.keys(operatorAndValue)[0];
+  // const value = operatorAndValue[operator];
+  // decodeURIComponent operatorAndValue[operator]
+  const value = operatorAndValue[operator]
+    .replace(/%20/g, ' ')
+    .replace(/%2C/g, ',')
+    .replace(/%27/g, "'")
+    .replace(/%22/g, '"')
+    .replace(/%3E/g, '>')
+    .replace(/%3C/g, '<')
+    .replace(/%3D/g, '=')
+    .replace(/%3B/g, ';')
+    .replace(/%2F/g, '/');
   if (operatorMapping[operator]) {
     let query = operatorMapping[operator];
 
@@ -60,54 +67,29 @@ const getOperatorValueString = (originalValue: string, cast?: string) => {
       query += ` ${value}`;
     }
 
-    if (cast) {
-      query += `::${cast}`;
-    }
-
     return query;
   }
-
   throw new AppError('Invalid operator', 400);
 };
 
-const jsonBuildQueries = (column: string, query: any, table?: string): string[] => {
+const buildQuery = (query: Record<string, any>): string[] => {
   const where: string[] = [];
-  const map: { [key: string]: string } = {};
-
-  const keys: string[] = Object.keys(query).filter((key) => key.startsWith(column));
-
-  keys.forEach((key) => {
-    map[key.split('.')[1]] = query[key];
-  });
-
-  Object.keys(map).forEach((key) => {
-    where.push(`${table ? table + '.' : ''}${column} ->> '${key}' ${getOperatorValueString(map[key] as string)}`);
-  });
-
-  return where;
-};
-
-const buildQuery = (query: any, jsons?: string[]): string[] => {
-  const where: string[] = [];
-  if (jsons) {
-    jsons.forEach((json) => {
-      where.push(...jsonBuildQueries(json, query));
-    });
-  }
-
   Object.keys(query).forEach((key) => {
-    const condition = !jsons || !jsons.some((excludedKey) => key.startsWith(excludedKey));
-    if (condition) {
-      where.push(`${key} ${getOperatorValueString(query[key] as string)}`);
+    const value = getOperatorValueString(query[key]);
+    if (key.includes('->>')) {
+      const column = key.split('->>')[0];
+      const field = key.split('->>')[1];
+      where.push(`${column} ->> '${field}' ${value}`);
+      return;
+    } else {
+      where.push(`${key} ${value}`);
     }
   });
-
   return where;
 };
 
 const buildOrder = (
-  sort_fields: string,
-  sort_orders: string | null,
+  orders: string,
   table: string | null = null,
 ):
   | {
@@ -115,34 +97,33 @@ const buildOrder = (
       order?: 'ASC' | 'DESC';
     }
   | {} => {
-  if (!sort_fields) {
-    // Return empty object if sort_fields is not provided
+  if (!orders) {
     return {};
   }
 
   const res: any = {};
-  const fields = sort_fields.toString().split(',');
-  const orders = sort_orders?.toString().split(',') || [];
+  const fields = orders.toString().split(',');
 
-  fields.forEach((field: string, index: number) => {
-    const order = orders[index] || 'asc';
+  fields.forEach((field: string) => {
+    const order = field.charAt(0) === '-' ? 'desc' : 'asc';
     const typeormSortOrder = order.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    //Remove - or + from field name
+    field = field.replace(/[-+]/g, '');
     res[`${table ? table + '.' : ''}${field}`] = typeormSortOrder;
   });
   return res;
 };
 
-function buildBaseQuery(query: Record<string, any>) : BaseQuery {
-  const { page, sort_fields, sort_orders } = query;
+function buildBaseQuery(query: Record<string, any>): BaseQuery {
+  const { page, orders } = query;
   const handleQuery = {
     ...query,
-  }
+  };
   delete handleQuery.page;
-  delete handleQuery.sort_fields;
-  delete handleQuery.sort_orders;
+  delete handleQuery.orders;
   const wheres = buildQuery(handleQuery);
-  const orders = buildOrder(sort_fields, sort_orders);
-  return { page, wheres, orders };
+  const buildOrders = buildOrder(orders);
+  return { page, wheres, orders: buildOrders };
 }
 
 export { buildQuery, getOperatorValueString, buildOrder, buildBaseQuery };

@@ -25,17 +25,15 @@ class UserServices {
     return user;
   }
   buildUserQuery(userQuery: any): UserQuery {
-    const { page, sort_fields, sort_orders } = userQuery;
-    const query: any = {};
+    const { page, orders } = userQuery;
     const handleQuery = {
       ...userQuery,
     }
     delete handleQuery.page;
-    delete handleQuery.sort_fields;
-    delete handleQuery.sort_orders;
+    delete handleQuery.orders;
     const wheres = buildQuery(handleQuery);
-    const orders = buildOrder(sort_fields, sort_orders);
-    return { page, wheres, orders };
+    const buildOrders = buildOrder(orders);
+    return { page, wheres, orders: buildOrders };
   }
 
   async getUserByQuery(userQuery: UserQuery): Promise<User[]> {

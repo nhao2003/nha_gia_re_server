@@ -40,6 +40,10 @@ class MediaController {
           if (!allowedMimeTypes.includes(file.mimetype)) {
             return res.status(400).json({ error: 'Invalid file format.' });
           }
+          // File size limit is 50MB
+          if (file.size > 50 * 1024 * 1024) {
+            return res.status(400).json({ error: 'File size too large.' });
+          }
           const isImage = file.mimetype.startsWith('image/');
           const subdirectory = isImage ? 'images' : 'videos';
           const url = mediaServices.upload(file, subdirectory);
