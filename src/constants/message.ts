@@ -50,6 +50,9 @@ export const APP_MESSAGES = {
     OTP_CODE_IS_CORRECT: "OTP code is correct",
     CREATE_PROPERTY_TYPE_SUCCESSFULLY: "Create property type successfully",
 
+    // Unit
+    GET_UNIT_INFO_SUCCESSFULLY: "Get unit info successfully",
+
     // Post
     CREATE_POST_SUCCESSFULLY: "Create post successfully",
     UPDATE_POST_SUCCESSFULLY: "Update post successfully",
@@ -78,6 +81,16 @@ export const APP_MESSAGES = {
     GET_PROJECT_SUCCESSFULLY: "Get project successfully",
     CREATE_PROJECT_SUCCESSFULLY: "Create project successfully",
     UPDATE_PROJECT_SUCCESSFULLY: "Update project successfully",
+
+    // Membership package
+    GET_MEMBERSHIP_PACKAGE_INFO_SUCCESSFULLY: "Get membership package info successfully",
+    DELETE_MEMBERSHIP_PACKAGE_SUCCESSFULLY: "Delete membership package successfully",
+
+    // Discount code
+    GET_DISCOUNT_CODE_INFO_SUCCESSFULLY: "Get discount code info successfully",
+    CREATE_DISCOUNT_CODE_SUCCESSFULLY: "Create discount code successfully",
+    UPDATE_DISCOUNT_CODE_SUCCESSFULLY: "Update discount code successfully",
+    DELETE_DISCOUNT_CODE_SUCCESSFULLY: "Delete discount code successfully",
   },
   VALIDATION_MESSAGE: {
     PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH: "Password and confirm password do not match",

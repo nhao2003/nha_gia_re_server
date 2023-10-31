@@ -14,5 +14,9 @@ type UpdatePostRequest = {
     videos?: string[];
     address: Address;
     features: PropertyFeatures;
+    project?: {
+        id: string | null;
+        project_name: string | null;
+    } | null;
 }
 export default UpdatePostRequest;

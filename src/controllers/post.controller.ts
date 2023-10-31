@@ -31,6 +31,7 @@ class PostController {
         ...req.body.features,
       }),
       user_id: req.user.id,
+      project: req.body.project,
     };
     const post = await PostServices.createPost(data);
 
@@ -59,6 +60,7 @@ class PostController {
         type_id: req.body.type_id,
         ...req.body.features,
       }),
+      project: req.body.project,
     };
     const updatedPost = await PostServices.updatePost(req.params.id, data);
     // res.status(200).json(updatedPost);

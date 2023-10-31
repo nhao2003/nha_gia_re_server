@@ -27,11 +27,24 @@ router
   .delete(AdminController.deletePropertyType);
 
 //Projects
-router.route('/projects').get(projectController.getProjects)
-.post(projectController.createProject);
+router.route('/projects').get(projectController.getProjects).post(projectController.createProject);
 
-router.route('/projects/:id')
-.patch(projectController.updateProject)
+router.route('/projects/:id').patch(projectController.updateProject);
+
+
+// MembemshipPackages
+router.route('/membership-packages').get(AdminController.getMembershipPackages).post(AdminController.createMembershipPackage);
+router
+  .route('/membership-packages/:id')
+  // .patch(AdminController.updateMembershipPackage)
+  .delete(AdminController.deleteMembershipPackage);
+
+// Discount Codes
+router.route('/discount-codes').get(AdminController.getDiscountCodes).post(AdminController.createDiscountCode);
+router
+  .route('/discount-codes/:id')
+  // .patch(AdminController.updateDiscountCode)
+  .delete(AdminController.deleteDiscountCode);
 
 
 export default router;

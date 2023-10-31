@@ -9,6 +9,17 @@ import { errorHandler } from '~/middlewares/error.middleware';
 import adminRoutes from '../routes/admin.routes';
 import bodyParser from 'body-parser';
 const app = express();
+// Add cors
+// https://h5.zdn.vn
+// zbrowser://h5.zdn.vn
+
+app.use((req, res, next) => {
+  // Allow requests from http://localhost:2999 and https://h5.zdn.vn
+  res.header('Access-Control-Allow-Origin', 'http://localhost:2999, https://h5.zdn.vn, zbrowser://h5.zdn.vn');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

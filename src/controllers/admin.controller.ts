@@ -11,18 +11,22 @@ import CommonServices from '~/services/common.services';
 import { Unit } from '~/domain/databases/entity/Unit';
 import { Developer } from '~/domain/databases/entity/Developer';
 import { PropertyType } from '~/domain/databases/entity/PropertyType';
+import MembershipPackage from '~/domain/databases/entity/MembershipPackage';
+import DiscountCode from '~/domain/databases/entity/DiscountCode';
 
 class AdminController {
   private UnitsService = new CommonServices(Unit);
   private DeveloperService = new CommonServices(Developer);
   private PropertyTypeService = new CommonServices(PropertyType);
+  private MembershipPackageService = new CommonServices(MembershipPackage);
+  private DiscountCodeService = new CommonServices(DiscountCode);
   public readonly getUnits = wrapRequestHandler(async (req: Request, res: Response) => {
     const baseQuery = buildBaseQuery(req.query);
     const data = await this.UnitsService.getAllByQuery(baseQuery);
     const appRes = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
-      message: 'APP_MESSAGES.SUCCESS_MESSAGE.GET_UNIT_INFO_SUCCESSFULLY',
+      message: APP_MESSAGES.SUCCESS_MESSAGE.GET_UNIT_INFO_SUCCESSFULLY,
       result: data,
     };
     res.status(200).json(appRes);
@@ -214,7 +218,7 @@ class AdminController {
   public readonly createPropertyType = wrapRequestHandler(async (req: Request, res: Response) => {
     const data = {
       id: req.body.id,
-      name: req.body.name
+      name: req.body.name,
     };
     const propertyType = await this.PropertyTypeService.create(data);
 
@@ -256,6 +260,81 @@ class AdminController {
     res.status(200).json(appRes);
   });
 
+  public readonly getMembershipPackages = wrapRequestHandler(async (req: Request, res: Response) => {
+    const query = buildBaseQuery(req.query);
+    const membershipPackages = await this.MembershipPackageService.getAllByQuery(query);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.GET_MEMBERSHIP_PACKAGE_INFO_SUCCESSFULLY,
+      result: membershipPackages,
+    };
+    res.status(200).json(appRes);
+  });
+
+  public readonly createMembershipPackage = wrapRequestHandler(async (req: Request, res: Response) => {
+    const data = req.body;
+    const membershipPackage = await this.MembershipPackageService.create(data);
+
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.CREATE_POST_SUCCESSFULLY,
+      result: membershipPackage,
+    };
+    res.status(200).json(appRes);
+  });
+
+  // Delete membership package
+  public readonly deleteMembershipPackage = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await this.MembershipPackageService.markDeleted(id);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.DELETE_MEMBERSHIP_PACKAGE_SUCCESSFULLY,
+      result: result,
+    };
+    res.status(200).json(appRes);
+  });
+
+  public readonly getDiscountCodes = wrapRequestHandler(async (req: Request, res: Response) => {
+    const query = buildBaseQuery(req.query);
+    const discountCodes = await this.DiscountCodeService.getAllByQuery(query);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.GET_MEMBERSHIP_PACKAGE_INFO_SUCCESSFULLY,
+      result: discountCodes,
+    };
+    res.status(200).json(appRes);
+  });
+
+  public readonly createDiscountCode = wrapRequestHandler(async (req: Request, res: Response) => {
+    const data = req.body;
+    const discountCode = await this.DiscountCodeService.create(data);
+
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.CREATE_DISCOUNT_CODE_SUCCESSFULLY,
+      result: discountCode,
+    };
+    res.status(200).json(appRes);
+  });
+
+  // Delete discount code
+  public readonly deleteDiscountCode = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await this.DiscountCodeService.markDeleted(id);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.DELETE_DISCOUNT_CODE_SUCCESSFULLY,
+      result: result,
+    };
+    res.status(200).json(appRes);
+  });
 }
 
 export default new AdminController();

@@ -7,6 +7,7 @@ import { PostQuery } from '~/models/PostQuery';
 import { MyRepository } from '~/repositories/my_repository';
 import { buildOrder, buildQuery } from '~/utils/build_query';
 import { parseTimeToMilliseconds } from '~/utils/time';
+import projectServices from './project.services';
 
 class PostServices {
   postRepository: Repository<RealEstatePost>;
@@ -26,6 +27,11 @@ class PostServices {
       is_priority: false,
       post_approval_priority: false,
     };
+    const project = data.project;
+    if (project) {
+      data.project_id = await projectServices.getOrCreateUnverifiedProject(project.id, project.project_name);
+    }
+    delete data.project;
     await this.postRepository.insert(data);
     return data;
   }
@@ -44,6 +50,11 @@ class PostServices {
     data = {
       ...data,
     };
+    const project = data.project;
+    if (project) {
+      data.project_id = await projectServices.getOrCreateUnverifiedProject(project.id, project.project_name);
+      await projectServices.deleteUnverifiedProject(project.id);
+    }
     const result = await this.postRepository.update(id, data);
     return result;
   }
@@ -132,11 +143,16 @@ class PostServices {
   }
 
   async checkPostExist(id: string) {
-    const post = await this.postRepository.findOne({
-      where: {
-        id,
-      },
-    });
+    const post = await this.postRepository
+      .createQueryBuilder()
+      .where('id = :id', { id })
+      .setParameters({
+        current_user_id: null,
+      })
+      .getOne();
+    // .andWhere('expiry_date >= :expiry_date', { expiry_date: new Date() })
+    // .andWhere('is_active = :is_active', { is_active: true })
+
     return post;
   }
 

@@ -50,7 +50,7 @@ class ProjectServices extends CommonServices {
     let { wheres, orders } = query;
     let baseQuery = this.getBaseQueryBuilder(query);
     baseQuery = baseQuery.leftJoinAndSelect('Project.developer', 'developer');
-    baseQuery = baseQuery.leftJoinAndSelect('Project.property_types', 'property_types');
+    // baseQuery = baseQuery.leftJoinAndSelect('Project.property_types', 'property_types');
     baseQuery = baseQuery.leftJoinAndSelect('Project.scales', 'scales');
     if (wheres) {
       wheres.forEach((where) => {
@@ -96,6 +96,47 @@ class ProjectServices extends CommonServices {
     promieses.push(this.repository.update(id, data));
     const results = await Promise.all(promieses);
     return results[results.length - 1];
+  }
+
+  async deleteUnverifiedProject(id: string): Promise<void> {
+    await this.repository.delete({
+      id,
+      verified: false,
+    });
+  }
+
+  async createUnverifiedProject(name: string): Promise<Project> {
+    const project: Project = new Project();
+    project.project_name = name;
+    project.verified = false;
+    // Return id of project
+    const result = await this.repository.save(project);
+    return result;
+  }
+
+  async getOrCreateUnverifiedProject(id: string | null, project_name: string | null): Promise<string | null> {
+    if (id) {
+      const project: Project = (await this.getById(id)) as Project;
+      if (project) {
+        return project.id;
+      }
+    }
+    if (project_name) {
+      const project: Project = await this.repository.findOne({
+        where: {
+          project_name,
+          verified: false,
+        },
+      });
+      if (project) {
+        return project.id;
+      }
+    }
+    if (!project_name) {
+      return null;
+    }
+    const project: Project = await this.createUnverifiedProject(project_name);
+    return project.id;
   }
 }
 export default new ProjectServices();
