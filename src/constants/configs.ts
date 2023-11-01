@@ -10,6 +10,7 @@ class AppConfig {
   //   name: this.isProduction ? process.env.DATABASE : process.env.DATABASE_DEV,
   // };
   // Use data production
+  public readonly APP_URL = process.env.APP_URL;
   public readonly database = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,

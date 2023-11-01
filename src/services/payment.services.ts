@@ -8,6 +8,7 @@ import DiscountCode from '~/domain/databases/entity/DiscountCode';
 import { AppError } from '~/models/Error';
 import zalopayServices from './zalopay.services';
 import ZaloPayOrderResponse from '~/models/Response/ZaloPayOrderResponse';
+import AppConfig from '../constants/configs';
 type OrderMembershipPackageRequest = {
   user_id: string;
   package_id: string;
@@ -41,6 +42,14 @@ type ZaloPayCallbackResponse = {
   discount_amount: number; // Số tiền giảm giá
 };
 
+type CreateSubscription = {
+  user_id: string,
+  package_id: string,
+  starting_date: Date,
+  expiration_date: Date,
+  transaction_id?: string | null,
+}
+
 class PaymentServices {
   private subcritpionRepository: Repository<Subscription>;
   private userRepository: Repository<User>;
@@ -62,19 +71,11 @@ class PaymentServices {
     });
     return res;
   }
-  public async createSubscription(
-    user_id: string,
-    package_id: string,
-    starting_date: Date,
-    expiration_date: Date,
-    transaction_id?: string | null,
+  private async createSubscription(
+    create: CreateSubscription,
   ): Promise<Subscription> {
     const res = this.subcritpionRepository.create({
-      user_id,
-      package_id,
-      transaction_id,
-      starting_date,
-      expiration_date,
+      ...create,
       is_active: true,
     });
     return res;
@@ -91,17 +92,17 @@ class PaymentServices {
   public subscribePackage = async (orderRequest: {
     user_id: string;
     package_id: string;
-    discount_id?: string | null;
     num_of_subscription_month: number;
+    discount_code?: string | null;
   }): Promise<OrderMembershipPackageResponse> => {
     const checkUserHasSubscription = await this.checkUserHasSubscription(orderRequest.user_id);
     if (checkUserHasSubscription) {
       throw new AppError('User has subscription', 400);
     }
-    const { user_id, package_id, discount_id, num_of_subscription_month } = orderRequest;
+    const { user_id, package_id, discount_code: discount_id, num_of_subscription_month } = orderRequest;
     let discount = null;
     if (discount_id) {
-      discount = await this.discountCodeRepository.findOne({ where: { id: discount_id } });
+      discount = await this.discountCodeRepository.findOne({ where: { code: discount_id } });
       if (!discount) {
         throw new AppError('Discount code not found', 404);
       }
@@ -127,7 +128,7 @@ class PaymentServices {
       bank_code: 'zalopayapp',
       app_time: starting_date,
       //TODO: change callback_url
-      callback_url: 'https://api.zalopay.com.vn/v2/create',
+      callback_url: AppConfig.APP_URL + '/api/v1/payment/verify-zalopay-transaction',
     });
 
     if (zalopayResponse.return_code !== 1) {
@@ -159,15 +160,66 @@ class PaymentServices {
     return res;
   }
 
-//   public async verifySuccessZaloPayTransaction(zaloPayResponse: {
-//     type: number;
-//     mac: string;
-//     data: string;
-//   }): Promise<void> {
-//     const data: ZaloPayCallbackResponse = JSON.parse(zaloPayResponse.data);
-//     if (data.app_id !== 494) {
-//       throw new AppError('App id not match', 400);
-//     }
-    
-//   }
+  public async verifySuccessZaloPayTransaction(zaloPayResponse: {
+    type: number;
+    mac: string;
+    data: string;
+  }): Promise<any> {
+    const data = JSON.parse(zaloPayResponse.data);
+
+    if (!zalopayServices.verifyOrderMac(zaloPayResponse.mac, zaloPayResponse.data)) {
+      console.log('Invalid mac');
+      return {
+        return_code: 3,
+        return_message: 'Invalid mac',
+      };
+    }
+    const transaction = await this.transactionRepository.findOne({
+      where: {
+        app_trans_id: (data as ZaloPayCallbackResponse).app_trans_id,
+      },
+    });
+    if(!transaction) {
+      console.log('Transaction not found');
+      return {
+        return_code: 3,
+        return_message: 'Transaction not found',
+      };
+    }
+    if (transaction !== null && transaction.status === 'success') {
+      console.log('Transaction not found');
+      return {
+        return_code: 2,
+        return_message: 'app_trans_id has been received',
+      };
+    }
+    const subscription = await this.subcritpionRepository.findOne({
+      where: {
+        user_id: (data as ZaloPayCallbackResponse).app_user,
+        is_active: true,
+      },
+    });
+
+    if (subscription) {
+      console.log('User has subscription');
+      return {
+        return_code: 3,
+        return_message: 'User has subscription',
+      };
+    }
+
+    await this.createSubscription({
+      user_id: (data as ZaloPayCallbackResponse).app_user,
+      package_id: data.package_id,
+      starting_date: new Date(),
+      expiration_date: new Date(new Date().setMonth(new Date().getMonth() + data.num_of_subscription_month)),
+      transaction_id: transaction.id,
+    });
+    await this.transactionRepository.update({ id: transaction.id }, { status: 'success' });
+    return {
+      return_code: 1,
+      return_message: 'Success'
+    };
+  }
 }
+export default new PaymentServices();
