@@ -15,7 +15,8 @@ const app = express();
 
 app.use((req, res, next) => {
   // Allow requests from http://localhost:2999 and https://h5.zdn.vn
-  res.header('Access-Control-Allow-Origin', 'http://localhost:2999, https://h5.zdn.vn, zbrowser://h5.zdn.vn');
+  // res.header('Access-Control-Allow-Origin', 'http://localhost:2999, https://h5.zdn.vn, zbrowser://h5.zdn.vn', );
+  res.setHeader('Access-Control-Allow-Origin', '*'); 
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   next();
