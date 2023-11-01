@@ -10,6 +10,7 @@ class AppConfig {
   //   name: this.isProduction ? process.env.DATABASE : process.env.DATABASE_DEV,
   // };
   // Use data production
+  public readonly APP_URL = process.env.APP_URL;
   public readonly database = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -17,6 +18,12 @@ class AppConfig {
     port: process.env.DB_PORT,
     name: process.env.DATABASE,
   };
+  public readonly ZALOPAY_SANDBOX = {
+    app_id: process.env.ZALOPAY_SANDBOX_APP_ID,
+    key1: process.env.ZALOPAY_SANDBOX_KEY1,
+    key2: process.env.ZALOPAY_SANDBOX_KEY2,
+  }
+
   public readonly  PASSWORD_SECRET_KEY = process.env.PASSWORD_SECRET_KEY;
   public readonly  JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
   public readonly  JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
@@ -24,5 +31,6 @@ class AppConfig {
   public readonly CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
   public readonly CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
   public readonly CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+  public readonly ZALOPAY_API = process.env.ZALO_API;
 }
 export default new AppConfig();

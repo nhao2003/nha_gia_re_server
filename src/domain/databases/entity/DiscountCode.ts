@@ -11,7 +11,7 @@ class DiscountCode extends BaseEntity implements IDiscountCode {
     @Column({ type: PostgresDataType.uuid })
     package_id!: string;
   
-    @Column({type: PostgresDataType.varchar, length: 50})
+    @Column({type: PostgresDataType.varchar, length: 50, unique: true})
     code!: string;
   
     @Column({ type: PostgresDataType.double_precision, default: 0 })

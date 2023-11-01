@@ -2,6 +2,7 @@ import express from 'express';
 import authRoutes from '../routes/auth.routes';
 import userRoutes from '../routes/user.routes';
 import postRoutes from '../routes/post.routes';
+import paymentRoutes from '../routes/payment.routes';
 import mediaRoutes from '../routes/media.routes';
 import { Request, Response } from 'express';
 import { User } from '~/domain/databases/entity/User';
@@ -31,10 +32,11 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/media', mediaRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/payment', paymentRoutes);
 app.get('/', (req, res) => {
   User.find()
     .then((units) => {
-      res.json(units);
+      res.status(200).send(units);
     })
     .catch((err) => {
       console.log(err);
