@@ -17,6 +17,12 @@ class AppConfig {
     port: process.env.DB_PORT,
     name: process.env.DATABASE,
   };
+  public readonly ZALOPAY_SANDBOX = {
+    app_id: process.env.ZALOPAY_SANDBOX_APP_ID,
+    key1: process.env.ZALOPAY_SANDBOX_KEY1,
+    key2: process.env.ZALOPAY_SANDBOX_KEY2,
+  }
+
   public readonly  PASSWORD_SECRET_KEY = process.env.PASSWORD_SECRET_KEY;
   public readonly  JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
   public readonly  JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
