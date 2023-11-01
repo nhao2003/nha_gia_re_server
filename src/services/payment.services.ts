@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { MoreThanOrEqual } from 'typeorm/browser';
+import { MoreThanOrEqual } from 'typeorm';
 import MembershipPackage from '~/domain/databases/entity/MembershipPackage';
 import Subscription from '~/domain/databases/entity/Subscription ';
 import { User } from '~/domain/databases/entity/User';
@@ -80,13 +80,13 @@ class PaymentServices {
     });
     return res;
   }
-  private async createTransaction(orderRequest: OrderMembershipPackageRequest): Promise<Transaction> {
+  private async createTransaction(orderRequest: OrderMembershipPackageRequest): Promise<string> {
     const data = {
       ...orderRequest,
       status: 'pending',
     };
-    const res = this.transactionRepository.create(data);
-    return res;
+    const res = await this.transactionRepository.insert(data);
+    return res.identifiers[0].id;
   }
 
   public subscribePackage = async (orderRequest: {
