@@ -10,8 +10,8 @@ class Transaction extends BaseEntity implements ITransaction {
   @Column(PostgresDataType.uuid, { comment: 'This is the user id' })
   user_id!: string;
 
-  @Column(PostgresDataType.uuid, { comment: 'This is the discount id' })
-  discount_id!: string;
+  @Column(PostgresDataType.uuid, { nullable: true, comment: 'This is the discount id' })
+  discount_id: string | null = null;
 
   @Column(PostgresDataType.uuid, { comment: 'This is the package id' })
   package_id!: string;

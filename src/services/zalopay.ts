@@ -1,5 +1,4 @@
 import AppConfig from '../constants/configs';
-import axios from 'axios';
 import crypto from 'crypto';
 type Order = {
     app_trans_id: string;
@@ -70,9 +69,9 @@ class ZaloPayServices {
 
   async createOrder2() {
     const config = {
-      app_id: '553',
-      key1: '9phuAOYhan4urywHTh0ndEXiV3pKHr5Q',
-      key2: 'Iyz2habzyr7AG8SgvoBCbKwKi3UzlLi3',
+      app_id: AppConfig.ZALOPAY_SANDBOX.app_id as string,
+      key1: AppConfig.ZALOPAY_SANDBOX.key1 as string,
+      key2: AppConfig.ZALOPAY_SANDBOX.key2 as string,
       endpoint: 'https://sandbox.zalopay.com.vn/v001/tpe/createorder',
       bankcode: 'zalopayapp',
       callbackurl: 'https://ldgecfuqlicdeuqijmbr.supabase.co/functions/v1/callback-order',
