@@ -28,7 +28,7 @@ class UserServices {
     const { page, orders } = userQuery;
     const handleQuery = {
       ...userQuery,
-    }
+    };
     delete handleQuery.page;
     delete handleQuery.orders;
     const wheres = buildQuery(handleQuery);
@@ -36,12 +36,12 @@ class UserServices {
     return { page, wheres, orders: buildOrders };
   }
 
-  async getUserByQuery(userQuery: UserQuery): Promise<User[]> {
+  async getUserByQuery(userQuery: UserQuery): Promise<{
+    num_of_pages: number;
+    users: User[];
+  }> {
     const page = userQuery.page || 1;
-    let query = this.userRepository
-      .createQueryBuilder()
-      .skip((page - 1) * 10)
-      .take(10);
+    let query = this.userRepository.createQueryBuilder();
     const wheres = userQuery.wheres;
     if (wheres) {
       wheres.forEach((where) => {
@@ -52,9 +52,17 @@ class UserServices {
     if (orders) {
       query = query.orderBy(orders);
     }
-    console.log(query.getSql());
-    const users = await query.getMany();
-    return users;
+    const total = query.getCount();
+
+    query = query.skip((page - 1) * 10).take(10);
+    const users = query.getMany();
+
+    const result = await Promise.all([total, users]);
+
+    return {
+      num_of_pages: Math.ceil(result[0] / 10),
+      users: result[1],
+    };
   }
 }
 

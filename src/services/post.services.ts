@@ -99,13 +99,13 @@ class PostServices {
     };
   }
 
-  async getPostsByQuery(postQuery: PostQuery, user_id: string | null = null) {
+  async getPostsByQuery(
+    postQuery: PostQuery,
+    user_id: string | null = null,
+  ): Promise<{ data: RealEstatePost[]; numberOfPages: number; }> {
     const page = postQuery.page || 1;
-    let query = this.postRepository
-      .createQueryBuilder()
-      .leftJoinAndSelect('RealEstatePost.user', 'user')
-      .skip((page - 1) * 10)
-      .take(10);
+    let query = this.postRepository.createQueryBuilder().leftJoinAndSelect('RealEstatePost.user', 'user');
+
     if (postQuery.postWhere) {
       postQuery.postWhere.forEach((item: string) => {
         query = query.andWhere(`RealEstatePost.${item}`);
@@ -127,8 +127,14 @@ class PostServices {
       query = query.orderBy(`ts_rank(document, to_tsquery('simple', unaccent('${search}')))`, 'DESC');
     }
     query = query.orderBy(postQuery.order);
-    const posts = await query.getMany();
-    return posts;
+
+    const total = query.getCount();
+    const data = query.skip((page - 1) * 10).take(10).getMany();
+    const result = await Promise.all([total, data]);
+    return {
+      numberOfPages: Math.ceil(result[0] / 10),
+      data: result[1],
+    };
   }
 
   async getPostsByProject(project_id: any) {

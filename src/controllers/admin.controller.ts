@@ -13,6 +13,7 @@ import { Developer } from '~/domain/databases/entity/Developer';
 import { PropertyType } from '~/domain/databases/entity/PropertyType';
 import MembershipPackage from '~/domain/databases/entity/MembershipPackage';
 import DiscountCode from '~/domain/databases/entity/DiscountCode';
+import AppResponse from '~/models/AppRespone';
 
 class AdminController {
   private UnitsService = new CommonServices(Unit);
@@ -82,7 +83,8 @@ class AdminController {
       status: 'success',
       code: ServerCodes.PostCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_POST_SUCCESSFULLY,
-      result: posts,
+      num_of_pages: posts.numberOfPages,
+      result: posts.data,
     };
     res.status(200).json(appRes);
   });
@@ -139,11 +141,12 @@ class AdminController {
     const users = await UserServices.getUserByQuery(query);
     // return res.json(users);
 
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.UserCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_USER_INFO_SUCCESSFULLY,
-      result: users,
+      num_of_pages: users.num_of_pages,
+      result: users.users,
     };
     res.status(200).json(appRes);
   });

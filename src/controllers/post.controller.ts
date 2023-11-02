@@ -98,7 +98,8 @@ class PostController {
       status: 'success',
       code: ServerCodes.PostCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_POST_SUCCESSFULLY,
-      result: posts,
+      num_of_pages: posts.numberOfPages,
+      result: posts.data,
     };
     res.status(200).json(appRes);
   });
@@ -114,10 +115,10 @@ class PostController {
       'user.status[eq]': "'verified'",
     };
     const postQuery = PostServices.buildPostQuery(query);
-    const post = await PostServices.getPostsByQuery(postQuery);
+    const {data, numberOfPages} = await PostServices.getPostsByQuery(postQuery);
     let appRes: AppResponse;
 
-    if (post.length === 0) {
+    if (data.length === 0) {
       appRes = {
         status: 'fail',
         code: ServerCodes.PostCode.PostNotFound,
@@ -129,7 +130,7 @@ class PostController {
         status: 'success',
         code: ServerCodes.PostCode.Success,
         message: APP_MESSAGES.SUCCESS_MESSAGE.GET_POST_SUCCESSFULLY,
-        result: post,
+        result: data,
       };
       return res.status(200).json(appRes);
     }

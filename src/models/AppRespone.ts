@@ -4,6 +4,7 @@ type AppResponse = {
   message: string;
   result?: any;
   error?: any;
+  num_of_pages?: number;
 };
 
 export default AppResponse;
