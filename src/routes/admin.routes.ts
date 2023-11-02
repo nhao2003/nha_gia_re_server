@@ -8,7 +8,7 @@ const router = Router();
 router.route('/posts').get(AdminController.getPosts);
 router.route('/posts/approve').post(AdminValidation.checkPostExisted, AdminController.approvePost);
 router.route('/posts/reject').post(AdminValidation.checkPostExisted, AdminController.rejectPost);
-router.route('/posts/delete').post(AdminValidation.checkPostExisted, AdminController.deletePost);
+router.route('/posts/delete').patch(AdminValidation.checkPostExisted, AdminController.deletePost);
 
 router.route('/users').get(AdminController.getUsers);
 
