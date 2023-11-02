@@ -43,12 +43,12 @@ type ZaloPayCallbackResponse = {
 };
 
 type CreateSubscription = {
-  user_id: string,
-  package_id: string,
-  starting_date: Date,
-  expiration_date: Date,
-  transaction_id?: string | null,
-}
+  user_id: string;
+  package_id: string;
+  starting_date: Date;
+  expiration_date: Date;
+  transaction_id?: string | null;
+};
 
 class PaymentServices {
   private subcritpionRepository: Repository<Subscription>;
@@ -71,14 +71,17 @@ class PaymentServices {
     });
     return res;
   }
-  private async createSubscription(
-    create: CreateSubscription,
-  ): Promise<Subscription> {
-    const res = this.subcritpionRepository.create({
-      ...create,
+  //TODO: create subscription
+  private async createSubscription(create: CreateSubscription): Promise<String> {
+    const res = await this.subcritpionRepository.insert({
+      user_id: create.user_id,
+      package_id: create.package_id,
+      starting_date: create.starting_date.toISOString(),
+      expiration_date: create.expiration_date.toISOString(),
+      transaction_id: create.transaction_id,
       is_active: true,
     });
-    return res;
+    return res.identifiers[0].id;
   }
   private async createTransaction(orderRequest: OrderMembershipPackageRequest): Promise<string> {
     const data = {
@@ -179,7 +182,7 @@ class PaymentServices {
         app_trans_id: (data as ZaloPayCallbackResponse).app_trans_id,
       },
     });
-    if(!transaction) {
+    if (!transaction) {
       console.log('Transaction not found');
       return {
         return_code: 3,
@@ -187,7 +190,7 @@ class PaymentServices {
       };
     }
     if (transaction !== null && transaction.status === 'success') {
-      console.log('Transaction not found');
+      console.log('app_trans_id has been received');
       return {
         return_code: 2,
         return_message: 'app_trans_id has been received',
@@ -207,18 +210,21 @@ class PaymentServices {
         return_message: 'User has subscription',
       };
     }
-
+    const date: Date = new Date(data.server_time);
+    const starting_date = date;
+    const expiration_date = new Date(date.setMonth(date.getMonth() + transaction.num_of_subscription_month));
+    console.log(starting_date);
     await this.createSubscription({
       user_id: (data as ZaloPayCallbackResponse).app_user,
-      package_id: data.package_id,
-      starting_date: new Date(),
-      expiration_date: new Date(new Date().setMonth(new Date().getMonth() + data.num_of_subscription_month)),
+      package_id: transaction.package_id,
+      starting_date: starting_date,
+      expiration_date: expiration_date,
       transaction_id: transaction.id,
     });
     await this.transactionRepository.update({ id: transaction.id }, { status: 'success' });
     return {
       return_code: 1,
-      return_message: 'Success'
+      return_message: 'Success',
     };
   }
 }

@@ -127,9 +127,6 @@ class PostServices {
       query = query.orderBy(`ts_rank(document, to_tsquery('simple', unaccent('${search}')))`, 'DESC');
     }
     query = query.orderBy(postQuery.order);
-
-    const getSql = query.getSql();
-    console.log(getSql);
     const posts = await query.getMany();
     return posts;
   }
