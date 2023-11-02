@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BaseEntity, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BaseEntity, OneToMany, JoinColumn } from 'typeorm';
 import { IUser } from '../interfaces/IUser';
 import { Session } from './Sesstion';
 import { DefaultValue } from '~/constants/defaultValue';
@@ -6,6 +6,7 @@ import { Role, UserStatus } from '~/constants/enum';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
 import Address from '~/domain/typing/address';
 import { RealEstatePost } from './RealEstatePost';
+import Subscription from './Subscription ';
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -47,10 +48,10 @@ export class User extends BaseEntity implements IUser {
   @Column({ type: PostgresDataType.varchar, default: DefaultValue.UNKNOW })
   phone!: string;
 
-  @Column({ type: PostgresDataType.timestamp_without_timezone, default:() => DatabaseDefaultValues.now })
+  @Column({ type: PostgresDataType.timestamp_without_timezone, default: () => DatabaseDefaultValues.now })
   last_active_at!: Date;
 
-  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone, default:() => DatabaseDefaultValues.now })
+  @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone, default: () => DatabaseDefaultValues.now })
   created_at!: Date;
 
   @Column(PostgresDataType.timestamp_without_timezone, { nullable: true })
@@ -64,6 +65,10 @@ export class User extends BaseEntity implements IUser {
 
   @OneToMany(() => RealEstatePost, (real_estate_posts) => real_estate_posts.user)
   posts!: RealEstatePost[];
+
+  @OneToMany(() => Subscription, (subscription) => subscription.user)
+  @JoinColumn({ name: 'id' })
+  subscriptions!: Subscription[];
 
   // Method
   toJSON(): Record<string, any> {

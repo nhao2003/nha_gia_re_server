@@ -1,6 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import ISubscription from '../interfaces/ISubscription';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
+import MembershipPackage from './MembershipPackage';
+import { User } from './User';
 @Entity('subscriptions')
 class Subscription extends BaseEntity implements ISubscription {
   @PrimaryGeneratedColumn(PostgresDataType.uuid)
@@ -23,6 +25,14 @@ class Subscription extends BaseEntity implements ISubscription {
 
   @Column({ type: PostgresDataType.boolean, default: 'true'})
   is_active!: boolean;
+
+  @ManyToOne(() =>MembershipPackage, membershipPackage => membershipPackage.subscriptions)
+  @JoinColumn({ name: 'package_id' })
+  membership_package!: MembershipPackage;
+
+  @ManyToOne(() => User, user => user.subscriptions)
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
 }
 
 export default Subscription;

@@ -9,6 +9,8 @@ import { AppError } from '~/models/Error';
 import zalopayServices from './zalopay.services';
 import ZaloPayOrderResponse from '~/models/Response/ZaloPayOrderResponse';
 import AppConfig from '../constants/configs';
+import subscriptionServices from './subscription.services';
+
 type OrderMembershipPackageRequest = {
   user_id: string;
   package_id: string;
@@ -43,13 +45,7 @@ type ZaloPayCallbackResponse = {
   discount_amount: number; // Số tiền giảm giá
 };
 
-type CreateSubscription = {
-  user_id: string;
-  package_id: string;
-  starting_date: Date;
-  expiration_date: Date;
-  transaction_id?: string | null;
-};
+
 
 class PaymentServices {
   private subcritpionRepository: Repository<Subscription>;
@@ -66,24 +62,9 @@ class PaymentServices {
     this.discountCodeRepository = DiscountCode.getRepository();
   }
 
-  public async checkUserHasSubscription(user_id: string): Promise<Subscription | null> {
-    const res = this.subcritpionRepository.findOne({
-      where: { user_id, expiration_date: MoreThanOrEqual(new Date()), is_active: true },
-    });
-    return res;
-  }
+
   //TODO: create subscription
-  private async createSubscription(create: CreateSubscription): Promise<String> {
-    const res = await this.subcritpionRepository.insert({
-      user_id: create.user_id,
-      package_id: create.package_id,
-      starting_date: create.starting_date.toISOString(),
-      expiration_date: create.expiration_date.toISOString(),
-      transaction_id: create.transaction_id,
-      is_active: true,
-    });
-    return res.identifiers[0].id;
-  }
+
   private async createTransaction(orderRequest: OrderMembershipPackageRequest): Promise<string> {
     const data = {
       ...orderRequest,
@@ -99,7 +80,7 @@ class PaymentServices {
     num_of_subscription_month: number;
     discount_code?: string | null;
   }): Promise<OrderMembershipPackageResponse> => {
-    const checkUserHasSubscription = await this.checkUserHasSubscription(orderRequest.user_id);
+    const checkUserHasSubscription = await subscriptionServices.checkUserHasSubscription(orderRequest.user_id);
     if (checkUserHasSubscription) {
       throw new AppError('User has subscription', 400);
     }
@@ -132,7 +113,7 @@ class PaymentServices {
       bank_code: 'zalopayapp',
       app_time: starting_date,
       //TODO: change callback_url
-      callback_url: AppConfig.APP_URL + '/api/v1/payment/verify-zalopay-transaction',
+      callback_url: AppConfig.APP_URL + '/api/v1/membership-package/verify-zalopay-transaction',
     });
 
     if (zalopayResponse.return_code !== 1) {
@@ -212,11 +193,11 @@ class PaymentServices {
         return_message: 'User has subscription',
       };
     }
-    const date: Date = new Date(data.server_time);
-    const starting_date = date;
-    const expiration_date = new Date(date.setMonth(date.getMonth() + transaction.num_of_subscription_month));
+    const starting_date = new Date(data.server_time);
+    const expiration_date = new Date(data.server_time);
+    expiration_date.setMonth(expiration_date.getMonth() + transaction.num_of_subscription_month);
     console.log(starting_date);
-    await this.createSubscription({
+    await subscriptionServices.createSubscription({
       user_id: (data as ZaloPayCallbackResponse).app_user,
       package_id: transaction.package_id,
       starting_date: starting_date,

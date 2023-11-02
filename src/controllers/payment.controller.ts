@@ -4,9 +4,9 @@ import paymentServices from '~/services/payment.services';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 class PaymentController {
   public readonly createOrderMemberShipPayment = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { user_id, membership_id, num_of_subscription_month, discount_code } = req.body;
+    const { user_id, membership_package_id, num_of_subscription_month, discount_code } = req.body;
 
-    if (!user_id || !membership_id || !num_of_subscription_month) {
+    if (!user_id || !membership_package_id || !num_of_subscription_month) {
       res.status(400).json({
         status: 'fail',
         message: 'Missing required fields',
@@ -15,7 +15,7 @@ class PaymentController {
 
     const result = await paymentServices.subscribePackage({
       user_id,
-      package_id: membership_id,
+      package_id: membership_package_id,
       num_of_subscription_month,
       discount_code,
     });

@@ -1,7 +1,8 @@
-import { PrimaryGeneratedColumn, Column, CreateDateColumn, BaseEntity } from 'typeorm';
+import { PrimaryGeneratedColumn, Column, CreateDateColumn, BaseEntity, OneToMany, JoinColumn } from 'typeorm';
 import { Entity } from 'typeorm';
 import { PostgresDataType } from '../constants/database_constants';
 import IMembershipPackage from '../interfaces/IMembershipPackage';
+import Subscription from './Subscription ';
 
 @Entity('membership_packages')
 class MembershipPackage  extends BaseEntity implements IMembershipPackage{
@@ -31,5 +32,9 @@ class MembershipPackage  extends BaseEntity implements IMembershipPackage{
 
   @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone })
   created_at!: Date;
+
+  @OneToMany(() => Subscription, subscription => subscription.membership_package)
+  @JoinColumn({ name: 'id' })
+  subscriptions!: Subscription[];
 }
 export default MembershipPackage;
