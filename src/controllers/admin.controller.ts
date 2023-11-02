@@ -77,7 +77,6 @@ class AdminController {
   public readonly getPosts = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = PostServices.buildPostQuery(req.query);
     const posts = await PostServices.getPostsByQuery(query, req.user?.id);
-    // return res.json(posts);
 
     const appRes = {
       status: 'success',
@@ -89,9 +88,17 @@ class AdminController {
   });
 
   public readonly approvePost = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const result = await AdminService.approvePost(id);
-
+    const id = req.post.id;
+    if(req.post.status === 'approved') {
+      const appRes = {
+        status: 'error',
+        code: ServerCodes.AdminCode.PostAlreadyApproved,
+        message: "Post is already approved",
+        result: null,
+      };
+      return res.status(400).json(appRes);
+    }
+    const result = await AdminService.approvePost(id as string);
     const appRes = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -102,11 +109,9 @@ class AdminController {
   });
 
   public readonly rejectPost = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { reason } = req.body;
-    const result = await AdminService.rejectPost(id, reason);
-    // return res.json(result);
-
+    const { id } = req.query;
+    const { reason } = req.body || "Not provided";
+    const result = await AdminService.rejectPost(id as string, reason);
     const appRes = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -117,8 +122,8 @@ class AdminController {
   });
 
   public readonly deletePost = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const result = await AdminService.deletePost(id);
+    const { id } = req.query
+    const result = await AdminService.deletePost(id as string);
     const appRes = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,

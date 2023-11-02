@@ -20,8 +20,9 @@ const ServerCodes = {
     },
     AdminCode: {
         Success: 400,
-        AdminNotFound: 401,
-        AdminNotUpdate: 402,
+        NotFound: 401,
+        MissingRequiredFields: 402,
+        PostAlreadyApproved: 403,
     },
 };
 export default ServerCodes;
