@@ -25,6 +25,7 @@ type OrderMembershipPackageResponse = {
   order_token: string;
   qr_code: string;
   app_trans_id: string;
+  transaction_id: string;
 };
 type ZaloPayCallbackResponse = {
   app_id: number; // app_id của đơn hàng
@@ -145,8 +146,9 @@ class PaymentServices {
       app_trans_id: zalopayResponse.app_trans_id,
       timestamp: starting_date,
     };
-    await this.createTransaction(create);
+    const transaction_id = await this.createTransaction(create);
     return {
+      transaction_id,
       order_url: zalopayResponse.order_url,
       zp_trans_token: zalopayResponse.zp_trans_token,
       order_token: zalopayResponse.order_token,
