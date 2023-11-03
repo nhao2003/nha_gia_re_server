@@ -77,6 +77,12 @@ class PaymentController {
   });
   public readonly verifyMiniAppTransaction = wrapRequestHandler(async (req: Request, res: Response) => {
     const { data, mac } = req.body;
+    if(!data || !mac) {
+      res.status(400).json({
+        status: 'fail',
+        message: 'Missing required fields',
+      });
+    }
     const result = await paymentServices.verifyMiniAppTransaction(data, mac);
     res.status(200).json(result);
   });

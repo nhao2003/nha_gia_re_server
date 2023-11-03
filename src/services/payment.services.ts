@@ -182,7 +182,7 @@ class PaymentServices {
     if (!membershipPackage) {
       throw new AppError('Membership package not found', 404);
     }
-    const amount = membershipPackage.price_per_month * num_of_subscription_month;
+    const amount = Number(membershipPackage.price_per_month) * num_of_subscription_month;
     const discount_percent = discount ? discount.discount_percent : 0;
     const discount_amount = amount * discount_percent;
     const total_amount = amount - discount_amount;
@@ -239,7 +239,6 @@ class PaymentServices {
       },
     });
     if (!transaction) {
-      console.log('Transaction not found');
       return {
         returnCode: 3,
         returnMessage: 'Transaction not found',
