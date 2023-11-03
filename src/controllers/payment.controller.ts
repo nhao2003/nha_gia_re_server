@@ -48,6 +48,12 @@ class PaymentController {
     const package_id = req.body.package_id;
     const num_of_subscription_month = req.body.num_of_subscription_month;
     const discount_code = req.body.discount_code;
+    if (!user_id || !package_id || !num_of_subscription_month) {
+      res.status(400).json({
+        status: 'fail',
+        message: 'Missing required fields',
+      });
+    }
     const result = await paymentServices.subscribePackageByMiniApp({
       user_id,
       package_id,
