@@ -1,27 +1,27 @@
-import nodemailer from "nodemailer";
-import fs from "fs";
-import exp from "constants";
+import nodemailer from 'nodemailer';
+import fs from 'fs';
+import path from 'path';
 export const sendEmail = async (to: string, subject: string, html: string) => {
   const transporter = nodemailer.createTransport({
-    service: "Gmail",
+    service: 'Gmail',
     auth: {
       user: process.env.SMTP_USERNAME as string,
-      pass: process.env.SMTP_PASSWORD as string
-    }
+      pass: process.env.SMTP_PASSWORD as string,
+    },
   });
   await transporter.sendMail(
     {
       from: process.env.SMTP_FROM,
       to,
       subject,
-      html
+      html,
     },
     (err, info) => {
       if (err) {
         console.log(err);
       }
       console.log(info);
-    }
+    },
   );
 };
 
@@ -81,14 +81,13 @@ export const sendConfirmationEmail = async (to: string, token: string) => {
     </body>
   </html>
   `;
-  template = template.replace("{{url}}", "http://localhost:3000/api/v1/auth/verify-email?token=" + token);
+  template = template.replace('{{url}}', 'http://localhost:3000/api/v1/auth/verify-email?token=' + token);
   //   template = template.replace("{{host}}", "http://localhost:3000");
-  await sendEmail(to, "Vui lòng xác minh email của bạn", template);
+  await sendEmail(to, 'Vui lòng xác minh email của bạn', template);
 };
 
 export const sendRecoveryPasswordEmail = async (to: string, code: string) => {
-  let template = fs.readFileSync("../templates/recovery-email.html", "utf-8");
-  template = template.replace("{{code}}", code);
-  await sendEmail(to, "Mã xác nhận đổi mật khẩu", template);
+  let template = fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'recovery-email.html'), 'utf-8');
+  template = template.replace('{{code}}', code);
+  await sendEmail(to, 'Mã xác nhận đổi mật khẩu', template);
 };
-

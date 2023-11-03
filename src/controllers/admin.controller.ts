@@ -14,7 +14,6 @@ import { PropertyType } from '~/domain/databases/entity/PropertyType';
 import MembershipPackage from '~/domain/databases/entity/MembershipPackage';
 import DiscountCode from '~/domain/databases/entity/DiscountCode';
 import AppResponse from '~/models/AppRespone';
-
 class AdminController {
   private UnitsService = new CommonServices(Unit);
   private DeveloperService = new CommonServices(Developer);
@@ -78,7 +77,6 @@ class AdminController {
   public readonly getPosts = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = PostServices.buildPostQuery(req.query);
     const posts = await PostServices.getPostsByQuery(query, req.user?.id);
-
     const appRes = {
       status: 'success',
       code: ServerCodes.PostCode.Success,

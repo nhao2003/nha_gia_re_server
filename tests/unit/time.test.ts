@@ -39,4 +39,12 @@ describe("parseTimeToMilliseconds", () => {
   it("should throw an error for invalid time unit", () => {
     expect(() => parseTimeToMilliseconds("10x")).toThrow("Invalid time string");
   });
+
+  it("should throw an error for invalid time value", () => {
+    expect(() => parseTimeToMilliseconds("s10")).toThrow("Invalid time string");
+  });
+  it('should throw an error for an invalid time string', () => {
+    const invalidTime = '10.0.0s';
+    expect(() => parseTimeToMilliseconds(invalidTime)).toThrowError('Invalid time string');
+  });
 });

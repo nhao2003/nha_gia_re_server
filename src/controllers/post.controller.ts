@@ -11,7 +11,7 @@ import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
 import { PostQuery } from '~/models/PostQuery';
 import { buildOrder } from '~/utils/build_query';
-
+import AddressUtils from '~/utils/address_utils';
 class PostController {
   createPost = wrapRequestHandler(async (req: any, res: any) => {
     const data: CreatePost = {

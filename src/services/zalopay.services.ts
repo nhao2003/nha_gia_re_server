@@ -3,6 +3,7 @@ import AppConfig from '../constants/configs';
 import crypto from 'crypto';
 import ZaloPayOrderResponse from '~/models/Response/ZaloPayOrderResponse';
 import ZaloPayCallbackResponse from '~/models/Response/ZaloPayCallbackResponse';
+import MiniAppTransactionDataCallback from '~/models/Response/MiniAppTransactionDataCallback';
 interface BodyCreateOrderRequest {
   app_id: number;
   mac: string;
@@ -95,6 +96,13 @@ class ZaloPayServices {
         .update(callbackData)
         .digest('hex') === mac
     );
+  }
+  public verifyMiniAppOrderMac(data: MiniAppTransactionDataCallback, mac: string): boolean {
+    // const data =
+    //   'appId={appId}&amount={amount}&description={description}&orderId={orderId}&message={message}&resultCode={resultCode}&transId={transId}';
+    const callbackData = `appId=${data.appId}&amount=${data.amount}&description=${data.description}&orderId=${data.orderId}&message=${data.message}&resultCode=${data.resultCode}&transId=${data.transId}`;
+    const hmac = crypto.createHmac('sha256', AppConfig.ZALOPAY_SANDBOX.privateKey as string).update(callbackData).digest('hex');
+    return hmac === mac;
   }
 }
 

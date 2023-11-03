@@ -19,8 +19,8 @@ class Transaction extends BaseEntity implements ITransaction {
   @Column(PostgresDataType.integer, { comment: 'This is the subscription id' })
   num_of_subscription_month!: number;
 
-  @Column(PostgresDataType.text, { comment: 'This is the app transaction id' })
-  app_trans_id!: string;
+  @Column(PostgresDataType.text, { nullable: true, comment: 'This is the app transaction id' })
+  app_trans_id: string | null = null;
 
   @Column({ type: PostgresDataType.varchar, length: 50, comment: 'This is the status of the transaction' })
   status!: string;
@@ -34,6 +34,9 @@ class Transaction extends BaseEntity implements ITransaction {
 
   @Column({ type: PostgresDataType.bigint, comment: 'This is the amount of the transaction' })
   amount!: number;
+  
+  @Column({ type: PostgresDataType.varchar, length: 50 })
+  platform!: string;
 
   @Column({ type: PostgresDataType.boolean, default: 'true', comment: 'Is the transaction active?' })
   is_active!: boolean;

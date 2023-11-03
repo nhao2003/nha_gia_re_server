@@ -16,8 +16,8 @@
     }
   },
   "ts-node": {
-    "require": ["tsconfig-paths/register"],
+    "require": ["tsconfig-paths/register"]
   },
   "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
-  "include": ["src/**/*", "tests/unit/filterBody.test.ts", "tests/build_query.test.ts", "tests/unit/time.test.ts", "src/models/.ts", "tests/unit/queue.test.ts"], // Đường dẫn include cho các file cần build
+  "include": ["src/**/*"] // Đường dẫn include cho các file cần build
 }

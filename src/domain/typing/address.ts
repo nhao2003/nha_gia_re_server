@@ -1,3 +1,4 @@
+import address_utils from "~/utils/address_utils";
 class Address {
   province_code: number;
   district_code: number;

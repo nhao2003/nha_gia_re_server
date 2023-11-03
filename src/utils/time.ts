@@ -17,9 +17,7 @@ export function parseTimeToMilliseconds(timeString: string): number {
       return timeInt * 24 * 60 * 60 * 1000;
     case "M":
       return timeInt * 30 * 24 * 60 * 60 * 1000;
-    case "y":
+    default: // "y"
       return timeInt * 365 * 24 * 60 * 60 * 1000;
-    default:
-      throw new Error("Invalid time string");
   }
 }

@@ -18,7 +18,7 @@
  */
 export type Task = {
   execute: (() => void) | (() => Promise<void>);
-  onError?: (err: Error) => void | null;
+  onError?: (err: Error) => void | Promise<void>;
 };
 
 /**

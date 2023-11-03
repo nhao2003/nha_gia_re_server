@@ -22,6 +22,8 @@ class AppConfig {
     app_id: process.env.ZALOPAY_SANDBOX_APP_ID,
     key1: process.env.ZALOPAY_SANDBOX_KEY1,
     key2: process.env.ZALOPAY_SANDBOX_KEY2,
+
+    privateKey: process.env.ZALOPAY_SANDBOX_PRIVATE_KEY,
   }
 
   public readonly  PASSWORD_SECRET_KEY = process.env.PASSWORD_SECRET_KEY;

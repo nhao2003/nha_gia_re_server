@@ -10,15 +10,17 @@ import zalopayServices from './zalopay.services';
 import ZaloPayOrderResponse from '~/models/Response/ZaloPayOrderResponse';
 import AppConfig from '../constants/configs';
 import subscriptionServices from './subscription.services';
+import MiniAppTransactionDataCallback from '~/models/Response/MiniAppTransactionDataCallback';
 
 type OrderMembershipPackageRequest = {
   user_id: string;
   package_id: string;
   discount_id?: string | null;
   num_of_subscription_month: number;
-  app_trans_id: string;
+  app_trans_id?: string | null;
   timestamp: Date;
   amount: number;
+  platform?: string;
 };
 
 type OrderMembershipPackageResponse = {
@@ -26,8 +28,18 @@ type OrderMembershipPackageResponse = {
   zp_trans_token: string;
   order_token: string;
   qr_code: string;
-  app_trans_id: string;
+  app_trans_id?: string | null;
   transaction_id: string;
+};
+type OrderMembershipPackagMiniAppeResponse = {
+  amount: number;
+  desc: string;
+  extradata: {
+    package_id: string;
+    user_id: string;
+  };
+  transaction_id: string;
+  item: MembershipPackage[];
 };
 type ZaloPayCallbackResponse = {
   app_id: number; // app_id của đơn hàng
@@ -45,8 +57,6 @@ type ZaloPayCallbackResponse = {
   discount_amount: number; // Số tiền giảm giá
 };
 
-
-
 class PaymentServices {
   private subcritpionRepository: Repository<Subscription>;
   private userRepository: Repository<User>;
@@ -62,13 +72,15 @@ class PaymentServices {
     this.discountCodeRepository = DiscountCode.getRepository();
   }
 
-
   //TODO: create subscription
 
-  private async createTransaction(orderRequest: OrderMembershipPackageRequest): Promise<string> {
+  private async createTransaction(
+    orderRequest: OrderMembershipPackageRequest,
+    status: string = 'pending',
+  ): Promise<string> {
     const data = {
       ...orderRequest,
-      status: 'pending',
+      status,
     };
     const res = await this.transactionRepository.insert(data);
     return res.identifiers[0].id;
@@ -135,6 +147,129 @@ class PaymentServices {
       order_token: zalopayResponse.order_token,
       qr_code: zalopayResponse.qr_code,
       app_trans_id: zalopayResponse.app_trans_id,
+    };
+  };
+
+  // 1. Mini app call this function to create order
+  // 2. Server create transaction
+  // 3. Server return order_info to mini app
+  // 4. Mini app call ZaloPay API to create order
+  // 5. Mini app Update transaction status to pending
+  // 6. Mini app Update app_trans_id to transaction
+  // 7. User pay order
+  // 8. ZaloPay call callback_url
+  // 9. Server verify transaction
+  // 10. Server create subscription if transaction is valid
+  public subscribePackageByMiniApp = async (orderRequest: {
+    user_id: string;
+    package_id: string;
+    num_of_subscription_month: number;
+    discount_code?: string | null;
+  }): Promise<OrderMembershipPackagMiniAppeResponse> => {
+    const checkUserHasSubscription = await subscriptionServices.checkUserHasSubscription(orderRequest.user_id);
+    if (checkUserHasSubscription) {
+      throw new AppError('User has subscription', 400);
+    }
+    const { user_id, package_id, discount_code: discount_id, num_of_subscription_month } = orderRequest;
+    let discount = null;
+    if (discount_id) {
+      discount = await this.discountCodeRepository.findOne({ where: { code: discount_id } });
+      if (!discount) {
+        throw new AppError('Discount code not found', 404);
+      }
+    }
+    const membershipPackage = await this.membershipPackageRepository.findOne({ where: { id: package_id } });
+    if (!membershipPackage) {
+      throw new AppError('Membership package not found', 404);
+    }
+    const amount = membershipPackage.price_per_month * num_of_subscription_month;
+    const discount_percent = discount ? discount.discount_percent : 0;
+    const discount_amount = amount * discount_percent;
+    const total_amount = amount - discount_amount;
+    const starting_date = new Date();
+    const transaction_id = await this.createTransaction(
+      {
+        amount: total_amount,
+        num_of_subscription_month,
+        user_id,
+        package_id,
+        app_trans_id: null,
+        timestamp: starting_date,
+        platform: 'mini-app',
+      },
+      'initiated',
+    );
+    const res = {
+      amount: total_amount,
+      desc: `Mua ${membershipPackage.name} thời hạn ${num_of_subscription_month} tháng`,
+      extradata: {
+        package_id,
+        user_id,
+      },
+      transaction_id,
+      item: [membershipPackage],
+    };
+    return res;
+  };
+
+  //Update app_status_id to transaction
+  public async miniAppUpdateTransaction(transaction_id: string, order_id: string) {
+    await this.transactionRepository.update(
+      {
+        id: transaction_id,
+      },
+      {
+        app_trans_id: order_id,
+        status: 'pending',
+      },
+    );
+  }
+
+  public verifyMiniAppTransaction = async (data: MiniAppTransactionDataCallback, mac: string): Promise<any> => {
+    if (!zalopayServices.verifyMiniAppOrderMac(data, mac)) {
+      console.log('Invalid mac');
+      return {
+        returnCode: 3,
+        returnMessage: 'Invalid mac',
+      };
+    }
+    const transaction = await this.transactionRepository.findOne({
+      where: {
+        app_trans_id: data.orderId,
+      },
+    });
+    if (!transaction) {
+      console.log('Transaction not found');
+      return {
+        returnCode: 3,
+        returnMessage: 'Transaction not found',
+      };
+    }
+    if (transaction.status === 'success') {
+      return {
+        returnCode: 2,
+        returnMessage: 'Trùng mã giao dịch transId',
+      };
+    }
+    transaction.status = 'success';
+    const extradata: {
+      package_id: string;
+      user_id: string;
+    } = JSON.parse(data.extradata);
+    const date = new Date(data.transTime);
+    const starting_date = date;
+    const expiration_date = new Date(date.setMonth(date.getMonth() + transaction.num_of_subscription_month));
+    const create = subscriptionServices.createSubscription({
+      user_id: extradata.user_id,
+      package_id: transaction.package_id,
+      starting_date,
+      expiration_date,
+      transaction_id: transaction.id,
+    });
+    await Promise.all([create, this.transactionRepository.save(transaction)]);
+    return {
+      return_code: 1,
+      return_message: 'Success',
     };
   };
 
