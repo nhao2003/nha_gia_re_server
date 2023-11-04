@@ -246,7 +246,7 @@ class PaymentServices {
       };
     }
     transaction.status = 'success';
-    const user_id = data.extradata;
+    const user_id = JSON.parse(decodeURIComponent(data.extradata));
     const date = new Date(data.transTime);
     const starting_date = date;
     const expiration_date = new Date(date.setMonth(date.getMonth() + transaction.num_of_subscription_month));
