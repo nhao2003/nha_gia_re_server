@@ -16,8 +16,14 @@ const app = express();
 // zbrowser://h5.zdn.vn
 
 app.use(cors());
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next) => {
   res.header({ 'Access-Control-Allow-Origin': '*' });
+  console.log('/***********************/');
+  console.log('Request URL:', req.originalUrl);
+  console.log('Request Time:', new Date().toLocaleString());
+  console.log('Request Type:', req.method);
+  console.log('/***********************/');
+
   next();
 });
 app.use(bodyParser.urlencoded({ extended: true }));
