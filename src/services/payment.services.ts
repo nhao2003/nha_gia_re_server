@@ -336,5 +336,20 @@ class PaymentServices {
       return_message: 'Success',
     };
   }
+
+  public async getTransaction(id: string): Promise<Transaction | null> {
+    const res = await this.transactionRepository
+      .createQueryBuilder('transaction')
+      .where('transaction.id = :id', { id: id })
+      .orWhere('app_trans_id = :id', { id: id })
+      .where('transaction.is_active = true')
+      .leftJoinAndSelect('transaction.subscription', 'subscription')
+      .leftJoinAndSelect('transaction.user', 'user')
+      .getOne();
+    if (!res) {
+      throw new AppError('Transaction not found', 404);
+    }
+    return res;
+  }
 }
 export default new PaymentServices();

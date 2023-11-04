@@ -3,6 +3,7 @@ import ISubscription from '../interfaces/ISubscription';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
 import MembershipPackage from './MembershipPackage';
 import { User } from './User';
+import Transaction from './Transaction';
 @Entity('subscriptions')
 class Subscription extends BaseEntity implements ISubscription {
   @PrimaryGeneratedColumn(PostgresDataType.uuid)
@@ -33,6 +34,10 @@ class Subscription extends BaseEntity implements ISubscription {
   @ManyToOne(() => User, user => user.subscriptions)
   @JoinColumn({ name: 'user_id' })
   user!: User;
+
+  @OneToOne(() => Transaction, transaction => transaction.subscription)
+  @JoinColumn({ name: 'transaction_id' })
+  transaction!: Transaction;
 }
 
 export default Subscription;

@@ -1,7 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
 import ITransaction from '../interfaces/ITransaction';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
 import { CreateDateColumn } from 'typeorm';
+import { User } from './User';
 @Entity('transactions')
 class Transaction extends BaseEntity implements ITransaction {
   @PrimaryGeneratedColumn(PostgresDataType.uuid, { comment: 'This is the primary key' })
@@ -40,5 +41,13 @@ class Transaction extends BaseEntity implements ITransaction {
 
   @Column({ type: PostgresDataType.boolean, default: 'true', comment: 'Is the transaction active?' })
   is_active!: boolean;
+
+  @OneToOne(() => Transaction, transaction => transaction.subscription)
+  @JoinColumn({ name: 'id' })
+  subscription!: Transaction;
+
+  @ManyToOne(() => User, user => user.transactions)
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
 }
 export default Transaction;

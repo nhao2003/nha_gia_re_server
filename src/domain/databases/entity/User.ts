@@ -7,6 +7,7 @@ import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_c
 import Address from '~/domain/typing/address';
 import { RealEstatePost } from './RealEstatePost';
 import Subscription from './Subscription ';
+import Transaction from './Transaction';
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -69,6 +70,10 @@ export class User extends BaseEntity implements IUser {
   @OneToMany(() => Subscription, (subscription) => subscription.user)
   @JoinColumn({ name: 'id' })
   subscriptions!: Subscription[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.user)
+  @JoinColumn({ name: 'id' })
+  transactions!: Transaction[];
 
   // Method
   toJSON(): Record<string, any> {

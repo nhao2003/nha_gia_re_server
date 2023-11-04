@@ -18,6 +18,7 @@ class MembershipPackageServices extends CommonServices {
       .createQueryBuilder()
       .leftJoinAndSelect('Subscription.membership_package', 'membership_package')
       .leftJoinAndSelect('Subscription.user', 'user')
+      .leftJoinAndSelect('Subscription.transaction', 'transaction')
       .andWhere('Subscription.is_active = true')
       .andWhere('user.status = verified');
     if (user_id) {

@@ -6,6 +6,7 @@ const routes = Router();
 routes.get('/', membership_packageController.getMembershipPackages);
 routes.get('/current-subscription', membership_packageController.getCurrentUserMembershipPackage);
 routes.get('/user-with-subscription', membership_packageController.getUserWithSubscriptionPackage);
+routes.get('/transactions', paymentController.getTransaction);
 
 routes.post('/check-out', paymentController.createOrderMemberShipPayment);
 

@@ -92,5 +92,23 @@ class PaymentController {
     const result = await paymentServices.verifyMiniAppTransaction(data, mac);
     res.status(200).json(result);
   });
+
+  public readonly getTransaction = wrapRequestHandler(async (req: Request, res: Response) => {
+    const id = req.query.id;
+    if(!id) {
+      res.status(400).json({
+        status: 'fail',
+        message: 'Missing required fields',
+      });
+    }
+    const result = await paymentServices.getTransaction(id as string);
+    const appRessponse: AppResponse = {
+      status: 'success',
+      code: 200,
+      message: 'Get transaction successfully',
+      result,
+    };
+    res.status(200).json(appRessponse);
+  });
 }
 export default new PaymentController();
