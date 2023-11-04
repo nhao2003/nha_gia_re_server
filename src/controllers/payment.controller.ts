@@ -72,7 +72,7 @@ class PaymentController {
   public readonly updatePaymentStatus = wrapRequestHandler(async (req: Request, res: Response) => {
     const order_id = req.body.order_id;
     const transaction_id = req.body.transaction_id;
-    const result = await paymentServices.miniAppUpdateTransaction(order_id, transaction_id);
+    const result = await paymentServices.miniAppUpdateTransaction(transaction_id, order_id);
     const appRessponse: AppResponse = {
       status: 'success',
       code: 200,
