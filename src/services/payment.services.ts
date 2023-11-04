@@ -34,10 +34,7 @@ type OrderMembershipPackageResponse = {
 type OrderMembershipPackagMiniAppeResponse = {
   amount: number;
   desc: string;
-  extradata: {
-    package_id: string;
-    user_id: string;
-  };
+  extradata: string;
   transaction_id: string;
   item: MembershipPackage[];
 };
@@ -202,10 +199,7 @@ class PaymentServices {
     const res = {
       amount: total_amount,
       desc: `Mua ${membershipPackage.name} thời hạn ${num_of_subscription_month} tháng`,
-      extradata: {
-        package_id,
-        user_id,
-      },
+      extradata: user_id,
       transaction_id,
       item: [membershipPackage],
     };
@@ -233,6 +227,7 @@ class PaymentServices {
         returnMessage: 'Invalid mac',
       };
     }
+    console.log(data);
     const transaction = await this.transactionRepository.findOne({
       where: {
         app_trans_id: data.orderId,
@@ -251,15 +246,12 @@ class PaymentServices {
       };
     }
     transaction.status = 'success';
-    const extradata: {
-      package_id: string;
-      user_id: string;
-    } = JSON.parse(data.extradata);
+    const user_id = data.extradata;
     const date = new Date(data.transTime);
     const starting_date = date;
     const expiration_date = new Date(date.setMonth(date.getMonth() + transaction.num_of_subscription_month));
     const create = subscriptionServices.createSubscription({
-      user_id: extradata.user_id,
+      user_id,
       package_id: transaction.package_id,
       starting_date,
       expiration_date,
