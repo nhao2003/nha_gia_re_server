@@ -340,11 +340,11 @@ class PaymentServices {
   public async getTransaction(id: string): Promise<Transaction | null> {
     const res = await this.transactionRepository
       .createQueryBuilder('transaction')
-      .where('transaction.id = :id', { id: id })
-      .orWhere('app_trans_id = :id', { id: id })
-      .where('transaction.is_active = true')
       .leftJoinAndSelect('transaction.subscription', 'subscription')
       .leftJoinAndSelect('transaction.user', 'user')
+      .where('transaction.is_active = true')
+      .where('transaction.id = :id', { id: id })
+      .orWhere('app_trans_id = :app_trans_id', { app_trans_id: id })
       .getOne();
     if (!res) {
       throw new AppError('Transaction not found', 404);
