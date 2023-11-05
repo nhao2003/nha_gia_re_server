@@ -3,7 +3,7 @@ interface IMembershipPackage {
     name: string;
     description: string;
     price_per_month: number;
-    monthy_post_limit: number;
+    monthly_post_limit: number;
     post_approval_priority_point: number;
     display_priority_point: number;
     is_active: boolean;

@@ -166,7 +166,7 @@ class AuthServices {
     return user;
   }
   async checkUserExistByID(id: string): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.createQueryBuilder().where('id = :id', { id }).addSelect('User.password').getOne();
     return user;
   }
 
