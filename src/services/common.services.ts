@@ -6,7 +6,7 @@ import { buildOrder, buildQuery } from '~/utils/build_query';
 class CommonServices {
   protected repository: Repository<any>;
   constructor(entity: any) {
-    this.repository = entity.getRepository();
+    this.repository = AppDataSource.getRepository(entity);
   }
 
   public buildBaseQuery(query: Record<string, any>): BaseQuery {

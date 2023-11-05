@@ -4,14 +4,15 @@ import PropertyTypeProject from '~/domain/databases/entity/PropertyTypeProject';
 import { Repository } from 'typeorm';
 import ProjectScale from '~/domain/databases/entity/ProjectScale';
 import { BaseQuery } from '~/models/PostQuery';
+import { AppDataSource } from '~/app/database';
 
 class ProjectServices extends CommonServices {
   propertyTypeProjectRepo: Repository<PropertyTypeProject>;
   projectScaleRepo: Repository<ProjectScale>;
   constructor() {
     super(Project);
-    this.propertyTypeProjectRepo = PropertyTypeProject.getRepository();
-    this.projectScaleRepo = ProjectScale.getRepository();
+    this.propertyTypeProjectRepo = AppDataSource.getRepository(PropertyTypeProject);
+    this.projectScaleRepo = AppDataSource.getRepository(ProjectScale);
   }
 
   public async create(data: Record<string, any>) {

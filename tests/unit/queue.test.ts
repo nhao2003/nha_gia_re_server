@@ -59,6 +59,15 @@ describe('ConcurrentQueue', () => {
       expect(onError2).not.toHaveBeenCalled();
       expect(onError3).toHaveBeenCalledWith(new Error('Task 3 failed'));
     });
+
+    //Add async test
+    it('should execute a single async task', async () => {
+      const queue = new ConcurrentQueue();
+      const task = jest.fn().mockResolvedValue(() => new Promise((resolve) => setTimeout(resolve, 100)));
+      queue.add({ execute: task });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(task).toHaveBeenCalled();
+    });
   });
 
   describe('clear', () => {

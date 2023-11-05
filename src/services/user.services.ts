@@ -1,13 +1,12 @@
 import { Repository } from 'typeorm/browser';
 import { User } from '~/domain/databases/entity/User';
 import { UserQuery } from '~/models/UserQuery';
-import { MyRepository } from '~/repositories/my_repository';
 import { buildOrder, buildQuery } from '~/utils/build_query';
-
+import { AppDataSource } from '~/app/database';
 class UserServices {
   private userRepository: Repository<User>;
   constructor() {
-    this.userRepository = MyRepository.userRepository();
+    this.userRepository = AppDataSource.getRepository(User);
   }
   async updateUserInfo(user_id: string, data: any): Promise<boolean> {
     await this.userRepository.update(

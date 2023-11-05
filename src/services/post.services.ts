@@ -4,19 +4,19 @@ import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import UserPostFavorite from '~/domain/databases/entity/UserPostFavorite';
 import UserPostView from '~/domain/databases/entity/UserPostView';
 import { PostQuery } from '~/models/PostQuery';
-import { MyRepository } from '~/repositories/my_repository';
 import { buildOrder, buildQuery } from '~/utils/build_query';
 import { parseTimeToMilliseconds } from '~/utils/time';
 import projectServices from './project.services';
+import { AppDataSource } from '~/app/database';
 
 class PostServices {
   postRepository: Repository<RealEstatePost>;
   postFavoriteRepository: Repository<UserPostFavorite>;
   postViewRepository: Repository<UserPostView>;
   constructor() {
-    this.postRepository = MyRepository.postRepository();
-    this.postFavoriteRepository = MyRepository.userPostFavoriteRepository();
-    this.postViewRepository = MyRepository.userPostViewRepository();
+    this.postRepository = AppDataSource.getRepository(RealEstatePost);
+    this.postFavoriteRepository = AppDataSource.getRepository(UserPostFavorite);
+    this.postViewRepository = AppDataSource.getRepository(UserPostView);
   }
   async createPost(data: Record<string, any>) {
     data = {

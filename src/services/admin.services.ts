@@ -1,20 +1,20 @@
 import { Equal, Repository } from 'typeorm';
+import { AppDataSource } from '~/app/database';
 import { PostStatus, UserStatus } from '~/constants/enum';
 import { Developer } from '~/domain/databases/entity/Developer';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import { User } from '~/domain/databases/entity/User';
 import { BaseQuery, PostQuery } from '~/models/PostQuery';
 import CreateDeveloper from '~/models/Request/CreateDeveloper';
-import { MyRepository } from '~/repositories/my_repository';
 
 class AdminService {
   private userRepo: Repository<User>;
   private postRepo: Repository<RealEstatePost>;
   developerRepo: Repository<Developer>;
   constructor() {
-    this.userRepo = User.getRepository();
-    this.postRepo = RealEstatePost.getRepository();
-    this.developerRepo = Developer.getRepository();
+    this.userRepo = AppDataSource.getRepository(User);
+    this.postRepo = AppDataSource.getRepository(RealEstatePost);
+    this.developerRepo = AppDataSource.getRepository(Developer);
   }
 
   async approvePost(id: string) {

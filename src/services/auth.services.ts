@@ -1,10 +1,10 @@
 // import RefreshToken from "~/models/database/RefreshToken";
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import { AppDataSource } from '~/app/database';
 import { OTPTypes, UserStatus } from '~/constants/enum';
 import { OTP } from '~/domain/databases/entity/Otp';
 import { Session } from '~/domain/databases/entity/Sesstion';
 import { User } from '~/domain/databases/entity/User';
-import { MyRepository } from '~/repositories/my_repository';
 import { hashPassword, hashString } from '~/utils/crypto';
 import { UserPayload, VerifyResult, signToken, verifyToken } from '~/utils/jwt';
 import { parseTimeToMilliseconds } from '~/utils/time';
@@ -20,9 +20,9 @@ class AuthServices {
   private otpRepository: Repository<OTP>;
   private sessionRepository: Repository<Session>;
   constructor() {
-    this.userRepository = MyRepository.userRepository();
-    this.otpRepository = MyRepository.otpRepository();
-    this.sessionRepository = MyRepository.sessionRepository();
+    this.userRepository = AppDataSource.getRepository(User);
+    this.otpRepository = AppDataSource.getRepository(OTP);
+    this.sessionRepository = AppDataSource.getRepository(Session);
   }
 
   /**

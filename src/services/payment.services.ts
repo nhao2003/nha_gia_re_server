@@ -11,6 +11,7 @@ import ZaloPayOrderResponse from '~/models/Response/ZaloPayOrderResponse';
 import AppConfig from '../constants/configs';
 import subscriptionServices from './subscription.services';
 import MiniAppTransactionDataCallback from '~/models/Response/MiniAppTransactionDataCallback';
+import { AppDataSource } from '~/app/database';
 
 type OrderMembershipPackageRequest = {
   user_id: string;
@@ -62,11 +63,15 @@ class PaymentServices {
   private discountCodeRepository: Repository<DiscountCode>;
 
   constructor() {
-    this.subcritpionRepository = Subscription.getRepository();
-    this.userRepository = User.getRepository();
-    this.membershipPackageRepository = MembershipPackage.getRepository();
-    this.transactionRepository = Transaction.getRepository();
-    this.discountCodeRepository = DiscountCode.getRepository();
+    this.subcritpionRepository = AppDataSource.getRepository(Subscription);
+    // this.userRepository = User.getRepository();
+    // this.membershipPackageRepository = MembershipPackage.getRepository();
+    // this.transactionRepository = Transaction.getRepository();
+    // this.discountCodeRepository = DiscountCode.getRepository();
+    this.userRepository = AppDataSource.getRepository(User);
+    this.membershipPackageRepository = AppDataSource.getRepository(MembershipPackage);
+    this.transactionRepository = AppDataSource.getRepository(Transaction);
+    this.discountCodeRepository = AppDataSource.getRepository(DiscountCode);
   }
 
   //TODO: create subscription

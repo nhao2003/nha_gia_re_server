@@ -11,10 +11,6 @@ import adminRoutes from '../routes/admin.routes';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 const app = express();
-// Add cors
-// https://h5.zdn.vn
-// zbrowser://h5.zdn.vn
-
 app.use(cors());
 app.use((req: Request, res: Response, next) => {
   res.header({ 'Access-Control-Allow-Origin': '*' });

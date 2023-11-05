@@ -3,6 +3,7 @@ import Subscription from '~/domain/databases/entity/Subscription ';
 import { User } from '~/domain/databases/entity/User';
 import { AppError } from '~/models/Error';
 import CommonServices from './common.services';
+import { AppDataSource } from '~/app/database';
 
 export type CreateSubscription = {
   user_id: string;
@@ -18,8 +19,8 @@ class SubscriptionService extends CommonServices {
 
   constructor() {
     super(Subscription);
-    this.subcritpionRepository = Subscription.getRepository();
-    this.userRepository = User.getRepository();
+    this.subcritpionRepository = AppDataSource.getRepository(Subscription);
+    this.userRepository = AppDataSource.getRepository(User);
   }
 
   public async checkUserHasSubscription(user_id: string): Promise<Subscription | null> {

@@ -4,10 +4,11 @@ import PostService from '~/services/post.services';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import { Request, Response } from 'express';
 import { Repository } from 'typeorm';
+import { AppDataSource } from '~/app/database';
 class AdminValidation {
   private postRepo: Repository<RealEstatePost>;
   constructor() {
-    this.postRepo = RealEstatePost.getRepository();
+    this.postRepo = AppDataSource.getRepository(RealEstatePost);
   }
   public readonly checkPostExisted = wrapRequestHandler(async (req: Request, res: Response, next) => {
     const { id } = req.query;

@@ -1,10 +1,9 @@
 import { AppDataSource } from './app/database';
 // dotenv config
-
+import app from './app/app';
 AppDataSource.initialize()
   .then(() => {
     console.log('Database connected');
-    const app = require('./app/app').default;
     const port = process.env.PORT || 8000;
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);
