@@ -8,6 +8,7 @@ import Address from '~/domain/typing/address';
 import { RealEstatePost } from './RealEstatePost';
 import Subscription from './Subscription ';
 import Transaction from './Transaction';
+import Report from './Report';
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -74,6 +75,10 @@ export class User extends BaseEntity implements IUser {
   @OneToMany(() => Transaction, (transaction) => transaction.user)
   @JoinColumn({ name: 'id' })
   transactions!: Transaction[];
+
+  @OneToMany(() => Report, (report) => report.user)
+  @JoinColumn({ name: 'id' })
+  reports!: Report[];
 
   // Method
   toJSON(): Record<string, any> {

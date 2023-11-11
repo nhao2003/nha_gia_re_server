@@ -115,7 +115,10 @@ const buildOrder = (
 };
 
 function buildBaseQuery(query: Record<string, any>): BaseQuery {
-  const { page, orders } = query;
+  let { page, orders } = query;
+  if (!page) {
+    page = 1;
+  }
   const handleQuery = {
     ...query,
   };

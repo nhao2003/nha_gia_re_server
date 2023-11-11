@@ -1,11 +1,11 @@
-import { BaseEntity, getRepository, Repository } from 'typeorm';
+import { BaseEntity, EntityTarget, getRepository, Repository } from 'typeorm';
 import { User } from '~/domain/databases/entity/User';
 import { AppDataSource } from '~/app/database';
 import { BaseQuery as BaseQuery } from '~/models/PostQuery';
 import { buildOrder, buildQuery } from '~/utils/build_query';
 class CommonServices {
   protected repository: Repository<any>;
-  constructor(entity: any) {
+  constructor(entity: EntityTarget<any>) {
     this.repository = AppDataSource.getRepository(entity);
   }
 

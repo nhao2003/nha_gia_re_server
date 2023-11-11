@@ -4,6 +4,7 @@ import userRoutes from '../routes/user.routes';
 import postRoutes from '../routes/post.routes';
 import membershipPackagenRoutes from '../routes/membership_package.routes';
 import mediaRoutes from '../routes/media.routes';
+import reportRoutes from '../routes/report.routes';
 import { Request, Response } from 'express';
 import { User } from '~/domain/databases/entity/User';
 import { errorHandler } from '~/middlewares/error.middleware';
@@ -32,6 +33,7 @@ app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/media', mediaRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/membership-package', membershipPackagenRoutes);
+app.use('/api/v1/reports', reportRoutes);
 app.get('/', (req, res) => {
   User.find()
     .then((units) => {

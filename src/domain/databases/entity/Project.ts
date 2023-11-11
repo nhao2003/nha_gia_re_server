@@ -8,6 +8,7 @@ import { JoinColumn } from 'typeorm';
 import { OneToMany } from 'typeorm';
 import PropertyTypeProject from './PropertyTypeProject';
 import ProjectScale from './ProjectScale';
+import { Progression as ProjectProgression, ProjectStatus } from '~/constants/enum';
 
 @Entity('projects')
 export class Project extends BaseEntity implements IProject {
@@ -36,10 +37,10 @@ export class Project extends BaseEntity implements IProject {
   address_point: any;
 
   @Column({ type: PostgresDataType.varchar, length: 50, nullable: true })
-  progression!: string;
+  progression!: ProjectProgression;
 
   @Column({ type: PostgresDataType.varchar, length: 50, nullable: true })
-  status!: string;
+  status!: ProjectStatus;
 
   @Column({ type: PostgresDataType.text, array: true, nullable: true })
   images!: string[];

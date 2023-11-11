@@ -91,3 +91,42 @@ export enum MessageTypes {
   location = 'location',
   post = 'post',
 }
+
+export enum ReportStatus {
+  pending = 'pending',
+  resolved ='resolved',
+  rejected = 'rejected'
+}
+
+
+export enum ReportType {
+  user = 'user',
+  post = 'post',
+  conversation = 'conversation',
+}
+
+
+export enum ReportContentType {
+  spam = 'spam',
+  offensive = 'offensive',
+  inappropriate = 'inappropriate',
+  other = 'other',
+}
+
+export enum Progression {
+  //Chưa khởi công
+  not_start = 'not_start',
+  //Đang khởi công
+  in_progress = 'in_progress',
+  //Đã hoàn thành
+  completed = 'completed',
+}
+
+export enum ProjectStatus {
+  //Sắp mở bán
+  upcoming = 'upcoming',
+  //Đang mở bán
+  opening = 'opening',
+  //Đã bàn giao
+  delivered = 'delivered',
+}

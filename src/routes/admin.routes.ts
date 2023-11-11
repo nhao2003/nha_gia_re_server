@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import AdminController from '~/controllers/admin.controller';
 import projectController from '~/controllers/project.controller';
+import reportController from '~/controllers/report.controller';
 import { AuthValidation } from '~/middlewares/auth.middleware';
 import AdminValidation from '~/middlewares/admin.middlewares';
 const router = Router();
@@ -27,9 +28,11 @@ router
   .delete(AdminController.deletePropertyType);
 
 //Projects
-router.route('/projects').get(projectController.getProjects).post(projectController.createProject);
+// router.route('/projects').get(projectController.getProjects).post(projectController.createProject);
 
-router.route('/projects/:id').patch(projectController.updateProject);
+// router.route('/projects/:id').patch(projectController.updateProject);
+
+router.route('/projects').get(projectController.getProjects).post(projectController.createProject);
 
 // MembemshipPackages
 router
@@ -47,5 +50,8 @@ router
   .route('/discount-codes/:id')
   // .patch(AdminController.updateDiscountCode)
   .delete(AdminController.deleteDiscountCode);
+
+// Get all reports
+router.route('/reports').get(reportController.getAllReport);
 
 export default router;

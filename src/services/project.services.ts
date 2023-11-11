@@ -28,7 +28,8 @@ class ProjectServices extends CommonServices {
     if (project_types) {
       const propertyTypeProjects: PropertyTypeProject[] = project_types.map((property_type_id: string) => {
         const propertyTypeProject: PropertyTypeProject = new PropertyTypeProject();
-        propertyTypeProject.projects_id = project.id;
+        propertyTypeProject.project
+        propertyTypeProject.project_id = project.id;
         propertyTypeProject.property_types_id = property_type_id;
         return propertyTypeProject;
       });
@@ -79,7 +80,7 @@ class ProjectServices extends CommonServices {
         projects_id: project.id,
         property_types_id: property_type_id,
       }));
-      promieses.push(this.propertyTypeProjectRepo.delete({ projects_id: project.id }));
+      promieses.push(this.propertyTypeProjectRepo.delete({ project_id: project.id }));
       promieses.push(this.propertyTypeProjectRepo.save(propertyTypeProjects));
     }
     if (scales !== null && Array.isArray(scales)) {

@@ -11,13 +11,13 @@ import { JoinColumn } from 'typeorm';
 @Entity('property_types_projects')
 class PropertyTypeProject extends BaseEntity implements IPropertyTypeProject {
   @PrimaryColumn({ type: PostgresDataType.uuid })
-  projects_id!: string;
+  project_id!: string;
 
   @PrimaryColumn({ type: PostgresDataType.varchar, length: 50 })
   property_types_id!: string;
 
   @ManyToOne(() => Project, (project) => project.property_types)
-  @JoinColumn({ name: 'projects_id' })
+  @JoinColumn({ name: 'project_id' })
   project!: Project;
 }
 export default PropertyTypeProject;
