@@ -76,7 +76,7 @@ export class User extends BaseEntity implements IUser {
   @JoinColumn({ name: 'id' })
   transactions!: Transaction[];
 
-  @OneToMany(() => Report, (report) => report.user)
+  @OneToMany(() => Report, (report) => report.reporter)
   @JoinColumn({ name: 'id' })
   reports!: Report[];
 

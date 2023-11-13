@@ -53,5 +53,6 @@ router
 
 // Get all reports
 router.route('/reports').get(reportController.getAllReport);
+router.route('/reports/:id').patch(reportController.updateReport);
 
 export default router;

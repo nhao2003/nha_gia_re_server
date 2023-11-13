@@ -11,7 +11,7 @@ class Report implements IReport {
   id!: string;
 
   @Column({ type: PostgresDataType.uuid })
-  user_id!: string;
+  reporter_id!: string;
 
   @Column({ type: PostgresDataType.uuid })
   reported_id!: string;
@@ -35,8 +35,11 @@ class Report implements IReport {
   created_date!: Date;
 
   @ManyToOne(() => User, (user) => user.reports)
-  @JoinColumn({ name: 'user_id' })
-  user!: User;
+  @JoinColumn({ name: 'reporter_id' })
+  reporter!: User;
+
+  reported!: RealEstatePost | User;
+
 }
 
 export default Report;

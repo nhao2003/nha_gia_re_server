@@ -2,7 +2,7 @@ import { ReportStatus, ReportType, ReportContentType } from "~/constants/enum";
 
 interface IReport {
     id: string;
-    user_id: string;
+    reporter_id: string;
     reported_id: string;
     status: ReportStatus;
     type: ReportType;

@@ -15,7 +15,12 @@ class ReportController {
         const reports = await ReportService.getAllByQuery(query);
         res.json(reports);
     });
-    
+
+    public readonly updateReport = wrapRequestHandler(async (req: Request, res: Response) => {
+        const { id } = req.params;
+        const report = await ReportService.updateReportStatus(id, req.body.status);
+        res.json(report);
+    });
 }
 
 export default new ReportController();

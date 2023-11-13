@@ -2,6 +2,9 @@ import CommonServices from './common.services';
 import Report from '../domain/databases/entity/Report';
 import { BaseQuery } from '~/models/PostQuery';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
+import { User } from '~/domain/databases/entity/User';
+import { AppError } from '~/models/Error';
+import { ReportStatus } from '~/constants/enum';
 class ReportService extends CommonServices {
   constructor() {
     super(Report);
@@ -20,8 +23,15 @@ class ReportService extends CommonServices {
     devQuery = devQuery.setParameters({ current_user_id: null });
     if (wheres) {
       wheres.forEach((where) => {
-        if(where === 'type = \'post\'') {
-          devQuery = devQuery.leftJoinAndSelect('Report.post', 'post');
+        if (where === "type = 'post'") {
+          devQuery = devQuery.leftJoinAndMapOne(
+            'Report.reported',
+            RealEstatePost,
+            'RealEstatePost',
+            'RealEstatePost.id = Report.reported_id',
+          );
+        } else if (where === "type = 'user'") {
+          devQuery = devQuery.leftJoinAndMapOne('Report.reported', User, 'User', 'User.id = Report.reported_id');
         }
         devQuery = devQuery.andWhere('Report.' + where);
       });
@@ -30,13 +40,32 @@ class ReportService extends CommonServices {
       devQuery = devQuery.orderBy(orders);
     }
     const getCount = devQuery.getCount();
-    const getMany = devQuery.skip(skip).take(take).getRawMany();
+    const getMany = devQuery.skip(skip).take(take).getMany();
     const values_2 = await Promise.all([getCount, getMany]);
     const [count, reports] = values_2;
     return {
       num_of_pages: Math.ceil(count / 10),
       data: reports,
     };
+  }
+
+  updateReportStatus = async (id: string, status: ReportStatus) => {
+    const report = await this.repository.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!Object.values(ReportStatus).includes(status) || status === ReportStatus.pending) {
+      throw new AppError('Status is not valid', 400);
+    }
+    if(report.status !== ReportStatus.pending) {
+      throw new AppError('Report has been processed', 400);
+    }
+    if (!report) {
+      throw new AppError('Report not found', 404);
+    }
+    report.status = status;
+    return await this.repository.save(report);
   }
 }
 

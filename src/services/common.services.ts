@@ -76,6 +76,7 @@ class CommonServices {
   }
 
   public async update(id: string, data: Record<string, any>) {
+    delete data.is_active;
     await this.repository.update(id, data);
     return id;
   }
