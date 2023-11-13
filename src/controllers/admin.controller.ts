@@ -156,7 +156,8 @@ class AdminController {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_DEVELOPER_INFO_SUCCESSFULLY,
-      result: developers,
+      num_of_pages: developers.num_of_pages,
+      result: developers.data,
     };
     res.status(200).json(appRes);
   });

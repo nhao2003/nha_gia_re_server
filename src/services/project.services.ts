@@ -48,9 +48,15 @@ class ProjectServices extends CommonServices {
     return project;
   }
 
-  public getAllByQuery(query: BaseQuery): Promise<any[]> {
-    let { wheres, orders } = query;
-    let baseQuery = this.getBaseQueryBuilder(query);
+  public async getAllByQuery(query: BaseQuery): Promise<{
+    num_of_pages: number;
+    data: Project[];
+  }> {
+    let { page, wheres, orders } = query;
+    page = Number(page) || 1;
+    const skip = (page - 1) * 10;
+    const take = 10;
+    let baseQuery = this.repository.createQueryBuilder();
     baseQuery = baseQuery.leftJoinAndSelect('Project.developer', 'developer');
     // baseQuery = baseQuery.leftJoinAndSelect('Project.property_types', 'property_types');
     baseQuery = baseQuery.leftJoinAndSelect('Project.scales', 'scales');
@@ -62,7 +68,13 @@ class ProjectServices extends CommonServices {
     if (orders) {
       baseQuery = baseQuery.orderBy(orders);
     }
-    return baseQuery.getMany();
+    const getCount = baseQuery.getCount();
+    const getMany = baseQuery.skip(skip).take(take).getMany();
+    const res = await Promise.all([getMany, getCount]);
+    return {
+      num_of_pages: Math.ceil(res[1] / 10),
+      data: res[0],
+    };
   }
   async update(id: string, data: Record<string, any>): Promise<any> {
     const project: Project = (await super.getById(id)) as Project;

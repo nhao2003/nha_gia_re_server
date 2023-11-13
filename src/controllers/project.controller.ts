@@ -12,7 +12,8 @@ class ProjectController {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_PROJECT_SUCCESSFULLY,
-      result: projects,
+      num_of_pages: projects.num_of_pages,
+      result: projects.data,
     };
     res.status(200).json(appRes);
   });
@@ -38,6 +39,18 @@ class ProjectController {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.UPDATE_PROJECT_SUCCESSFULLY,
+      result: project,
+    };
+    res.status(200).json(appRes);
+  });
+
+  public readonly deleteProject = wrapRequestHandler(async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const project = await ProjectServices.markDeleted(id);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: 'Delete project successfully',
       result: project,
     };
     res.status(200).json(appRes);

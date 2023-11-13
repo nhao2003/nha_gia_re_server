@@ -43,19 +43,13 @@ class CommonServices {
     });
   }
 
-  protected getBaseQueryBuilder(query: BaseQuery) {
+
+  public async getAllByQuery(query: BaseQuery) {
     let { page, wheres, orders } = query;
     page = Number(page) || 1;
     const skip = (page - 1) * 10;
     const take = 10;
-    let devQuery = this.repository.createQueryBuilder().skip(skip).take(take);
-    return devQuery;
-  }
-
-
-  public async getAllByQuery(query: BaseQuery) {
-    let { wheres, orders } = query;
-    let devQuery = this.getBaseQueryBuilder(query);
+    let devQuery = this.repository.createQueryBuilder();
     if (wheres) {
       wheres.forEach((where) => {
         devQuery = devQuery.andWhere(where);
@@ -64,7 +58,13 @@ class CommonServices {
     if (orders) {
       devQuery = devQuery.orderBy(orders);
     }
-    return devQuery.getMany();
+    const getCount = devQuery.getCount();
+    const getMany = devQuery.skip(skip).take(take).getMany();
+    const res = await Promise.all([getMany, getCount]);
+    return {
+      num_of_pages: Math.ceil(res[1] / 10),
+      data: res[0],
+    }
   }
 
   public async create(data: Record<string, any>) {

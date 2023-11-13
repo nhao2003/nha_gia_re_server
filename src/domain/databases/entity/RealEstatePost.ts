@@ -7,6 +7,7 @@ import {
   JoinColumn,
   VirtualColumn,
   AfterLoad,
+  OneToMany,
 } from 'typeorm';
 import IRealEstatePost from '../interfaces/IRealEstatePost';
 import { PostgresDataType } from '../constants/database_constants';
@@ -14,6 +15,7 @@ import { CreateDateColumn } from 'typeorm';
 import Address from '~/domain/typing/address';
 import { User } from './User';
 import address_utils from '~/utils/address_utils';
+import Report from './Report';
 @Entity('real_estate_posts')
 export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @PrimaryGeneratedColumn(PostgresDataType.uuid)
@@ -121,10 +123,15 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
 
   @AfterLoad()
   addAddressDetail() {
+    if(!this.address) return "";
     let val = address_utils.getDetailedAddress(this.address.province_code, this.address.district_code, this.address.ward_code);
     if (this.address.detail) {
       val = `${this.address.detail}, ${val}`;
     }
     this.address_detail = val;
   }
+
+  @OneToMany(() => Report, (report) => report.post)
+  @JoinColumn({ name: 'id', referencedColumnName: 'reported_id' })
+  reports!: Report[];
 }

@@ -38,6 +38,10 @@ class Report implements IReport {
   @JoinColumn({ name: 'user_id' })
   user!: User;
   
+
+  @ManyToOne(() => RealEstatePost, (post) => post.reports)
+  @JoinColumn({ name: 'reported_id', referencedColumnName: 'id' })
+  post!: RealEstatePost;
 }
 
 export default Report;

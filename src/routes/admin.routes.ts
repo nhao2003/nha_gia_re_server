@@ -32,7 +32,7 @@ router
 
 // router.route('/projects/:id').patch(projectController.updateProject);
 
-router.route('/projects').get(projectController.getProjects).post(projectController.createProject);
+router.route('/projects').get(projectController.getProjects).post(projectController.createProject).delete(projectController.deleteProject);
 
 // MembemshipPackages
 router
