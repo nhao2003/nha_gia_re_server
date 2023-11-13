@@ -204,7 +204,7 @@ class AdminController {
     const appRes = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
-      message: APP_MESSAGES.SUCCESS_MESSAGE.DELETE_POST_SUCCESSFULLY,
+      message: 'Delete developer successfully',
       result: result,
     };
     res.status(200).json(appRes);
