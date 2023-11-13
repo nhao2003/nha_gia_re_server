@@ -5,6 +5,7 @@ import projectController from '~/controllers/project.controller';
 import reportController from '~/controllers/report.controller';
 import { AuthValidation } from '~/middlewares/auth.middleware';
 import AdminValidation from '~/middlewares/admin.middlewares';
+import blogController from '~/controllers/blog.controller';
 const router = Router();
 router.route('/posts').get(AdminController.getPosts);
 router.route('/posts/approve').post(AdminValidation.checkPostExisted, AdminController.approvePost);
@@ -56,5 +57,10 @@ router
 // Get all reports
 router.route('/reports').get(reportController.getAllReport);
 router.route('/reports/:id').patch(reportController.updateReport);
+
+// Blogs
+router.route('/blogs').get(blogController.getAllBlog).post(blogController.createBlog);
+router.route('/blogs/:id').patch(blogController.updateBlog).delete(blogController.deleteBlog);
+router.route('/blogs/:id/view').get(blogController.viewBlog);
 
 export default router;
