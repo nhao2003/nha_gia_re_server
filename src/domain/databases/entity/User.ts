@@ -60,10 +60,10 @@ export class User extends BaseEntity implements IUser {
   updated_at!: Date;
 
   @Column(PostgresDataType.timestamp_without_timezone, { nullable: true })
-  banned_util!: Date;
+  banned_util!: Date | null;
 
   @Column(PostgresDataType.text, { nullable: true })
-  ban_reason!: string;
+  ban_reason!: string | null;
 
   @OneToMany(() => RealEstatePost, (real_estate_posts) => real_estate_posts.user)
   posts!: RealEstatePost[];
@@ -79,16 +79,4 @@ export class User extends BaseEntity implements IUser {
   @OneToMany(() => Report, (report) => report.reporter)
   @JoinColumn({ name: 'id' })
   reports!: Report[];
-
-  // Method
-  toJSON(): Record<string, any> {
-    const user: Record<string, any> = { ...this };
-    delete user.password;
-    delete user.is_active;
-    delete user.banned_util;
-    delete user.ban_reason;
-    delete user.sessions;
-    delete user.otps;
-    return user;
-  }
 }

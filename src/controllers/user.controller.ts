@@ -2,7 +2,7 @@ import filterBody from '~/utils/filterBody';
 import { NextFunction, Request, Response } from 'express';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { UserStatus } from '~/constants/enum';
-import UserServices from '~/services/user.services';
+import UserServices from '~/services/user.service';
 import { AppError } from '~/models/Error';
 import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';

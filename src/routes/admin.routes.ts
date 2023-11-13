@@ -12,6 +12,8 @@ router.route('/posts/reject').post(AdminValidation.checkPostExisted, AdminContro
 router.route('/posts/delete').patch(AdminValidation.checkPostExisted, AdminController.deletePost);
 
 router.route('/users').get(AdminController.getUsers);
+router.route('/users/:id/ban').patch(AdminController.banUser);
+router.route('/users/:id/unban').patch(AdminController.unbanUser);
 
 router.route('/developers').get(AdminController.getDevelopers).post(AdminController.createDeveloper);
 router.route('/developers/:id').patch(AdminController.updateDeveloper).delete(AdminController.deleteDeveloper);

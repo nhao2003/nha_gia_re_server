@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import AdminService from '../services/admin.services';
 import PostServices from '~/services/post.services';
-import UserServices from '~/services/user.services';
+import UserServices from '~/services/user.service';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
@@ -144,7 +144,33 @@ class AdminController {
       code: ServerCodes.UserCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_USER_INFO_SUCCESSFULLY,
       num_of_pages: users.num_of_pages,
-      result: users.users,
+      result: users.users as any,
+    };
+    console.log(appRes);
+    res.status(200).json(appRes);
+  });
+
+  public readonly banUser = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { ban_reason, banned_util } = req.body;
+    const result = await UserServices.banUser(id, ban_reason, banned_util);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: 'Ban user successfully',
+      result: result,
+    };
+    res.status(200).json(appRes);
+  });
+
+  public readonly unbanUser = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await UserServices.unbanUser(id);
+    const appRes = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: 'Unban user successfully',
+      result: result,
     };
     res.status(200).json(appRes);
   });

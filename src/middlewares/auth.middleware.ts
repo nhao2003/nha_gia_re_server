@@ -66,6 +66,17 @@ export class AuthValidation {
       if (password_is_correct === false) {
         return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
       }
+      if (user.status === UserStatus.banned) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
+          status: 'fail',
+          code: 403,
+          message: `You have been banned  ${user.banned_util} because ${user.ban_reason}. Please contact admin for more information`,
+          result: {
+            banned_util: user.banned_util,
+            ban_reason: user.ban_reason,
+          }
+        });
+      }
       req.user = user;
       next();
     },
