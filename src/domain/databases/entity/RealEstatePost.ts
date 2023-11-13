@@ -130,8 +130,4 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
     }
     this.address_detail = val;
   }
-
-  @OneToMany(() => Report, (report) => report.post)
-  @JoinColumn({ name: 'id', referencedColumnName: 'reported_id' })
-  reports!: Report[];
 }

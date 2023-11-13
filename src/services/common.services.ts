@@ -23,6 +23,10 @@ class CommonServices {
   }
 
   public async markDeleted(id: string): Promise<void> {
+    const value = await this.repository.findOne({ where: { id: id, is_active: true } });
+    if (value === undefined || value === null) {
+      throw new Error('Not found');
+    }
     await this.repository.update(id, { is_active: false });
   }
 
@@ -42,7 +46,6 @@ class CommonServices {
       },
     });
   }
-
 
   public async getAllByQuery(query: BaseQuery) {
     let { page, wheres, orders } = query;
@@ -64,7 +67,7 @@ class CommonServices {
     return {
       num_of_pages: Math.ceil(res[1] / 10),
       data: res[0],
-    }
+    };
   }
 
   public async create(data: Record<string, any>) {

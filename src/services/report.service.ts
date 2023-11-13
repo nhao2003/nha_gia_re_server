@@ -30,7 +30,7 @@ class ReportService extends CommonServices {
       devQuery = devQuery.orderBy(orders);
     }
     const getCount = devQuery.getCount();
-    const getMany = devQuery.skip(skip).take(take).getMany();
+    const getMany = devQuery.skip(skip).take(take).getRawMany();
     const values_2 = await Promise.all([getCount, getMany]);
     const [count, reports] = values_2;
     return {
