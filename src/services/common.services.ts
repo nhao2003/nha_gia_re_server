@@ -3,6 +3,7 @@ import { User } from '~/domain/databases/entity/User';
 import { AppDataSource } from '~/app/database';
 import { BaseQuery as BaseQuery } from '~/models/PostQuery';
 import { buildOrder, buildQuery } from '~/utils/build_query';
+import { AppError } from '~/models/Error';
 class CommonServices {
   protected repository: Repository<any>;
   constructor(entity: EntityTarget<any>) {
@@ -25,7 +26,7 @@ class CommonServices {
   public async markDeleted(id: string): Promise<void> {
     const value = await this.repository.findOne({ where: { id: id, is_active: true } });
     if (value === undefined || value === null) {
-      throw new Error('Not found');
+      throw new AppError('Not found', 404);
     }
     await this.repository.update(id, { is_active: false });
   }
