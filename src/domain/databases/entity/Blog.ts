@@ -1,6 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BaseEntity } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  BaseEntity,
+  OneToMany,
+  JoinColumn,
+  VirtualColumn,
+} from 'typeorm';
 import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_constants';
 import IBlog from '../interfaces/IBlog';
+import { UserBlogFavorite } from './UserBlogFavorite';
 
 @Entity('blogs')
 class Blog extends BaseEntity implements IBlog {
@@ -27,5 +37,28 @@ class Blog extends BaseEntity implements IBlog {
 
   @Column({ type: PostgresDataType.boolean, default: DatabaseDefaultValues.true })
   is_active!: boolean;
+
+  @OneToMany(() => UserBlogFavorite, (userBlogFavorite) => userBlogFavorite.blog)
+  @JoinColumn({ name: 'id', referencedColumnName: 'blog_id' })
+  user_blog_favorites!: UserBlogFavorite[];
+
+  @VirtualColumn({
+    query: (alias) => `SELECT COUNT(*) FROM user_blog_views WHERE user_blog_views.blog_id = ${alias}.id`,
+  })
+  num_views!: number;
+
+  // @VirtualColumn({
+  //   query: (alias) => `SELECT COUNT(*) FROM user_blog_favorites WHERE user_blog_favorites.blog_id = ${alias}.id`,
+  // })
+  // num_of_favorites!: number;
+
+  @VirtualColumn({
+    query: (alias) =>
+      `SELECT CASE
+      WHEN EXISTS (SELECT * FROM user_blog_favorites WHERE user_blog_favorites.blog_id = ${alias}.id AND user_blog_favorites.user_id = :current_user_id) THEN TRUE
+      ELSE FALSE
+  END`,
+  })
+  is_favorite!: boolean;
 }
 export default Blog;

@@ -2,6 +2,7 @@ import express from 'express';
 import authRoutes from '../routes/auth.routes';
 import userRoutes from '../routes/user.routes';
 import postRoutes from '../routes/post.routes';
+import blogRoutes from '../routes/blog.routes';
 import membershipPackagenRoutes from '../routes/membership_package.routes';
 import mediaRoutes from '../routes/media.routes';
 import reportRoutes from '../routes/report.routes';
@@ -35,6 +36,7 @@ app.use('/api/v1/media', mediaRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/membership-package', membershipPackagenRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/blogs', blogRoutes);
 app.get('/', (req, res) => {
   User.find()
     .then((units) => {

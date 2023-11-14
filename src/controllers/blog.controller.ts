@@ -1,15 +1,11 @@
 import Blog from '~/domain/databases/entity/Blog';
 import AppResponse from '~/models/AppRespone';
 import { AppError } from '~/models/Error';
-import CommonServices from '~/services/common.services';
 import { buildBaseQuery } from '~/utils/build_query';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
-
+import blogService from '~/services/blog.service';
+import { Request, Response } from 'express';
 class BlogController {
-  private blogService: CommonServices;
-  constructor() {
-    this.blogService = new CommonServices(Blog);
-  }
 
   public readonly createBlog = wrapRequestHandler(async (req: any, res: any) => {
     const blog: Record<string, any> = {};
@@ -21,7 +17,7 @@ class BlogController {
     if (!blog.title || !blog.content || !blog.author || !blog.thumbnail || !blog.short_description) {
       throw new AppError('Missing fields', 400);
     }
-    this.blogService.create(blog);
+    blogService.create(blog);
     const appResponse: AppResponse = {
       status: 'success',
       code: 200,
@@ -30,9 +26,10 @@ class BlogController {
     res.json(appResponse);
   });
 
-  public readonly getAllBlog = wrapRequestHandler(async (req: any, res: any) => {
+  public readonly getAllBlog = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = buildBaseQuery(req.query);
-    const blogs = await this.blogService.getAllByQuery(query);
+    const verifyResult = req.verifyResult;
+    const blogs = await blogService.getAllWithFavoriteByQuery(query, req.user ? req.user.id : null);
     const appResponse: AppResponse = {
       status: 'success',
       code: 200,
@@ -45,7 +42,7 @@ class BlogController {
 
   public readonly getBlogById = wrapRequestHandler(async (req: any, res: any) => {
     const { id } = req.params;
-    const blog = await this.blogService.getById(id);
+    const blog = await blogService.getById(id);
     const appResponse: AppResponse = {
       status: 'success',
       code: 200,
@@ -57,7 +54,7 @@ class BlogController {
   //Update blog
   public readonly updateBlog = wrapRequestHandler(async (req: any, res: any) => {
     const { id } = req.params;
-    const blog = await this.blogService.update(id, req.body);
+    const blog = await blogService.update(id, req.body);
     const appResponse: AppResponse = {
       status: 'success',
       code: 200,
@@ -69,7 +66,7 @@ class BlogController {
   //Delete blog
   public readonly deleteBlog = wrapRequestHandler(async (req: any, res: any) => {
     const { id } = req.params;
-    await this.blogService.markDeleted(id);
+    await blogService.markDeleted(id);
     const appResponse: AppResponse = {
       status: 'success',
       code: 200,
@@ -144,7 +141,7 @@ class BlogController {
   }
   public viewBlog = wrapRequestHandler(async (req: any, res: any) => {
     const { id } = req.params;
-    const blog = (await this.blogService.getById(id)) as Blog;
+    const blog = (await blogService.getById(id)) as Blog;
     if (!blog) {
       const html = '<h1>Not found</h1>';
       return res.send(html);

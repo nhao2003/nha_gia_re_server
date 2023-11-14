@@ -9,9 +9,7 @@ import { NextFunction } from 'express';
 import AppResponse from '~/models/AppRespone';
 import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
-import { PostQuery } from '~/models/PostQuery';
-import { buildOrder } from '~/utils/build_query';
-import AddressUtils from '~/utils/address_utils';
+import { Request, Response } from 'express';
 class PostController {
   createPost = wrapRequestHandler(async (req: any, res: any) => {
     const data: CreatePost = {
@@ -104,7 +102,7 @@ class PostController {
     res.status(200).json(appRes);
   });
 
-  getPostById = wrapRequestHandler(async (req: any, res: any) => {
+  getPostById = wrapRequestHandler(async (req: Request, res: Response) => {
     const id = req.params.id;
     const query: {
       [key: string]: any;
@@ -115,7 +113,7 @@ class PostController {
       'user.status[eq]': "'verified'",
     };
     const postQuery = PostServices.buildPostQuery(query);
-    const {data, numberOfPages} = await PostServices.getPostsByQuery(postQuery);
+    const { data, numberOfPages } = await PostServices.getPostsByQuery(postQuery, req.user ? req.user.id : null);
     let appRes: AppResponse;
 
     if (data.length === 0) {

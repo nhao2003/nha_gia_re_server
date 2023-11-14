@@ -16,6 +16,38 @@ import AuthServices from '~/services/auth.services';
 import ServerCodes from '~/constants/server_codes';
 
 export class AuthValidation {
+  public static getUserByTokenIfExist = wrapRequestHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const authorization = req.headers.authorization;
+      if(!authorization) {
+        return next();
+      }
+      const access_token = authorization?.split(' ')[1];
+      if (!access_token) {
+        return next(new AppError(APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED, HTTP_STATUS.UNAUTHORIZED));
+      }
+      const result = await verifyToken(access_token, process.env.JWT_SECRET_KEY as string);
+      if (!result) {
+        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED));
+      }
+      if (result.expired || !result.payload) {
+        return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
+      }
+      const session = await AuthServices.checkSessionExist((result.payload as UserPayload).session_id);
+      if (session === null || session === undefined) {
+        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+      }
+      const user = await AuthServices.checkUserExistByID(session.user_id);
+      if (user === null || user === undefined) {
+        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+      }
+      req.user = user;
+      req.session = session;
+      next();
+    },
+  );
+
+
   public static readonly signUpValidation = [
     validate(
       checkSchema({

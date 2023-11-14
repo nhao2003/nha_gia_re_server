@@ -11,7 +11,7 @@ router
   .post(AuthValidation.accessTokenValidation, PostValidation.createPostValidation, PostController.createPost);
 router
   .route('/:id')
-  .get(PostController.getPostById)
+  .get(AuthValidation.getUserByTokenIfExist, PostController.getPostById)
   .patch(AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.updatePost)
   .delete(AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.deletePost);
 
@@ -22,5 +22,5 @@ router
 router
   .route('/favorite/:id')
   .put( AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.favoritePost);
-router.route('/').get(PostController.getAllPost);
+router.route('/').get(AuthValidation.getUserByTokenIfExist,PostController.getAllPost);
 export default router;
