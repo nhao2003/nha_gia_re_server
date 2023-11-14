@@ -11,6 +11,7 @@ import { errorHandler } from '~/middlewares/error.middleware';
 import adminRoutes from '../routes/admin.routes';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import AppResponse from '~/models/AppRespone';
 const app = express();
 app.use(cors());
 app.use((req: Request, res: Response, next) => {
@@ -46,10 +47,12 @@ app.get('/', (req, res) => {
 });
 
 app.all('*', (req: Request, res: Response) => {
-  res.status(404).json({
+  const appRes: AppResponse = {
     status: 'fail',
+    code: 404,
     message: `Can't find ${req.originalUrl} on this server!`,
-  });
+  };
+  res.status(404).json(appRes);
 });
 
 app.use(errorHandler);
