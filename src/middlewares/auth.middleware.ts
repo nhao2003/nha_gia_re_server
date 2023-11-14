@@ -236,7 +236,7 @@ export class AuthValidation {
       // }
       // return next();
       const userRepo = User.getRepository();
-      const user = await userRepo.findOne({ where: { id: (payload as UserPayload).id } });
+      const user = await userRepo.findOne({ where: { id: (payload as UserPayload).user_id } });
       if (user !== null) {
         if (user.status === UserStatus.unverified) {
           return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));

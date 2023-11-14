@@ -79,7 +79,7 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   info_message: string | null | undefined;
 
   @Column({ type: PostgresDataType.text, default: 0 })
-  priority_level!: number;
+  display_priority_point!: number;
 
   @Column(PostgresDataType.jsonb)
   features: any;

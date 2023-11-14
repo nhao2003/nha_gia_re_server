@@ -2,7 +2,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { AppError } from '~/models/Error';
 
 export interface UserPayload extends JwtPayload {
-  id: string;
+  user_id: string;
   session_id: string;
 }
 

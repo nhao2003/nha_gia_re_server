@@ -17,19 +17,21 @@ class MembershipPackageServices extends CommonServices {
     if (!user_id && !email && !phone) return null;
     let query = this.subscriptionPackageRepository
       .createQueryBuilder()
+      .andWhere({
+        is_active: true,
+      })
       .leftJoinAndSelect('Subscription.membership_package', 'membership_package')
       .leftJoinAndSelect('Subscription.user', 'user')
       .leftJoinAndSelect('Subscription.transaction', 'transaction')
-      .andWhere('Subscription.is_active = true')
-      .andWhere('user.status = verified');
+
     if (user_id) {
-      query = query.where('Subscription.user_id = :user_id', { user_id });
+      query = query.andWhere('Subscription.user_id = :user_id', { user_id });
     }
     if (email) {
-      query = query.where('user.email = :email', { email });
+      query = query.andWhere('user.email = :email', { email });
     }
     if (phone) {
-      query = query.where('user.phone = :phone', { phone });
+      query = query.andWhere('user.phone = :phone', { phone });
     }
     const subscriptionPackage = await query.getOne();
     return subscriptionPackage;

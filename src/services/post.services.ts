@@ -1,4 +1,4 @@
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { Between, Equal, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { PostStatus, UserStatus } from '~/constants/enum';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import UserPostFavorite from '~/domain/databases/entity/UserPostFavorite';
@@ -8,24 +8,42 @@ import { buildOrder, buildQuery } from '~/utils/build_query';
 import { parseTimeToMilliseconds } from '~/utils/time';
 import projectServices from './project.services';
 import { AppDataSource } from '~/app/database';
-
+import Subscription from '~/domain/databases/entity/Subscription ';
+import membership_packageServices from './membership_package.services';
+import { AppError } from '~/models/Error';
 class PostServices {
   postRepository: Repository<RealEstatePost>;
   postFavoriteRepository: Repository<UserPostFavorite>;
   postViewRepository: Repository<UserPostView>;
+  subscriptionRepository: Repository<Subscription>;
   constructor() {
     this.postRepository = AppDataSource.getRepository(RealEstatePost);
     this.postFavoriteRepository = AppDataSource.getRepository(UserPostFavorite);
     this.postViewRepository = AppDataSource.getRepository(UserPostView);
+    this.subscriptionRepository = AppDataSource.getRepository(Subscription);
   }
   async createPost(data: Record<string, any>) {
+    const subscriptionPackage = await membership_packageServices.getCurrentUserSubscriptionPackage(data.user_id);
+    const countPostInMonth = await this.countPostInMonth(data.user_id);
+    const limitPostInMonth = subscriptionPackage ? subscriptionPackage.membership_package.monthly_post_limit : 3;
+    if (countPostInMonth >= limitPostInMonth) {
+      throw new AppError(`You have exceeded the number of posts in the month (${limitPostInMonth} posts).`, 400);
+    }
+    var display_priority_point = 0;
+    var post_approval_priority_point = 0;
+    if (subscriptionPackage) {
+      display_priority_point += subscriptionPackage.membership_package.display_priority_point;
+      post_approval_priority_point += subscriptionPackage.membership_package.post_approval_priority_point;
+      display_priority_point += subscriptionPackage.user.is_identity_verified ? 1 : 0;
+    }
     data = {
       ...data,
       status: PostStatus.pending,
       //expiry_date 14 days from now
       expiry_date: new Date(Date.now() + parseTimeToMilliseconds('14d')),
       is_priority: false,
-      post_approval_priority: false,
+      display_priority_point,
+      post_approval_priority_point,
     };
     const project = data.project;
     if (project) {
@@ -102,7 +120,7 @@ class PostServices {
   async getPostsByQuery(
     postQuery: PostQuery,
     user_id: string | null = null,
-  ): Promise<{ data: RealEstatePost[]; numberOfPages: number; }> {
+  ): Promise<{ data: RealEstatePost[]; numberOfPages: number }> {
     const page = postQuery.page || 1;
     let query = this.postRepository.createQueryBuilder().leftJoinAndSelect('RealEstatePost.user', 'user');
 
@@ -129,7 +147,10 @@ class PostServices {
     query = query.orderBy(postQuery.order);
 
     const total = query.getCount();
-    const data = query.skip((page - 1) * 10).take(10).getMany();
+    const data = query
+      .skip((page - 1) * 10)
+      .take(10)
+      .getMany();
     const result = await Promise.all([total, data]);
     return {
       numberOfPages: Math.ceil(result[0] / 10),
@@ -202,6 +223,20 @@ class PostServices {
         }
         throw err;
       });
+  }
+
+  // Đếm tổng số bài đăng của user trong 1 tháng
+  async countPostInMonth(user_id: string) {
+    const count = await this.postRepository
+      .createQueryBuilder()
+      .where('user_id = :user_id', { user_id })
+      .andWhere({
+        is_active: true,
+      })
+      .andWhere('EXTRACT(MONTH FROM posted_date) = EXTRACT(MONTH FROM CURRENT_TIMESTAMP)')
+      .andWhere('EXTRACT(YEAR FROM posted_date) = EXTRACT(YEAR FROM CURRENT_TIMESTAMP)')
+      .getCount();
+    return count;
   }
 }
 
