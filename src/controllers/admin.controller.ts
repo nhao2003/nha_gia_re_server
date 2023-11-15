@@ -23,7 +23,7 @@ class AdminController {
   public readonly getUnits = wrapRequestHandler(async (req: Request, res: Response) => {
     const baseQuery = buildBaseQuery(req.query);
     const data = await this.UnitsService.getAllByQuery(baseQuery);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_UNIT_INFO_SUCCESSFULLY,
@@ -37,7 +37,7 @@ class AdminController {
       unit_name: req.body.unit_name,
     };
     const unit = await this.UnitsService.create(data);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: 'APP_MESSAGES.SUCCESS_MESSAGE.CREATE_UNIT_SUCCESSFULLY',
@@ -53,7 +53,7 @@ class AdminController {
       data.unit_name = req.body.unit_name;
     }
     const result = await this.UnitsService.update(id, data);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: 'APP_MESSAGES.SUCCESS_MESSAGE.UPDATE_UNIT_SUCCESSFULLY',
@@ -65,7 +65,7 @@ class AdminController {
   public readonly deleteUnit = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await this.UnitsService.markDeleted(id);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: 'APP_MESSAGES.SUCCESS_MESSAGE.DELETE_UNIT_SUCCESSFULLY',
@@ -77,7 +77,7 @@ class AdminController {
   public readonly getPosts = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = PostServices.buildPostQuery(req.query);
     const posts = await PostServices.getPostsByQuery(query, req.user?.id);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.PostCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_POST_SUCCESSFULLY,
@@ -89,17 +89,17 @@ class AdminController {
 
   public readonly approvePost = wrapRequestHandler(async (req: Request, res: Response) => {
     const id = req.post.id;
-    if(req.post.status === 'approved') {
-      const appRes = {
+    if (req.post.status === 'approved') {
+      const appRes: AppResponse = {
         status: 'error',
         code: ServerCodes.AdminCode.PostAlreadyApproved,
-        message: "Post is already approved",
+        message: 'Post is already approved',
         result: null,
       };
       return res.status(400).json(appRes);
     }
     const result = await AdminService.approvePost(id as string);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.APPROVE_POST_SUCCESSFULLY,
@@ -110,9 +110,9 @@ class AdminController {
 
   public readonly rejectPost = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.query;
-    const { reason } = req.body || "Not provided";
+    const { reason } = req.body || 'Not provided';
     const result = await AdminService.rejectPost(id as string, reason);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.REJECT_POST_SUCCESSFULLY,
@@ -122,9 +122,9 @@ class AdminController {
   });
 
   public readonly deletePost = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { id } = req.query
+    const { id } = req.query;
     const result = await AdminService.deletePost(id as string);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.DELETE_POST_SUCCESSFULLY,
@@ -154,7 +154,7 @@ class AdminController {
     const { id } = req.params;
     const { ban_reason, banned_util } = req.body;
     const result = await UserServices.banUser(id, ban_reason, banned_util);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: 'Ban user successfully',
@@ -166,7 +166,7 @@ class AdminController {
   public readonly unbanUser = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await UserServices.unbanUser(id);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: 'Unban user successfully',
@@ -178,7 +178,7 @@ class AdminController {
   public readonly getDevelopers = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = buildBaseQuery(req.query);
     const developers = await this.DeveloperService.getAllByQuery(query);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_DEVELOPER_INFO_SUCCESSFULLY,
@@ -193,7 +193,7 @@ class AdminController {
     const developer = await this.DeveloperService.create(data);
     // return res.json(developer);
 
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.CREATE_POST_SUCCESSFULLY,
@@ -215,7 +215,7 @@ class AdminController {
       data.images = req.body.images;
     }
     const result = await this.DeveloperService.update(id, data);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.UPDATE_POST_SUCCESSFULLY,
@@ -227,7 +227,7 @@ class AdminController {
   public readonly deleteDeveloper = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await this.DeveloperService.markDeleted(id);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: 'Delete developer successfully',
@@ -239,7 +239,7 @@ class AdminController {
   public readonly getPropertyTypes = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = buildBaseQuery(req.query);
     const propertyTypes = await this.PropertyTypeService.getAllByQuery(query);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_PROPERTY_TYPE_INFO_SUCCESSFULLY,
@@ -255,7 +255,7 @@ class AdminController {
     };
     const propertyType = await this.PropertyTypeService.create(data);
 
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.CREATE_PROPERTY_TYPE_SUCCESSFULLY,
@@ -272,7 +272,7 @@ class AdminController {
     }
 
     const result = await this.PropertyTypeService.update(id, data);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.UPDATE_PROPERTY_TYPE_SUCCESSFULLY,
@@ -284,7 +284,7 @@ class AdminController {
   public readonly deletePropertyType = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await this.PropertyTypeService.markDeleted(id);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.DELETE_POST_SUCCESSFULLY,
@@ -296,7 +296,7 @@ class AdminController {
   public readonly getMembershipPackages = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = buildBaseQuery(req.query);
     const membershipPackages = await this.MembershipPackageService.getAllByQuery(query);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_MEMBERSHIP_PACKAGE_INFO_SUCCESSFULLY,
@@ -309,7 +309,7 @@ class AdminController {
     const data = req.body;
     const membershipPackage = await this.MembershipPackageService.create(data);
 
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.CREATE_POST_SUCCESSFULLY,
@@ -322,7 +322,7 @@ class AdminController {
   public readonly deleteMembershipPackage = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await this.MembershipPackageService.markDeleted(id);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.DELETE_MEMBERSHIP_PACKAGE_SUCCESSFULLY,
@@ -334,7 +334,7 @@ class AdminController {
   public readonly getDiscountCodes = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = buildBaseQuery(req.query);
     const discountCodes = await this.DiscountCodeService.getAllByQuery(query);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_MEMBERSHIP_PACKAGE_INFO_SUCCESSFULLY,
@@ -347,7 +347,7 @@ class AdminController {
     const data = req.body;
     const discountCode = await this.DiscountCodeService.create(data);
 
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.CREATE_DISCOUNT_CODE_SUCCESSFULLY,
@@ -360,7 +360,7 @@ class AdminController {
   public readonly deleteDiscountCode = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await this.DiscountCodeService.markDeleted(id);
-    const appRes = {
+    const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.DELETE_DISCOUNT_CODE_SUCCESSFULLY,

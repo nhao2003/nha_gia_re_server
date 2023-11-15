@@ -25,7 +25,7 @@ const handleDevelopmentError = (err: any, res: Response) => {
     error: err,
     message: err.message,
     stack: err.stack
-  });
+  } as any);
 };
 
 const handleProductionError = (err: any, res: Response) => {
@@ -36,13 +36,13 @@ const handleProductionError = (err: any, res: Response) => {
       status: err.status,
       message: err.message,
       details: err.details
-    });
+    } as any);
   } else {
     console.log("PROGRAMMING ERROR");
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
       status: "error",
       message: APP_MESSAGES.INTERNAL_SERVER_ERROR
-    });
+    } as any);
   }
   
 };

@@ -10,6 +10,7 @@ class PaymentController {
       res.status(400).json({
         status: 'fail',
         message: 'Missing required fields',
+        code: 400,
       });
     }
 
@@ -41,7 +42,7 @@ class PaymentController {
     res.status(500).json({
       return_code: 0,
       return_message: 'exception',
-    });
+    } as any);
   });
   public readonly createMiniAppOrder = wrapRequestHandler(async (req: Request, res: Response) => {
     const user_id = req.body.user_id;
@@ -52,7 +53,7 @@ class PaymentController {
       res.status(400).json({
         status: 'fail',
         message: 'Missing required fields',
-      });
+      } as any);
     }
     const result = await paymentServices.subscribePackageByMiniApp({
       user_id,
@@ -87,7 +88,7 @@ class PaymentController {
       res.status(400).json({
         status: 'fail',
         message: 'Missing required fields',
-      });
+      } as any);
     }
     const result = await paymentServices.verifyMiniAppTransaction(data, mac);
     res.status(200).json(result);
@@ -99,7 +100,7 @@ class PaymentController {
       res.status(400).json({
         status: 'fail',
         message: 'Missing required fields',
-      });
+      } as any);
     }
     const result = await paymentServices.getTransaction(id as string);
     const appRessponse: AppResponse = {

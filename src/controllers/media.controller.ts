@@ -38,11 +38,23 @@ class MediaController {
 
         for (const file of uploadedFiles) {
           if (!allowedMimeTypes.includes(file.mimetype)) {
-            return res.status(400).json({ error: 'Invalid file format.' });
+            return res.status(400).json(
+              {
+                code: 400,
+                status: 'fail',
+                message: 'Invalid file type.',
+              }
+            );
           }
           // File size limit is 50MB
           if (file.size > 50 * 1024 * 1024) {
-            return res.status(400).json({ error: 'File size too large.' });
+            return res.status(400).json(
+              {
+                code: 400,
+                status: 'fail',
+                message: 'File size limit exceeded.',
+              }
+            );
           }
           const isImage = file.mimetype.startsWith('image/');
           const subdirectory = isImage ? 'images' : 'videos';
@@ -59,7 +71,14 @@ class MediaController {
         return res.json(appRes);
       });
     } catch (error) {
-      return res.status(500).json({ error: 'Internal server error.' });
+      console.log('error', error);
+      const appRes: AppResponse = {
+        status: 'error',
+        message: 'Error uploading file(s).',
+        code: 500,
+        result: null,
+      };
+      return res.status(500).json(appRes);
     }
   });
 }
