@@ -1,5 +1,5 @@
 import MembershipPackage from '~/domain/databases/entity/MembershipPackage';
-import CommonServices from './common.services';
+import CommonServices from './common.service';
 import { DataSource, Repository } from 'typeorm';
 import Subscription from '~/domain/databases/entity/Subscription ';
 import { User } from '~/domain/databases/entity/User';

@@ -7,10 +7,10 @@ import DiscountCode from '~/domain/databases/entity/DiscountCode';
 import { AppError } from '~/models/Error';
 import ZaloPayOrderResponse from '~/models/Response/ZaloPayOrderResponse';
 import AppConfig from '../constants/configs';
-import SubscriptionServices from './subscription.services';
+import SubscriptionServices from './subscription.service';
 import MiniAppTransactionDataCallback from '~/models/Response/MiniAppTransactionDataCallback';
 import { Service } from 'typedi';
-import ZaloPayServices from './zalopay.services';
+import ZaloPayServices from './zalopay.service';
 
 type OrderMembershipPackageRequest = {
   user_id: string;

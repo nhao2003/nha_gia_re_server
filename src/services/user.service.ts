@@ -2,7 +2,7 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from '~/domain/databases/entity/User';
 import { UserQuery } from '~/models/UserQuery';
 import { buildOrder, buildQuery } from '~/utils/build_query';
-import AuthServices from './auth.services';
+import AuthServices from './auth.service';
 import { AppError } from '~/models/Error';
 import { UserStatus } from '~/constants/enum';
 import { Service } from 'typedi';

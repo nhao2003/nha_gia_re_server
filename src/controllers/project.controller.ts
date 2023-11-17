@@ -1,4 +1,4 @@
-import ProjectServices from '~/services/project.services';
+import ProjectServices from '~/services/project.service';
 import { buildBaseQuery } from '~/utils/build_query';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import ServerCodes from '~/constants/server_codes';

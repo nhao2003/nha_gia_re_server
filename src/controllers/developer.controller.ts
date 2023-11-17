@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import AdminService from '../services/admin.services';
+import AdminService from '../services/admin.service';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';

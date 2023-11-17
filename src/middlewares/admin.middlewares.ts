@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { Repository } from 'typeorm';
 import { AppDataSource } from '~/app/database';
 import { Service } from 'typedi';
-import PostServices from '~/services/post.services';
+import PostServices from '~/services/post.service';
 @Service()
 class AdminValidation {
   private postService: PostServices

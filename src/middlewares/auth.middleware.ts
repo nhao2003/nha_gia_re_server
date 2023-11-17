@@ -10,7 +10,7 @@ import { UserStatus } from '~/constants/enum';
 import ServerCodes from '~/constants/server_codes';
 import { Service } from 'typedi';
 import { User } from '~/domain/databases/entity/User';
-import AuthServices from '~/services/auth.services';
+import AuthServices from '~/services/auth.service';
 import { ParamsValidation } from '~/validations/params_validation';
 
 @Service()

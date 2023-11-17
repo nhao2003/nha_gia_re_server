@@ -1,7 +1,7 @@
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { Request, Response } from 'express';
 import multer from 'multer';
-import MediaServices from '~/services/media.services';
+import MediaServices from '~/services/media.service';
 import AppResponse from '~/models/AppRespone';
 import { Service } from 'typedi';
 

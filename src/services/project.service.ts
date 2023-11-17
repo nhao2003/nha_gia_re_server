@@ -1,5 +1,5 @@
 import { Project } from '~/domain/databases/entity/Project';
-import CommonServices from './common.services';
+import CommonServices from './common.service';
 import PropertyTypeProject from '~/domain/databases/entity/PropertyTypeProject';
 import { DataSource, Repository } from 'typeorm';
 import ProjectScale from '~/domain/databases/entity/ProjectScale';

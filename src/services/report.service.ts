@@ -1,4 +1,4 @@
-import CommonServices from './common.services';
+import CommonServices from './common.service';
 import Report from '../domain/databases/entity/Report';
 import { BaseQuery } from '~/models/PostQuery';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';

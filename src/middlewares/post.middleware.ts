@@ -2,7 +2,7 @@ import { checkSchema } from 'express-validator';
 import { PropertyTypes } from '~/constants/enum';
 import { PropertyFeatures } from '~/domain/typing/Features';
 import Address from '~/domain/typing/address';
-import PostServices from '~/services/post.services';
+import PostServices from '~/services/post.service';
 import { validate } from '~/utils/validation';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { ParamsValidation } from '~/validations/params_validation';

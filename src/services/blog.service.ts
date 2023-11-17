@@ -1,5 +1,5 @@
 import Blog from '~/domain/databases/entity/Blog';
-import CommonServices from './common.services';
+import CommonServices from './common.service';
 import { DataSource, Repository } from 'typeorm';
 import { UserBlogFavorite } from '~/domain/databases/entity/UserBlogFavorite';
 import { Service } from 'typedi';

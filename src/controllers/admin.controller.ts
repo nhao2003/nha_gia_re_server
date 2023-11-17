@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import AdminService from '../services/admin.services';
-import PostServices from '~/services/post.services';
+import AdminService from '../services/admin.service';
+import PostServices from '~/services/post.service';
 import UserServices from '~/services/user.service';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
 import { buildBaseQuery } from '~/utils/build_query';
-import CommonServices from '~/services/common.services';
+import CommonServices from '~/services/common.service';
 import { Unit } from '~/domain/databases/entity/Unit';
 import { Developer } from '~/domain/databases/entity/Developer';
 import { PropertyType } from '~/domain/databases/entity/PropertyType';

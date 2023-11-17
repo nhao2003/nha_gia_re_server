@@ -2,7 +2,7 @@ import { DataSource, MoreThanOrEqual, Repository } from 'typeorm';
 import Subscription from '~/domain/databases/entity/Subscription ';
 import { User } from '~/domain/databases/entity/User';
 import { AppError } from '~/models/Error';
-import CommonServices from './common.services';
+import CommonServices from './common.service';
 import { AppDataSource } from '~/app/database';
 import { Service } from 'typedi';
 

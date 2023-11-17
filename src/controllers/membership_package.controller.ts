@@ -1,6 +1,6 @@
 import { buildBaseQuery } from '~/utils/build_query';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
-import MembershipPackageService from '~/services/membership_package.services';
+import MembershipPackageService from '~/services/membership_package.service';
 import AppResponse from '~/models/AppRespone';
 import { Request, Response } from 'express';
 import HTTP_STATUS from '~/constants/httpStatus';

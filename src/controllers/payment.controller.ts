@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Service } from 'typedi';
 import AppResponse from '~/models/AppRespone';
-import PaymentServices from '~/services/payment.services';
+import PaymentServices from '~/services/payment.service';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 
 @Service()

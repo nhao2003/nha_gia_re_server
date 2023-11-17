@@ -9,7 +9,7 @@ import { verifyPassword } from '~/utils/crypto';
 import { Service } from 'typedi';
 import { User } from '~/domain/databases/entity/User';
 import AppResponse from '~/models/AppRespone';
-import AuthServices from '~/services/auth.services';
+import AuthServices from '~/services/auth.service';
 @Service()
 class AuthController {
   constructor(private authServices: AuthServices) {}

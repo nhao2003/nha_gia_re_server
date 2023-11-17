@@ -1,5 +1,5 @@
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
-import PostServices from '../services/post.services';
+import PostServices from '../services/post.service';
 import { PropertyFeatures } from '~/domain/typing/Features';
 import Address from '~/domain/typing/address';
 import CreatePost from '~/models/Request/CreatePost';

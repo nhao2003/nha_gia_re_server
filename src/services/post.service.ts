@@ -6,10 +6,10 @@ import UserPostView from '~/domain/databases/entity/UserPostView';
 import { PostQuery } from '~/models/PostQuery';
 import { buildOrder, buildQuery } from '~/utils/build_query';
 import { parseTimeToMilliseconds } from '~/utils/time';
-import ProjectServices from './project.services';
+import ProjectServices from './project.service';
 import Subscription from '~/domain/databases/entity/Subscription ';
 import { AppError } from '~/models/Error';
-import MembershipPackageServices from './membership_package.services';
+import MembershipPackageServices from './membership_package.service';
 import { Service } from 'typedi';
 
 @Service()
