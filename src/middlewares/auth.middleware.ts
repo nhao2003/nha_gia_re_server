@@ -5,18 +5,21 @@ import { AppError } from '~/models/Error';
 import { UserPayload, VerifyResult, verifyToken } from '~/utils/jwt';
 import { validate } from '~/utils/validation';
 import { NextFunction, Request, Response } from 'express';
-import { hashPassword, verifyPassword } from '~/utils/crypto';
-import { wrap } from 'module';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { UserStatus } from '~/constants/enum';
-import { User } from '~/domain/databases/entity/User';
-import { Session } from '~/domain/databases/entity/Sesstion';
-import { ParamsValidation } from '~/validations/params_validation';
-import AuthServices from '~/services/auth.services';
 import ServerCodes from '~/constants/server_codes';
+import { Service } from 'typedi';
+import { User } from '~/domain/databases/entity/User';
+import AuthServices from '~/services/auth.services';
+import { ParamsValidation } from '~/validations/params_validation';
 
-export class AuthValidation {
-  public static getUserByTokenIfExist = wrapRequestHandler(
+@Service()
+class AuthValidation {
+  private authServices: AuthServices;
+  constructor(auth: AuthServices) {
+    this.authServices = auth;
+  }
+  public getUserByTokenIfExist = wrapRequestHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const authorization = req.headers.authorization;
       if(!authorization) {
@@ -33,11 +36,11 @@ export class AuthValidation {
       if (result.expired || !result.payload) {
         return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
       }
-      const session = await AuthServices.checkSessionExist((result.payload as UserPayload).session_id);
+      const session = await this.authServices.checkSessionExist((result.payload as UserPayload).session_id);
       if (session === null || session === undefined) {
         return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
       }
-      const user = await AuthServices.checkUserExistByID(session.user_id);
+      const user = await this.authServices.checkUserExistByID(session.user_id);
       if (user === null || user === undefined) {
         return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
       }
@@ -46,9 +49,7 @@ export class AuthValidation {
       next();
     },
   );
-
-
-  public static readonly signUpValidation = [
+  public readonly signUpValidation = [
     validate(
       checkSchema({
         email: ParamsValidation.email,
@@ -68,7 +69,7 @@ export class AuthValidation {
     ),
     async (req: Request, res: Response, next: NextFunction) => {
       const { email, password } = req.body;
-      const user = await AuthServices.checkUserExistByEmail(email);
+      const user = await this.authServices.checkUserExistByEmail(email);
       if (user) {
         return res.status(HTTP_STATUS.CONFLICT).json({
           status: 'error',
@@ -79,7 +80,7 @@ export class AuthValidation {
       next();
     },
   ];
-  public static readonly signInValidation = [
+  public readonly signInValidation = [
     validate(
       checkSchema({
         email: ParamsValidation.email,
@@ -88,7 +89,7 @@ export class AuthValidation {
     ),
     async (req: Request, res: Response, next: NextFunction) => {
       const { email, password } = req.body;
-      const { user, password_is_correct } = await AuthServices.getUserByEmailAndPassword(email, password);
+      const { user, password_is_correct } = await this.authServices.getUserByEmailAndPassword(email, password);
       if (user === null || user === undefined) {
         return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
       }
@@ -98,23 +99,12 @@ export class AuthValidation {
       if (password_is_correct === false) {
         return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
       }
-      if (user.status === UserStatus.banned) {
-        return res.status(HTTP_STATUS.FORBIDDEN).json({
-          status: 'fail',
-          code: 403,
-          message: `You have been banned  ${user.banned_util} because ${user.ban_reason}. Please contact admin for more information`,
-          result: {
-            banned_util: user.banned_util,
-            ban_reason: user.ban_reason,
-          }
-        });
-      }
       req.user = user;
       next();
     },
   ];
 
-  public static readonly acctiveAccountValidation = validate(
+  public readonly acctiveAccountValidation = validate(
     checkSchema({
       email: ParamsValidation.email,
       password: ParamsValidation.password,
@@ -122,13 +112,13 @@ export class AuthValidation {
     }),
   );
 
-  public static readonly resendActivationCodeValidation = validate(
+  public readonly resendActivationCodeValidation = validate(
     checkSchema({
       email: ParamsValidation.email,
     }),
   );
 
-  public static readonly accessTokenValidation = [
+  public readonly accessTokenValidation = [
     validate(
       checkSchema({
         Authorization: {
@@ -153,11 +143,11 @@ export class AuthValidation {
       if (result.expired || !result.payload) {
         return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
       }
-      const session = await AuthServices.checkSessionExist((result.payload as UserPayload).session_id);
+      const session = await this.authServices.checkSessionExist((result.payload as UserPayload).session_id);
       if (session === null || session === undefined) {
         return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
       }
-      const user = await AuthServices.checkUserExistByID(session.user_id);
+      const user = await this.authServices.checkUserExistByID(session.user_id);
       if (user === null || user === undefined) {
         return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
       }
@@ -167,7 +157,7 @@ export class AuthValidation {
     },
   ];
 
-  public static readonly refreshTokenValidation = validate(
+  public refreshTokenValidation = validate(
     checkSchema({
       refresh_token: {
         in: ['body'],
@@ -180,20 +170,20 @@ export class AuthValidation {
     }),
   );
 
-  public static readonly forgotPasswordValidation = validate(
+  public readonly forgotPasswordValidation = validate(
     checkSchema({
       email: ParamsValidation.email,
     }),
   );
 
-  public static readonly verifyRecoveryTokenValidation = validate(
+  public readonly verifyRecoveryTokenValidation = validate(
     checkSchema({
       email: ParamsValidation.email,
       code: ParamsValidation.code,
     }),
   );
 
-  public static readonly resetPasswordValidation = [
+  public readonly resetPasswordValidation = [
     validate(
       checkSchema({
         email: ParamsValidation.email,
@@ -268,7 +258,7 @@ export class AuthValidation {
       // }
       // return next();
       const userRepo = User.getRepository();
-      const user = await userRepo.findOne({ where: { id: (payload as UserPayload).user_id } });
+      const user = await userRepo.findOne({ where: { id: (payload as UserPayload).id } });
       if (user !== null) {
         if (user.status === UserStatus.unverified) {
           return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
@@ -301,3 +291,7 @@ export class AuthValidation {
     }),
   );
 }
+
+export default AuthValidation;
+
+

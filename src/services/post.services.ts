@@ -1,29 +1,35 @@
-import { Between, Equal, MoreThanOrEqual, Not, Repository } from 'typeorm';
-import { PostStatus, UserStatus } from '~/constants/enum';
+import { DataSource, MoreThanOrEqual, Repository } from 'typeorm';
+import { PostStatus } from '~/constants/enum';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import UserPostFavorite from '~/domain/databases/entity/UserPostFavorite';
 import UserPostView from '~/domain/databases/entity/UserPostView';
 import { PostQuery } from '~/models/PostQuery';
 import { buildOrder, buildQuery } from '~/utils/build_query';
 import { parseTimeToMilliseconds } from '~/utils/time';
-import projectServices from './project.services';
-import { AppDataSource } from '~/app/database';
+import ProjectServices from './project.services';
 import Subscription from '~/domain/databases/entity/Subscription ';
-import membership_packageServices from './membership_package.services';
 import { AppError } from '~/models/Error';
+import MembershipPackageServices from './membership_package.services';
+import { Service } from 'typedi';
+
+@Service()
 class PostServices {
   postRepository: Repository<RealEstatePost>;
   postFavoriteRepository: Repository<UserPostFavorite>;
   postViewRepository: Repository<UserPostView>;
   subscriptionRepository: Repository<Subscription>;
-  constructor() {
-    this.postRepository = AppDataSource.getRepository(RealEstatePost);
-    this.postFavoriteRepository = AppDataSource.getRepository(UserPostFavorite);
-    this.postViewRepository = AppDataSource.getRepository(UserPostView);
-    this.subscriptionRepository = AppDataSource.getRepository(Subscription);
+  membershipPackageServices: MembershipPackageServices
+  projectServices: ProjectServices;
+  constructor(dataSource: DataSource ) {
+    this.postRepository = dataSource.getRepository(RealEstatePost);
+    this.postFavoriteRepository = dataSource.getRepository(UserPostFavorite);
+    this.postViewRepository = dataSource.getRepository(UserPostView);
+    this.subscriptionRepository = dataSource.getRepository(Subscription);
+    this.membershipPackageServices = new MembershipPackageServices(dataSource);
+    this.projectServices = new ProjectServices(dataSource);
   }
   async createPost(data: Record<string, any>) {
-    const subscriptionPackage = await membership_packageServices.getCurrentUserSubscriptionPackage(data.user_id);
+    const subscriptionPackage = await this.membershipPackageServices.getCurrentUserSubscriptionPackage(data.user_id);
     const countPostInMonth = await this.countPostInMonth(data.user_id);
     const limitPostInMonth = subscriptionPackage ? subscriptionPackage.membership_package.monthly_post_limit : 3;
     if (countPostInMonth >= limitPostInMonth) {
@@ -47,7 +53,7 @@ class PostServices {
     };
     const project = data.project;
     if (project) {
-      data.project_id = await projectServices.getOrCreateUnverifiedProject(project.id, project.project_name);
+      data.project_id = await this.projectServices.getOrCreateUnverifiedProject(project.id, project.project_name);
     }
     delete data.project;
     await this.postRepository.insert(data);
@@ -55,13 +61,12 @@ class PostServices {
   }
 
   async getPostById(id: any): Promise<RealEstatePost | null> {
-    const post = await this.postRepository.findOne({
-      where: {
-        id,
-        expiry_date: MoreThanOrEqual(new Date()),
-        is_active: true,
-      },
-    });
+    const post = await this.postRepository
+      .createQueryBuilder()
+      .where('id = :id', { id })
+      .andWhere('is_active = :is_active', { is_active: true })
+      .setParameters({ current_user_id: null })
+      .getOne();
     return post;
   }
   async updatePost(id: string, data: any): Promise<any> {
@@ -70,8 +75,8 @@ class PostServices {
     };
     const project = data.project;
     if (project) {
-      data.project_id = await projectServices.getOrCreateUnverifiedProject(project.id, project.project_name);
-      await projectServices.deleteUnverifiedProject(project.id);
+      data.project_id = await this.projectServices.getOrCreateUnverifiedProject(project.id, project.project_name);
+      await this.projectServices.deleteUnverifiedProject(project.id);
     }
     const result = await this.postRepository.update(id, data);
     return result;
@@ -240,4 +245,4 @@ class PostServices {
   }
 }
 
-export default new PostServices();
+export default PostServices;

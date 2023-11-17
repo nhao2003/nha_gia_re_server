@@ -5,10 +5,19 @@ import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
 import { Request, Response } from 'express';
 import AppResponse from '~/models/AppRespone';
+import { Service } from 'typedi';
+
+@Service()
 class ProjectController {
+  private projectServices: ProjectServices;
+
+  constructor(projectServices: ProjectServices) {
+    this.projectServices = projectServices;
+  }
+
   public readonly getProjects = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = buildBaseQuery(req.query);
-    const projects = await ProjectServices.getAllByQuery(query);
+    const projects = await this.projectServices.getAllByQuery(query);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -22,7 +31,7 @@ class ProjectController {
   public readonly createProject = wrapRequestHandler(async (req: Request, res: Response) => {
     //TODO: validate scales and types
     const data = req.body;
-    const project = await ProjectServices.create(data);
+    const project = await this.projectServices.create(data);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -35,7 +44,7 @@ class ProjectController {
   public readonly updateProject = wrapRequestHandler(async (req: Request, res: Response) => {
     const id = req.params.id;
     const data = req.body;
-    const project = await ProjectServices.update(id, data);
+    const project = await this.projectServices.update(id, data);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -47,7 +56,7 @@ class ProjectController {
 
   public readonly deleteProject = wrapRequestHandler(async (req: Request, res: Response) => {
     const id = req.params.id;
-    const project = await ProjectServices.markDeleted(id);
+    const project = await this.projectServices.markDeleted(id);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -58,4 +67,4 @@ class ProjectController {
   });
 }
 
-export default new ProjectController();
+export default ProjectController;

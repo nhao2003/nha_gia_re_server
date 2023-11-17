@@ -2,14 +2,9 @@ import { UploadApiOptions, v2 as cloudinary } from 'cloudinary';
 import ConcurrentQueue from '~/utils/queue';
 import { v4 as uuidv4 } from 'uuid';
 import AppConfig from '../constants/configs';
+import { Service } from 'typedi';
+@Service()
 class MediaServices {
-  private static instance: MediaServices;
-  public static getInstance(): MediaServices {
-    if (!MediaServices.instance) {
-      MediaServices.instance = new MediaServices();
-    }
-    return MediaServices.instance;
-  }
   private queue: ConcurrentQueue;
   constructor() {
     cloudinary.config({
@@ -54,4 +49,4 @@ class MediaServices {
   }
 }
 
-export default MediaServices.getInstance();
+export default MediaServices;

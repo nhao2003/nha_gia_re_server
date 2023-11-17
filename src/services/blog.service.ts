@@ -1,11 +1,13 @@
 import Blog from '~/domain/databases/entity/Blog';
 import CommonServices from './common.services';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UserBlogFavorite } from '~/domain/databases/entity/UserBlogFavorite';
+import { Service } from 'typedi';
 
+@Service()
 class BlogService extends CommonServices {
-  constructor() {
-    super(Blog);
+  constructor(dataSource: DataSource) {
+    super(Blog, dataSource);
   }
 
   async getAllWithFavoriteByQuery(query: any, current_user_id: string | null) {
@@ -33,4 +35,4 @@ class BlogService extends CommonServices {
   }
 }
 
-export default new BlogService();
+export default BlogService;

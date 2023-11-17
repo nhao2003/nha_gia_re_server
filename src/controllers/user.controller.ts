@@ -7,7 +7,15 @@ import { AppError } from '~/models/Error';
 import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
 import AppResponse from '~/models/AppRespone';
+import { Service } from 'typedi';
+@Service()
 class UserController {
+  private userServices: UserServices;
+
+  constructor(userServices: UserServices) {
+    this.userServices = userServices;
+  }
+
   public updateProfile = wrapRequestHandler(async (req: Request, res) => {
     let filteredBody = filterBody(req.body, ['first_name', 'last_name', 'gender', 'address', 'phone', 'dob']);
     const user = req.user;
@@ -18,7 +26,7 @@ class UserController {
         status: UserStatus.verified,
       };
     }
-    await UserServices.updateUserInfo(user!.id, filteredBody);
+    await this.userServices.updateUserInfo(user!.id, filteredBody);
     // res.status(200).json({
     //   message: 'Profile updated successfully.',
     //   data: filteredBody,
@@ -26,14 +34,14 @@ class UserController {
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.UserCode.Success,
-      message: APP_MESSAGES.SUCCESS_MESSAGE.UPDATE_USER_INFO_SUCCESSFULLY
+      message: APP_MESSAGES.SUCCESS_MESSAGE.UPDATE_USER_INFO_SUCCESSFULLY,
     };
     res.status(200).json(appRes);
   });
 
   public getUserProfile = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
     let id = req.params.id === null || req.params.id === undefined ? req.user!.id : req.params.id;
-    const data = await UserServices.getUserInfo(id as string);
+    const data = await this.userServices.getUserInfo(id as string);
     if (data === null || data === undefined) {
       return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
     }
@@ -47,4 +55,4 @@ class UserController {
   });
 }
 
-export default new UserController();
+export default UserController;

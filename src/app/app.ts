@@ -13,50 +13,53 @@ import adminRoutes from '../routes/admin.routes';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import AppResponse from '~/models/AppRespone';
-const app = express();
-app.use(cors());
-app.use((req: Request, res: Response, next) => {
-  res.header({ 'Access-Control-Allow-Origin': '*' });
-  console.log('/***********************/');
-  console.log('Request URL:', req.originalUrl);
-  console.log('Request Time:', new Date().toLocaleString());
-  console.log('Request Type:', req.method);
-  console.log('/***********************/');
+import { Express } from 'express';
 
-  next();
-});
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(express.json());
-app.use(express.static('public'));
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/posts', postRoutes);
-app.use('/api/v1/media', mediaRoutes);
-app.use('/api/v1/admin', adminRoutes);
-app.use('/api/v1/membership-package', membershipPackagenRoutes);
-app.use('/api/v1/reports', reportRoutes);
-app.use('/api/v1/blogs', blogRoutes);
-app.get('/', (req, res) => {
-  User.find()
-    .then((units) => {
-      res.status(200).send(units);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({ error: 'Something went wrong' });
-    });
-});
+export function initApp(): Express {
+  const app = express();
+  app.use(cors());
+  app.use((req: Request, res: Response, next) => {
+    res.header({ 'Access-Control-Allow-Origin': '*' });
+    console.log('/***********************/');
+    console.log('Request URL:', req.originalUrl);
+    console.log('Request Time:', new Date().toLocaleString());
+    console.log('Request Type:', req.method);
+    console.log('/***********************/');
 
-app.all('*', (req: Request, res: Response) => {
-  const appRes: AppResponse = {
-    status: 'fail',
-    code: 404,
-    message: `Can't find ${req.originalUrl} on this server!`,
-  };
-  res.status(404).json(appRes);
-});
+    next();
+  });
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(bodyParser.json());
+  app.use(express.json());
+  app.use(express.static('public'));
+  app.use('/api/v1/auth', authRoutes);
+  app.use('/api/v1/users', userRoutes);
+  app.use('/api/v1/posts', postRoutes);
+  app.use('/api/v1/media', mediaRoutes);
+  app.use('/api/v1/admin', adminRoutes);
+  app.use('/api/v1/membership-package', membershipPackagenRoutes);
+  app.use('/api/v1/reports', reportRoutes);
+  app.use('/api/v1/blogs', blogRoutes);
+  app.get('/', (req, res) => {
+    User.find()
+      .then((units) => {
+        res.status(200).send(units);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({ error: 'Something went wrong' });
+      });
+  });
 
-app.use(errorHandler);
+  app.all('*', (req: Request, res: Response) => {
+    const appRes: AppResponse = {
+      status: 'fail',
+      code: 404,
+      message: `Can't find ${req.originalUrl} on this server!`,
+    };
+    res.status(404).json(appRes);
+  });
 
-export default app;
+  app.use(errorHandler);
+  return app;
+}

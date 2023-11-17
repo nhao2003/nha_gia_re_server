@@ -1,7 +1,12 @@
 import { Router } from 'express';
-import membership_packageController from '~/controllers/membership_package.controller';
-import paymentController from '~/controllers/payment.controller';
+import Membership_packageController from '~/controllers/membership_package.controller';
+import PaymentController from '~/controllers/payment.controller';
+import DependencyInjection from '../di/di';
 const routes = Router();
+
+const membership_packageController =
+  DependencyInjection.get<Membership_packageController>(Membership_packageController);
+const paymentController = DependencyInjection.get<PaymentController>(PaymentController);
 
 routes.get('/', membership_packageController.getMembershipPackages);
 routes.get('/current-subscription', membership_packageController.getCurrentUserMembershipPackage);

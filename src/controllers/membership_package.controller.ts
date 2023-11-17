@@ -1,15 +1,22 @@
 import { buildBaseQuery } from '~/utils/build_query';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import MembershipPackageService from '~/services/membership_package.services';
-import ServerCodes from '~/constants/server_codes';
-import { APP_MESSAGES } from '~/constants/message';
 import AppResponse from '~/models/AppRespone';
 import { Request, Response } from 'express';
 import HTTP_STATUS from '~/constants/httpStatus';
+import { Service } from 'typedi';
+
+@Service()
 class MembershipPackageController {
+  private membershipPackageService: MembershipPackageService;
+
+  constructor(membershipPackageService: MembershipPackageService) {
+    this.membershipPackageService = membershipPackageService;
+  }
+
   public readonly getMembershipPackages = wrapRequestHandler(async (req, res) => {
     const query = buildBaseQuery(req.query);
-    const membershipPackages = await MembershipPackageService.getAllByQuery(query);
+    const membershipPackages = await this.membershipPackageService.getAllByQuery(query);
     const appRes: AppResponse = {
       status: 'success',
       code: 200,
@@ -20,7 +27,7 @@ class MembershipPackageController {
   });
 
   public readonly getMembershipPackageById = wrapRequestHandler(async (req, res) => {
-    const membershipPackage = await MembershipPackageService.getById(req.params.id);
+    const membershipPackage = await this.membershipPackageService.getById(req.params.id);
     const appRes: AppResponse = {
       status: 'success',
       code: 200,
@@ -42,7 +49,7 @@ class MembershipPackageController {
       };
       return res.status(HTTP_STATUS.BAD_REQUEST).json(appRes);
     }
-    const membershipPackage = await MembershipPackageService.getCurrentUserSubscriptionPackage(user_id, email, phone);
+    const membershipPackage = await this.membershipPackageService.getCurrentUserSubscriptionPackage(user_id, email, phone);
     const appRes: AppResponse = {
       status: 'success',
       code: 200,
@@ -67,7 +74,7 @@ class MembershipPackageController {
       };
       return res.status(HTTP_STATUS.BAD_REQUEST).json(appRes);
     }
-    const result = await MembershipPackageService.getUserWithSubscriptionPackage(email, phone, user_id);
+    const result = await this.membershipPackageService.getUserWithSubscriptionPackage(email, phone, user_id);
     const appRes: AppResponse = {
       status: 'success',
       code: 200,
@@ -78,4 +85,4 @@ class MembershipPackageController {
   });
 }
 
-export default new MembershipPackageController();
+export default MembershipPackageController;

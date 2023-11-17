@@ -1,14 +1,16 @@
 import ServerCodes from '~/constants/server_codes';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
-import PostService from '~/services/post.services';
 import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import { Request, Response } from 'express';
 import { Repository } from 'typeorm';
 import { AppDataSource } from '~/app/database';
+import { Service } from 'typedi';
+import PostServices from '~/services/post.services';
+@Service()
 class AdminValidation {
-  private postRepo: Repository<RealEstatePost>;
-  constructor() {
-    this.postRepo = AppDataSource.getRepository(RealEstatePost);
+  private postService: PostServices
+  constructor(postService: PostServices) {
+    this.postService = postService;
   }
   public readonly checkPostExisted = wrapRequestHandler(async (req: Request, res: Response, next) => {
     const { id } = req.query;
@@ -20,12 +22,7 @@ class AdminValidation {
         result: null,
       });
     }
-    const post = await this.postRepo
-      .createQueryBuilder()
-      .where('id = :id', { id })
-      .andWhere('is_active = :is_active', { is_active: true })
-      .setParameters({ current_user_id: null })
-      .getOne();
+    const post = await this.postService.getPostById(id);
     if (!post) {
       return res.status(404).json({
         status: 'error',
@@ -38,4 +35,4 @@ class AdminValidation {
     next();
   });
 }
-export default new AdminValidation();
+export default AdminValidation;

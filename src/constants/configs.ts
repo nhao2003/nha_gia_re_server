@@ -11,6 +11,8 @@ class AppConfig {
   // };
   // Use data production
   public readonly APP_URL = process.env.APP_URL;
+  public readonly SMTP_USERNAME = process.env.SMTP_USERNAME as string;
+  public readonly SMTP_PASSWORD = process.env.SMTP_PASSWORD as string;
   public readonly database = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,

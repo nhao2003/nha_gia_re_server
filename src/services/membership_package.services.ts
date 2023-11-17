@@ -1,17 +1,19 @@
 import MembershipPackage from '~/domain/databases/entity/MembershipPackage';
 import CommonServices from './common.services';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import Subscription from '~/domain/databases/entity/Subscription ';
 import { User } from '~/domain/databases/entity/User';
 import { AppDataSource } from '~/app/database';
+import { Service } from 'typedi';
 
+@Service()
 class MembershipPackageServices extends CommonServices {
   private subscriptionPackageRepository: Repository<Subscription>;
   private userRepository: Repository<User>;
-  constructor() {
-    super(MembershipPackage);
-    this.subscriptionPackageRepository = AppDataSource.getRepository(Subscription);
-    this.userRepository = AppDataSource.getRepository(User);
+  constructor(dataSource: DataSource) {
+    super(MembershipPackage, dataSource);
+    this.subscriptionPackageRepository = dataSource.getRepository(Subscription);
+    this.userRepository = dataSource.getRepository(User);
   }
   public async getCurrentUserSubscriptionPackage(user_id?: string, email?: string, phone?: string) {
     if (!user_id && !email && !phone) return null;
@@ -56,4 +58,4 @@ class MembershipPackageServices extends CommonServices {
   };
 }
 
-export default new MembershipPackageServices();
+export default MembershipPackageServices;

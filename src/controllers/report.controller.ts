@@ -3,11 +3,17 @@ import ReportService from '../services/report.service';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { buildBaseQuery } from '~/utils/build_query';
 import AppResponse from '~/models/AppRespone';
+import { Service } from 'typedi';
+
+@Service()
 class ReportController {
-    
+    private reportService: ReportService;
+    constructor(reportService: ReportService) {
+        this.reportService = reportService;
+    }
     public readonly getAllReport = wrapRequestHandler(async (req: Request, res: Response) => {
         const query = buildBaseQuery(req.query);
-        const reports = await ReportService.getAllByQuery(query);
+        const reports = await this.reportService.getAllByQuery(query);
         const appRes: AppResponse = {
             status: 'success',
             code: 200,
@@ -20,7 +26,7 @@ class ReportController {
 
     public readonly updateReport = wrapRequestHandler(async (req: Request, res: Response) => {
         const { id } = req.params;
-        const report = await ReportService.updateReportStatus(id, req.body.status);
+        const report = await this.reportService.updateReportStatus(id, req.body.status);
         const appRes: AppResponse = {
             status: 'success',
             code: 200,
@@ -31,4 +37,4 @@ class ReportController {
     });
 }
 
-export default new ReportController();
+export default ReportController;

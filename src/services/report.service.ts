@@ -5,9 +5,12 @@ import { RealEstatePost } from '~/domain/databases/entity/RealEstatePost';
 import { User } from '~/domain/databases/entity/User';
 import { AppError } from '~/models/Error';
 import { ReportStatus } from '~/constants/enum';
+import { DataSource } from 'typeorm';
+import { Service } from 'typedi';
+@Service()
 class ReportService extends CommonServices {
-  constructor() {
-    super(Report);
+  constructor(dataSource: DataSource) {
+    super(Report, dataSource);
   }
 
   public async getAllByQuery(query: BaseQuery): Promise<{
@@ -58,7 +61,7 @@ class ReportService extends CommonServices {
     if (!Object.values(ReportStatus).includes(status) || status === ReportStatus.pending) {
       throw new AppError('Status is not valid', 400);
     }
-    if(report.status !== ReportStatus.pending) {
+    if (report.status !== ReportStatus.pending) {
       throw new AppError('Report has been processed', 400);
     }
     if (!report) {
@@ -66,7 +69,7 @@ class ReportService extends CommonServices {
     }
     report.status = status;
     return await this.repository.save(report);
-  }
+  };
 }
 
-export default new ReportService();
+export default ReportService;

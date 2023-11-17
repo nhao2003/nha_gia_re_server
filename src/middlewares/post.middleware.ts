@@ -2,14 +2,22 @@ import { checkSchema } from 'express-validator';
 import { PropertyTypes } from '~/constants/enum';
 import { PropertyFeatures } from '~/domain/typing/Features';
 import Address from '~/domain/typing/address';
-import postServices from '~/services/post.services';
+import PostServices from '~/services/post.services';
 import { validate } from '~/utils/validation';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { ParamsValidation } from '~/validations/params_validation';
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '~/models/Error';
+import { Service } from 'typedi';
+
+@Service()
 class PostValidation {
-  public static createPostValidation = [
+  private postServices: PostServices;
+
+  constructor(postServices: PostServices) {
+    this.postServices = postServices;
+  }
+  public createPostValidation = [
     validate(
       checkSchema({
         type_id: {
@@ -177,7 +185,7 @@ class PostValidation {
     }),
   ];
 
-  public static checkPostExist = [
+  public checkPostExist = [
     validate(
       checkSchema({
         id: {
@@ -193,7 +201,7 @@ class PostValidation {
       }),
     ),
     wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
-      const post = await postServices.checkPostExist(req.params.id);
+      const post = await this.postServices.checkPostExist(req.params.id);
       console.log(post);
       if (post === null || post === undefined) next(new AppError('Post is not exist', 404));
       if (req.user!.id !== post!.user_id) next(new AppError('You are not authorized to perform this action', 403));

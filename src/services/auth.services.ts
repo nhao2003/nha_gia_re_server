@@ -1,12 +1,12 @@
 // import RefreshToken from "~/models/database/RefreshToken";
-import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
-import { AppDataSource } from '~/app/database';
+import { Service } from 'typedi';
+import { DataSource, MoreThanOrEqual, Repository } from 'typeorm';
 import { OTPTypes, UserStatus } from '~/constants/enum';
 import { OTP } from '~/domain/databases/entity/Otp';
 import { Session } from '~/domain/databases/entity/Sesstion';
 import { User } from '~/domain/databases/entity/User';
 import { hashPassword, hashString } from '~/utils/crypto';
-import { UserPayload, VerifyResult, signToken, verifyToken } from '~/utils/jwt';
+import { UserPayload, signToken, verifyToken } from '~/utils/jwt';
 import { parseTimeToMilliseconds } from '~/utils/time';
 
 type SignInResult = {
@@ -15,14 +15,15 @@ type SignInResult = {
   session_id: string;
 };
 
+@Service()
 class AuthServices {
   private userRepository: Repository<User>;
   private otpRepository: Repository<OTP>;
   private sessionRepository: Repository<Session>;
-  constructor() {
-    this.userRepository = AppDataSource.getRepository(User);
-    this.otpRepository = AppDataSource.getRepository(OTP);
-    this.sessionRepository = AppDataSource.getRepository(Session);
+  constructor(dataSource: DataSource) {
+    this.userRepository = dataSource.getRepository(User);
+    this.otpRepository = dataSource.getRepository(OTP);
+    this.sessionRepository = dataSource.getRepository(Session);
   }
 
   /**
@@ -239,4 +240,4 @@ class AuthServices {
   }
 }
 
-export default new AuthServices();
+export default AuthServices;

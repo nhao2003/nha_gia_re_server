@@ -10,7 +10,15 @@ import AppResponse from '~/models/AppRespone';
 import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
 import { Request, Response } from 'express';
+import { Service } from 'typedi';
+
+@Service()
 class PostController {
+  private postServices: PostServices;
+
+  constructor(postServices: PostServices) {
+    this.postServices = postServices;
+  }
   createPost = wrapRequestHandler(async (req: any, res: any) => {
     const data: CreatePost = {
       type_id: req.body.type_id,
@@ -31,7 +39,7 @@ class PostController {
       user_id: req.user.id,
       project: req.body.project,
     };
-    const post = await PostServices.createPost(data);
+    const post = await this.postServices.createPost(data);
 
     const appRes: AppResponse = {
       status: 'success',
@@ -60,7 +68,7 @@ class PostController {
       }),
       project: req.body.project,
     };
-    const updatedPost = await PostServices.updatePost(req.params.id, data);
+    const updatedPost = await this.postServices.updatePost(req.params.id, data);
     // res.status(200).json(updatedPost);
 
     const appRes: AppResponse = {
@@ -77,7 +85,7 @@ class PostController {
     if (post.is_active === false) {
       return next(new AppError('Post is already deleted', 400));
     }
-    await PostServices.deletePost(req.params.id);
+    await this.postServices.deletePost(req.params.id);
     // res.status(200).json({ message: 'Delete success' });
 
     const appRes: AppResponse = {
@@ -89,8 +97,8 @@ class PostController {
   });
 
   getAllPost = wrapRequestHandler(async (req: any, res: any) => {
-    const query = PostServices.buildPostQuery(req.query);
-    const posts = await PostServices.getPostsByQuery(query, req.user?.id);
+    const query = this.postServices.buildPostQuery(req.query);
+    const posts = await this.postServices.getPostsByQuery(query, req.user?.id);
     // return res.json(posts);
     const appRes: AppResponse = {
       status: 'success',
@@ -112,8 +120,8 @@ class PostController {
       'post.is_active[eq]': 'eq:true',
       'user.status[eq]': "'verified'",
     };
-    const postQuery = PostServices.buildPostQuery(query);
-    const { data, numberOfPages } = await PostServices.getPostsByQuery(postQuery, req.user ? req.user.id : null);
+    const postQuery = this.postServices.buildPostQuery(query);
+    const { data, numberOfPages } = await this.postServices.getPostsByQuery(postQuery, req.user ? req.user.id : null);
     let appRes: AppResponse;
 
     if (data.length === 0) {
@@ -137,7 +145,7 @@ class PostController {
   // Mark read post
   markReadPost = wrapRequestHandler(async (req: any, res: any) => {
     const id = req.params.id;
-    const post = await PostServices.markReadPost(id, req.user.id);
+    const post = await this.postServices.markReadPost(id, req.user.id);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.PostCode.Success,
@@ -150,7 +158,7 @@ class PostController {
   // Favorite post
   favoritePost = wrapRequestHandler(async (req: any, res: any) => {
     const id = req.params.id;
-    const post = await PostServices.toggleFavorite(id, req.user.id);
+    const post = await this.postServices.toggleFavorite(id, req.user.id);
 
     if (post === false) {
       const appRes: AppResponse = {
@@ -170,4 +178,4 @@ class PostController {
   });
 }
 
-export default new PostController();
+export default PostController;

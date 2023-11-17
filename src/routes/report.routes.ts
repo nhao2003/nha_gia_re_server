@@ -1,7 +1,8 @@
 import { Router } from "express";
 import ReportController from "../controllers/report.controller";
+import DependencyInjection from '../di/di';
 const router = Router();
-
-router.route('/').get(ReportController.getAllReport);
+const reportController = DependencyInjection.get<ReportController>(ReportController);
+router.route('/').get(reportController.getAllReport);
 
 export default router;

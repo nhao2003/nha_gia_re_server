@@ -1,16 +1,18 @@
 import { Project } from '~/domain/databases/entity/Project';
 import CommonServices from './common.services';
 import PropertyTypeProject from '~/domain/databases/entity/PropertyTypeProject';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import ProjectScale from '~/domain/databases/entity/ProjectScale';
 import { BaseQuery } from '~/models/PostQuery';
 import { AppDataSource } from '~/app/database';
+import { Service } from 'typedi';
 
+@Service()
 class ProjectServices extends CommonServices {
   propertyTypeProjectRepo: Repository<PropertyTypeProject>;
   projectScaleRepo: Repository<ProjectScale>;
-  constructor() {
-    super(Project);
+  constructor(dataSource: DataSource) {
+    super(Project, dataSource);
     this.propertyTypeProjectRepo = AppDataSource.getRepository(PropertyTypeProject);
     this.projectScaleRepo = AppDataSource.getRepository(ProjectScale);
   }
@@ -153,4 +155,4 @@ class ProjectServices extends CommonServices {
     return project.id;
   }
 }
-export default new ProjectServices();
+export default ProjectServices;

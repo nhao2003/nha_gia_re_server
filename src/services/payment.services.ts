@@ -1,17 +1,16 @@
-import { Repository } from 'typeorm';
-import { MoreThanOrEqual } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import MembershipPackage from '~/domain/databases/entity/MembershipPackage';
 import Subscription from '~/domain/databases/entity/Subscription ';
 import { User } from '~/domain/databases/entity/User';
 import Transaction from '~/domain/databases/entity/Transaction';
 import DiscountCode from '~/domain/databases/entity/DiscountCode';
 import { AppError } from '~/models/Error';
-import zalopayServices from './zalopay.services';
 import ZaloPayOrderResponse from '~/models/Response/ZaloPayOrderResponse';
 import AppConfig from '../constants/configs';
-import subscriptionServices from './subscription.services';
+import SubscriptionServices from './subscription.services';
 import MiniAppTransactionDataCallback from '~/models/Response/MiniAppTransactionDataCallback';
-import { AppDataSource } from '~/app/database';
+import { Service } from 'typedi';
+import ZaloPayServices from './zalopay.services';
 
 type OrderMembershipPackageRequest = {
   user_id: string;
@@ -55,23 +54,23 @@ type ZaloPayCallbackResponse = {
   discount_amount: number; // Số tiền giảm giá
 };
 
+@Service()
 class PaymentServices {
   private subcritpionRepository: Repository<Subscription>;
   private userRepository: Repository<User>;
   private membershipPackageRepository: Repository<MembershipPackage>;
   private transactionRepository: Repository<Transaction>;
   private discountCodeRepository: Repository<DiscountCode>;
-
-  constructor() {
-    this.subcritpionRepository = AppDataSource.getRepository(Subscription);
-    // this.userRepository = User.getRepository();
-    // this.membershipPackageRepository = MembershipPackage.getRepository();
-    // this.transactionRepository = Transaction.getRepository();
-    // this.discountCodeRepository = DiscountCode.getRepository();
-    this.userRepository = AppDataSource.getRepository(User);
-    this.membershipPackageRepository = AppDataSource.getRepository(MembershipPackage);
-    this.transactionRepository = AppDataSource.getRepository(Transaction);
-    this.discountCodeRepository = AppDataSource.getRepository(DiscountCode);
+  private zalopayServices: ZaloPayServices;
+  private subscriptionServices: SubscriptionServices;
+  constructor(dataSource: DataSource, zalopayServices: ZaloPayServices) {
+    this.subcritpionRepository = dataSource.getRepository(Subscription);
+    this.userRepository = dataSource.getRepository(User);
+    this.membershipPackageRepository = dataSource.getRepository(MembershipPackage);
+    this.transactionRepository = dataSource.getRepository(Transaction);
+    this.discountCodeRepository = dataSource.getRepository(DiscountCode);
+    this.zalopayServices = zalopayServices;
+    this.subscriptionServices = new SubscriptionServices(dataSource);
   }
 
   //TODO: create subscription
@@ -94,7 +93,7 @@ class PaymentServices {
     num_of_subscription_month: number;
     discount_code?: string | null;
   }): Promise<OrderMembershipPackageResponse> => {
-    const checkUserHasSubscription = await subscriptionServices.checkUserHasSubscription(orderRequest.user_id);
+    const checkUserHasSubscription = await this.subscriptionServices.checkUserHasSubscription(orderRequest.user_id);
     if (checkUserHasSubscription) {
       throw new AppError('User has subscription', 400);
     }
@@ -115,7 +114,7 @@ class PaymentServices {
     const discount_amount = amount * discount_percent;
     const total_amount = amount - discount_amount;
     const starting_date = new Date();
-    const zalopayResponse: ZaloPayOrderResponse = await zalopayServices.createOrder({
+    const zalopayResponse: ZaloPayOrderResponse = await this.zalopayServices.createOrder({
       app_user: user_id,
       amount: total_amount,
       item: [membershipPackage],
@@ -168,7 +167,7 @@ class PaymentServices {
     num_of_subscription_month: number;
     discount_code?: string | null;
   }): Promise<OrderMembershipPackagMiniAppeResponse> => {
-    const checkUserHasSubscription = await subscriptionServices.checkUserHasSubscription(orderRequest.user_id);
+    const checkUserHasSubscription = await this.subscriptionServices.checkUserHasSubscription(orderRequest.user_id);
     if (checkUserHasSubscription) {
       throw new AppError('User has subscription', 400);
     }
@@ -225,7 +224,7 @@ class PaymentServices {
   }
 
   public verifyMiniAppTransaction = async (data: MiniAppTransactionDataCallback, mac: string): Promise<any> => {
-    if (!zalopayServices.verifyMiniAppOrderMac(data, mac)) {
+    if (!this.zalopayServices.verifyMiniAppOrderMac(data, mac)) {
       console.log('Invalid mac');
       return {
         returnCode: 3,
@@ -255,7 +254,7 @@ class PaymentServices {
     const date = new Date(data.transTime);
     const starting_date = date;
     const expiration_date = new Date(date.setMonth(date.getMonth() + transaction.num_of_subscription_month));
-    const create = subscriptionServices.createSubscription({
+    const create = await this.subscriptionServices.createSubscription({
       user_id,
       package_id: transaction.package_id,
       starting_date,
@@ -284,7 +283,7 @@ class PaymentServices {
   }): Promise<any> {
     const data = JSON.parse(zaloPayResponse.data);
 
-    if (!zalopayServices.verifyOrderMac(zaloPayResponse.mac, zaloPayResponse.data)) {
+    if (!this.zalopayServices.verifyOrderMac(zaloPayResponse.mac, zaloPayResponse.data)) {
       console.log('Invalid mac');
       return {
         return_code: 3,
@@ -328,7 +327,7 @@ class PaymentServices {
     const expiration_date = new Date(data.server_time);
     expiration_date.setMonth(expiration_date.getMonth() + transaction.num_of_subscription_month);
     console.log(starting_date);
-    await subscriptionServices.createSubscription({
+    await this.subscriptionServices.createSubscription({
       user_id: (data as ZaloPayCallbackResponse).app_user,
       package_id: transaction.package_id,
       starting_date: starting_date,
@@ -356,4 +355,4 @@ class PaymentServices {
     return res;
   }
 }
-export default new PaymentServices();
+export default PaymentServices;

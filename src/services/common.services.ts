@@ -1,4 +1,4 @@
-import { BaseEntity, EntityTarget, getRepository, Repository } from 'typeorm';
+import { BaseEntity, DataSource, EntityTarget, getRepository, Repository } from 'typeorm';
 import { User } from '~/domain/databases/entity/User';
 import { AppDataSource } from '~/app/database';
 import { BaseQuery as BaseQuery } from '~/models/PostQuery';
@@ -6,8 +6,8 @@ import { buildOrder, buildQuery } from '~/utils/build_query';
 import { AppError } from '~/models/Error';
 class CommonServices {
   protected repository: Repository<any>;
-  constructor(entity: EntityTarget<any>) {
-    this.repository = AppDataSource.getRepository(entity);
+  constructor(entity: EntityTarget<any>, dataSource: DataSource) {
+    this.repository = dataSource.getRepository(entity);
   }
 
   public buildBaseQuery(query: Record<string, any>): BaseQuery {

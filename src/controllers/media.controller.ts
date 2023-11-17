@@ -1,12 +1,19 @@
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { Request, Response } from 'express';
 import multer from 'multer';
-import mediaServices from '~/services/media.services';
+import MediaServices from '~/services/media.services';
 import AppResponse from '~/models/AppRespone';
+import { Service } from 'typedi';
 
+@Service()
 class MediaController {
   private multer = multer.memoryStorage();
   private uploadMiddleware = multer({ storage: this.multer });
+  private mediaServices: MediaServices;
+
+  constructor(mediaServices: MediaServices) {
+    this.mediaServices = mediaServices;
+  }
 
   public upload = wrapRequestHandler(async (req: Request, res: Response) => {
     try {
@@ -38,27 +45,23 @@ class MediaController {
 
         for (const file of uploadedFiles) {
           if (!allowedMimeTypes.includes(file.mimetype)) {
-            return res.status(400).json(
-              {
-                code: 400,
-                status: 'fail',
-                message: 'Invalid file type.',
-              }
-            );
+            return res.status(400).json({
+              code: 400,
+              status: 'fail',
+              message: 'Invalid file type.',
+            });
           }
           // File size limit is 50MB
           if (file.size > 50 * 1024 * 1024) {
-            return res.status(400).json(
-              {
-                code: 400,
-                status: 'fail',
-                message: 'File size limit exceeded.',
-              }
-            );
+            return res.status(400).json({
+              code: 400,
+              status: 'fail',
+              message: 'File size limit exceeded.',
+            });
           }
           const isImage = file.mimetype.startsWith('image/');
           const subdirectory = isImage ? 'images' : 'videos';
-          const url = mediaServices.upload(file, subdirectory);
+          const url = this.mediaServices.upload(file, subdirectory);
           fileUrls.push(url);
         }
 
@@ -83,4 +86,4 @@ class MediaController {
   });
 }
 
-export default new MediaController();
+export default MediaController;

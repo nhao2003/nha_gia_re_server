@@ -1,15 +1,18 @@
-import { Repository } from 'typeorm/browser';
+import { DataSource, Repository } from 'typeorm';
 import { User } from '~/domain/databases/entity/User';
 import { UserQuery } from '~/models/UserQuery';
 import { buildOrder, buildQuery } from '~/utils/build_query';
-import { AppDataSource } from '~/app/database';
-import authServices from './auth.services';
+import AuthServices from './auth.services';
 import { AppError } from '~/models/Error';
 import { UserStatus } from '~/constants/enum';
+import { Service } from 'typedi';
+@Service()
 class UserServices {
   private userRepository: Repository<User>;
-  constructor() {
-    this.userRepository = AppDataSource.getRepository(User);
+  private authServices: AuthServices;
+  constructor(dataSource: DataSource, authServices: AuthServices) {
+    this.userRepository = dataSource.getRepository(User);
+    this.authServices = authServices;
   }
   async updateUserInfo(user_id: string, data: any): Promise<boolean> {
     await this.userRepository.update(
@@ -82,7 +85,7 @@ class UserServices {
     user.ban_reason = ban_reason;
     user.banned_util = banned_util;
     const ban = this.userRepository.save(user);
-    const signOutAll = authServices.signOutAll(id);
+    const signOutAll = this.authServices.signOutAll(id);
     await Promise.all([ban, signOutAll]);
   }
 
@@ -101,4 +104,4 @@ class UserServices {
   }
 }
 
-export default new UserServices();
+export default UserServices;

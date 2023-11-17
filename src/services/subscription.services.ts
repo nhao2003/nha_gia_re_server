@@ -1,9 +1,10 @@
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { DataSource, MoreThanOrEqual, Repository } from 'typeorm';
 import Subscription from '~/domain/databases/entity/Subscription ';
 import { User } from '~/domain/databases/entity/User';
 import { AppError } from '~/models/Error';
 import CommonServices from './common.services';
 import { AppDataSource } from '~/app/database';
+import { Service } from 'typedi';
 
 export type CreateSubscription = {
   user_id: string;
@@ -13,12 +14,13 @@ export type CreateSubscription = {
   transaction_id?: string | null;
 };
 
+@Service()
 class SubscriptionService extends CommonServices {
   private subcritpionRepository: Repository<Subscription>;
   private userRepository: Repository<User>;
 
-  constructor() {
-    super(Subscription);
+  constructor(dataSource: DataSource) {
+    super(Subscription, dataSource);
     this.subcritpionRepository = AppDataSource.getRepository(Subscription);
     this.userRepository = AppDataSource.getRepository(User);
   }
@@ -50,4 +52,4 @@ class SubscriptionService extends CommonServices {
     return true;
   }
 }
-export default new SubscriptionService();
+export default SubscriptionService;

@@ -5,8 +5,7 @@ import UserServices from '~/services/user.service';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
-import { buildBaseQuery, buildOrder, buildQuery } from '~/utils/build_query';
-import { BaseQuery } from '~/models/PostQuery';
+import { buildBaseQuery } from '~/utils/build_query';
 import CommonServices from '~/services/common.services';
 import { Unit } from '~/domain/databases/entity/Unit';
 import { Developer } from '~/domain/databases/entity/Developer';
@@ -14,12 +13,30 @@ import { PropertyType } from '~/domain/databases/entity/PropertyType';
 import MembershipPackage from '~/domain/databases/entity/MembershipPackage';
 import DiscountCode from '~/domain/databases/entity/DiscountCode';
 import AppResponse from '~/models/AppRespone';
+import { DataSource } from 'typeorm';
+import { Service } from 'typedi';
+
+@Service()
 class AdminController {
-  private UnitsService = new CommonServices(Unit);
-  private DeveloperService = new CommonServices(Developer);
-  private PropertyTypeService = new CommonServices(PropertyType);
-  private MembershipPackageService = new CommonServices(MembershipPackage);
-  private DiscountCodeService = new CommonServices(DiscountCode);
+  private UnitsService: CommonServices;
+  private DeveloperService: CommonServices;
+  private PropertyTypeService: CommonServices;
+  private MembershipPackageService: CommonServices;
+  private DiscountCodeService: CommonServices;
+  private adminService: AdminService;
+  private userServices: UserServices;
+  private postServices: PostServices;
+  constructor(dataSource: DataSource, adminService: AdminService, userServices: UserServices, postServices: PostServices) {
+    this.UnitsService = new CommonServices(Unit, dataSource);
+    this.DeveloperService = new CommonServices(Developer, dataSource);
+    this.PropertyTypeService = new CommonServices(PropertyType, dataSource);
+    this.MembershipPackageService = new CommonServices(MembershipPackage, dataSource);
+    this.DiscountCodeService = new CommonServices(DiscountCode, dataSource);
+    this.adminService = adminService;
+    this.userServices = userServices;
+    this.postServices = postServices;
+  }
+
   public readonly getUnits = wrapRequestHandler(async (req: Request, res: Response) => {
     const baseQuery = buildBaseQuery(req.query);
     const data = await this.UnitsService.getAllByQuery(baseQuery);
@@ -75,8 +92,8 @@ class AdminController {
   });
 
   public readonly getPosts = wrapRequestHandler(async (req: Request, res: Response) => {
-    const query = PostServices.buildPostQuery(req.query);
-    const posts = await PostServices.getPostsByQuery(query, req.user?.id);
+    const query = this.postServices.buildPostQuery(req.query);
+    const posts = await this.postServices.getPostsByQuery(query, req.user?.id);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.PostCode.Success,
@@ -98,7 +115,7 @@ class AdminController {
       };
       return res.status(400).json(appRes);
     }
-    const result = await AdminService.approvePost(id as string);
+    const result = await this.adminService.approvePost(id as string);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -111,7 +128,7 @@ class AdminController {
   public readonly rejectPost = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.query;
     const { reason } = req.body || 'Not provided';
-    const result = await AdminService.rejectPost(id as string, reason);
+    const result = await this.adminService.rejectPost(id as string, reason);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -123,7 +140,7 @@ class AdminController {
 
   public readonly deletePost = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.query;
-    const result = await AdminService.deletePost(id as string);
+    const result = await this.adminService.deletePost(id as string);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -135,8 +152,8 @@ class AdminController {
   });
 
   public readonly getUsers = wrapRequestHandler(async (req: Request, res: Response) => {
-    const query = UserServices.buildUserQuery(req.query);
-    const users = await UserServices.getUserByQuery(query);
+    const query = this.userServices.buildUserQuery(req.query);
+    const users = await this.userServices.getUserByQuery(query);
     // return res.json(users);
 
     const appRes: AppResponse = {
@@ -153,7 +170,7 @@ class AdminController {
   public readonly banUser = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { ban_reason, banned_util } = req.body;
-    const result = await UserServices.banUser(id, ban_reason, banned_util);
+    const result = await this.userServices.banUser(id, ban_reason, banned_util);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -165,7 +182,7 @@ class AdminController {
 
   public readonly unbanUser = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await UserServices.unbanUser(id);
+    const result = await this.userServices.unbanUser(id);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -370,4 +387,4 @@ class AdminController {
   });
 }
 
-export default new AdminController();
+export default AdminController;

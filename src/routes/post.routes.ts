@@ -1,26 +1,30 @@
 import { Router } from 'express';
-import { AuthValidation } from '~/middlewares/auth.middleware';
-import { UserValidation } from '~/middlewares/user.middlware';
 import PostController from '~/controllers/post.controller';
 import { PostValidation } from '~/middlewares/post.middleware';
+import DependencyInjection from '../di/di';
+import AuthValidation from '~/middlewares/auth.middleware';
 const router = Router();
+
+const postController = DependencyInjection.get<PostController>(PostController);
+const postValidation = DependencyInjection.get<PostValidation>(PostValidation);
+const authValidation = DependencyInjection.get<AuthValidation>(AuthValidation);
 
 // Create a post
 router
   .route('/create')
-  .post(AuthValidation.accessTokenValidation, PostValidation.createPostValidation, PostController.createPost);
+  .post(authValidation.accessTokenValidation, postValidation.createPostValidation, postController.createPost);
 router
   .route('/:id')
-  .get(AuthValidation.getUserByTokenIfExist, PostController.getPostById)
-  .patch(AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.updatePost)
-  .delete(AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.deletePost);
+  .get(authValidation.getUserByTokenIfExist, postController.getPostById)
+  .patch(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.updatePost)
+  .delete(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.deletePost);
 
 //Mark read post
 router
   .route('/mark-read/:id')
-  .put(AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.markReadPost);
+  .put(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.markReadPost);
 router
   .route('/favorite/:id')
-  .put( AuthValidation.accessTokenValidation, PostValidation.checkPostExist, PostController.favoritePost);
-router.route('/').get(AuthValidation.getUserByTokenIfExist,PostController.getAllPost);
+  .put(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.favoritePost);
+router.route('/').get(authValidation.getUserByTokenIfExist, postController.getAllPost);
 export default router;

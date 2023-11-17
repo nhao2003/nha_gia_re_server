@@ -1,58 +1,68 @@
 import { Router } from 'express';
 
 import AdminController from '~/controllers/admin.controller';
-import projectController from '~/controllers/project.controller';
-import reportController from '~/controllers/report.controller';
-import { AuthValidation } from '~/middlewares/auth.middleware';
+import AuthValidation from '~/middlewares/auth.middleware';
 import AdminValidation from '~/middlewares/admin.middlewares';
-import blogController from '~/controllers/blog.controller';
+import DependencyInjection from '~/di/di';
+import ProjectController from '~/controllers/project.controller';
+import BlogController from '~/controllers/blog.controller';
+import ReportController from '~/controllers/report.controller';
 const router = Router();
-router.route('/posts').get(AdminController.getPosts);
-router.route('/posts/approve').post(AdminValidation.checkPostExisted, AdminController.approvePost);
-router.route('/posts/reject').post(AdminValidation.checkPostExisted, AdminController.rejectPost);
-router.route('/posts/delete').patch(AdminValidation.checkPostExisted, AdminController.deletePost);
+const adminController = DependencyInjection.get<AdminController>(AdminController);
+const adminValidation = DependencyInjection.get<AdminValidation>(AdminValidation);
+const projectController = DependencyInjection.get<ProjectController>(ProjectController);
+const blogController = DependencyInjection.get<BlogController>(BlogController);
+const reportController = DependencyInjection.get<ReportController>(ReportController);
+router.route('/posts').get(adminController.getPosts);
+router.route('/posts/approve').post(adminValidation.checkPostExisted, adminController.approvePost);
+router.route('/posts/reject').post(adminValidation.checkPostExisted, adminController.rejectPost);
+router.route('/posts/delete').patch(adminValidation.checkPostExisted, adminController.deletePost);
 
-router.route('/users').get(AdminController.getUsers);
-router.route('/users/:id/ban').patch(AdminController.banUser);
-router.route('/users/:id/unban').patch(AdminController.unbanUser);
+router.route('/users').get(adminController.getUsers);
+router.route('/users/:id/ban').patch(adminController.banUser);
+router.route('/users/:id/unban').patch(adminController.unbanUser);
 
-router.route('/developers').get(AdminController.getDevelopers).post(AdminController.createDeveloper);
-router.route('/developers/:id').patch(AdminController.updateDeveloper).delete(AdminController.deleteDeveloper);
+router.route('/developers').get(adminController.getDevelopers).post(adminController.createDeveloper);
+router.route('/developers/:id').patch(adminController.updateDeveloper).delete(adminController.deleteDeveloper);
 
 // Units
-router.route('/units').get(AdminController.getUnits).post(AdminController.createUnit);
-router.route('/units/:id').patch(AdminController.updateUnit).delete(AdminController.deleteUnit);
+router.route('/units').get(adminController.getUnits).post(adminController.createUnit);
+router.route('/units/:id').patch(adminController.updateUnit).delete(adminController.deleteUnit);
 
 //PropertyTypes
-router.route('/property-types').get(AdminController.getPropertyTypes).post(AdminController.createPropertyType);
+router.route('/property-types').get(adminController.getPropertyTypes).post(adminController.createPropertyType);
 router
   .route('/property-types/:id')
-  .patch(AdminController.updatePropertyType)
-  .delete(AdminController.deletePropertyType);
+  .patch(adminController.updatePropertyType)
+  .delete(adminController.deletePropertyType);
 
 //Projects
 // router.route('/projects').get(projectController.getProjects).post(projectController.createProject);
 
 // router.route('/projects/:id').patch(projectController.updateProject);
 
-router.route('/projects').get(projectController.getProjects).post(projectController.createProject).delete(projectController.deleteProject);
+router
+  .route('/projects')
+  .get(projectController.getProjects)
+  .post(projectController.createProject)
+  .delete(projectController.deleteProject);
 
 // MembemshipPackages
 router
   .route('/membership-packages')
-  .get(AdminController.getMembershipPackages)
-  .post(AdminController.createMembershipPackage);
+  .get(adminController.getMembershipPackages)
+  .post(adminController.createMembershipPackage);
 router
   .route('/membership-packages/:id')
   // .patch(AdminController.updateMembershipPackage)
-  .delete(AdminController.deleteMembershipPackage);
+  .delete(adminController.deleteMembershipPackage);
 
 // Discount Codes
-router.route('/discount-codes').get(AdminController.getDiscountCodes).post(AdminController.createDiscountCode);
+router.route('/discount-codes').get(adminController.getDiscountCodes).post(adminController.createDiscountCode);
 router
   .route('/discount-codes/:id')
   // .patch(AdminController.updateDiscountCode)
-  .delete(AdminController.deleteDiscountCode);
+  .delete(adminController.deleteDiscountCode);
 
 // Get all reports
 router.route('/reports').get(reportController.getAllReport);
