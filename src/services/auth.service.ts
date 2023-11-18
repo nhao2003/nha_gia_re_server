@@ -8,6 +8,7 @@ import { User } from '~/domain/databases/entity/User';
 import { hashPassword, hashString } from '~/utils/crypto';
 import { UserPayload, signToken, verifyToken } from '~/utils/jwt';
 import { parseTimeToMilliseconds } from '~/utils/time';
+import MailService from './mail.service';
 
 type SignInResult = {
   access_token: string;
@@ -20,10 +21,12 @@ class AuthServices {
   private userRepository: Repository<User>;
   private otpRepository: Repository<OTP>;
   private sessionRepository: Repository<Session>;
-  constructor(dataSource: DataSource) {
+  private mailService: MailService;
+  constructor(dataSource: DataSource, mailService: MailService) {
     this.userRepository = dataSource.getRepository(User);
     this.otpRepository = dataSource.getRepository(OTP);
     this.sessionRepository = dataSource.getRepository(Session);
+    this.mailService = mailService;
   }
 
   /**
@@ -81,6 +84,7 @@ class AuthServices {
     const user = await this.userRepository.insert({ email, password: hashPassword(password) });
     const user_id = user.identifiers[0].id;
     const otp_code = await this.generateOTPCode(OTPTypes.account_activation, user_id);
+    await this.mailService.sendConfirmationEmail(email, otp_code);
     return otp_code;
   }
 
@@ -93,6 +97,7 @@ class AuthServices {
     }
 
     const otp_code = await this.generateOTPCode(OTPTypes.account_activation, user.id);
+    await this.mailService.sendConfirmationEmail(email, otp_code);
     return otp_code;
   }
 
@@ -167,7 +172,11 @@ class AuthServices {
     return user;
   }
   async checkUserExistByID(id: string): Promise<User | null> {
-    const user = await this.userRepository.createQueryBuilder().where('id = :id', { id }).addSelect('User.password').getOne();
+    const user = await this.userRepository
+      .createQueryBuilder()
+      .where('id = :id', { id })
+      .addSelect('User.password')
+      .getOne();
     return user;
   }
 
@@ -224,6 +233,7 @@ class AuthServices {
     const user = await this.userRepository.findOne({ where: { email } });
     if (user) {
       const otp_code = await this.generateOTPCode(OTPTypes.password_recovery, user.id);
+      await this.mailService.sendRecoveryPasswordEmail(email, otp_code)
       return otp_code;
     } else {
       return null;

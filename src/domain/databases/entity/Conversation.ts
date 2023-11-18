@@ -18,11 +18,11 @@ class Conversation extends BaseEntity implements IConversation {
   @Column({ type: PostgresDataType.boolean, default: 'true' })
   is_active!: boolean;
 
-  @OneToMany(() => Participant, participant => participant.conversation)
+  @OneToMany(() => Participant, participant => participant.conversation, { cascade: true })
   @JoinColumn({ name: 'id' })
   participants!: Participant[];
 
-  @OneToMany(() => Message, message => message.conversation)
+  @OneToMany(() => Message, message => message.conversation, { cascade: true })
   @JoinColumn({ name: 'id' })
   messages!: Message[];
 }

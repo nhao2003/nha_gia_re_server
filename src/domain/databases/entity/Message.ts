@@ -3,6 +3,7 @@ import IMessage from "../interfaces/IMessage";
 import { PostgresDataType } from '../constants/database_constants';
 import Conversation from "./Conversation";
 import Participant from "./Participant";
+import { MessageTypes } from "~/constants/enum";
 
 @Entity('messages')
  class Message extends BaseEntity implements IMessage {
@@ -15,8 +16,8 @@ import Participant from "./Participant";
   @Column(PostgresDataType.uuid)
     sender_id!: string;
 
-  @Column({type: PostgresDataType.varchar, length: 50})
-    content_type!: string;
+  @Column({type: PostgresDataType.varchar, length: 50, enum: Object.values(MessageTypes)})
+    content_type!: MessageTypes;
 
   @Column('jsonb')
   content: any;

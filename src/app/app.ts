@@ -6,6 +6,7 @@ import blogRoutes from '../routes/blog.routes';
 import membershipPackagenRoutes from '../routes/membership_package.routes';
 import mediaRoutes from '../routes/media.routes';
 import reportRoutes from '../routes/report.routes';
+import conversationRoutes from '../routes/conversation.routes';
 import { Request, Response } from 'express';
 import { User } from '~/domain/databases/entity/User';
 import { errorHandler } from '~/middlewares/error.middleware';
@@ -25,7 +26,6 @@ export function initApp(): Express {
     console.log('Request Time:', new Date().toLocaleString());
     console.log('Request Type:', req.method);
     console.log('/***********************/');
-
     next();
   });
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -40,6 +40,7 @@ export function initApp(): Express {
   app.use('/api/v1/membership-package', membershipPackagenRoutes);
   app.use('/api/v1/reports', reportRoutes);
   app.use('/api/v1/blogs', blogRoutes);
+  app.use('/api/v1/conversations', conversationRoutes);
   app.get('/', (req, res) => {
     User.find()
       .then((units) => {
