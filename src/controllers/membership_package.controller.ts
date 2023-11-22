@@ -21,7 +21,8 @@ class MembershipPackageController {
       status: 'success',
       code: 200,
       message: 'Get membership packages successfully',
-      result: membershipPackages,
+      num_of_pages: membershipPackages.num_of_pages,
+      result: membershipPackages.data,
     };
     res.status(200).json(appRes);
   });

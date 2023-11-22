@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.io Client Test</title>
+    <!-- Include the Socket.io client library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+  </head>
+  <body>
+    <h1>Socket.io Client Test</h1>
+
+    <div>
+      <label for="conversationId">Enter Conversation ID:</label>
+      <input type="text" id="conversationId" />
+      <button onclick="connectToConversation()">Connect to Conversation</button>
+    </div>
+
+    <div>
+      <label for="messageContent">Enter Message Content:</label>
+      <input type="text" id="messageContent" />
+      <button onclick="sendMessage()">Send Message</button>
+    </div>
+
+    <div id="messages"></div>
+
+    <script>
+      const conversationIdInput = document.getElementById('conversationId');
+      const messageContentInput = document.getElementById('messageContent');
+      const messagesDiv = document.getElementById('messages');
+
+      // Connect to the '/messages' namespace
+      const socket = io('/messages');
+
+      socket.on('messages', (messages) => {
+        // Display received messages
+        messagesDiv.innerHTML = messages.map((message) => `<p>${message.content}</p>`).join('');
+      });
+
+      function connectToConversation() {
+        const conversationId = conversationIdInput.value.trim();
+
+        if (conversationId) {
+          // Connect to the specified conversation
+          socket.emit('connectToConversation', { conversation_id: conversationId });
+        } else {
+          alert('Please enter a Conversation ID');
+        }
+      }
+
+      function sendMessage() {
+        const content = messageContentInput.value.trim();
+
+        if (content) {
+          // Send a message to the connected conversation
+          socket.emit('message', { content: content });
+        } else {
+          alert('Please enter a message');
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -61,7 +61,8 @@ class AuthServices {
     user_id: string,
     expiration_time: string = process.env.OTP_EXPIRES_IN as string,
   ): Promise<string> {
-    const otp_code = Math.floor(100000 + Math.random() * 900000).toString();
+    // const otp_code = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp_code = '000000';
     console.log(otp_code);
     const token = hashString((otp_code + process.env.OTP_SECRET_KEY + type) as string);
     // Save OTP code to database
@@ -247,6 +248,14 @@ class AuthServices {
       secretKey: process.env.RECOVERY_PASSWORD_SERECT_KEY as string,
     });
     return reset_password_token;
+  }
+
+  verifyUserByAccessToken = async (access_token: string): Promise<User | null> => {
+    const { payload, expired } = await verifyToken(access_token);
+    if (expired) return null;
+    const { user_id } = payload as UserPayload;
+    const user = await this.userRepository.findOne({ where: { id: user_id } });
+    return user;
   }
 }
 

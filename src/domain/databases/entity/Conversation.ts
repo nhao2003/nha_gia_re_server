@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, BaseEntity, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, BaseEntity, OneToMany, JoinColumn, OneToOne } from 'typeorm';
 import { PostgresDataType } from '../constants/database_constants';
 import IConversation from '../interfaces/IConversation';
 import Participant from './Participant';
 import Message from './Message';
+import { User } from './User';
 
 @Entity('conversations')
 class Conversation extends BaseEntity implements IConversation {
@@ -25,6 +26,10 @@ class Conversation extends BaseEntity implements IConversation {
   @OneToMany(() => Message, message => message.conversation, { cascade: true })
   @JoinColumn({ name: 'id' })
   messages!: Message[];
+
+  users: User[] | null = null;
+
+  last_message: Message | null = null;
 }
 
 export default Conversation;

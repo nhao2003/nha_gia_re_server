@@ -5,6 +5,9 @@ import Message from '~/domain/databases/entity/Message';
 import Conversation from '~/domain/databases/entity/Conversation';
 import e from 'express';
 import { MessageTypes } from '~/constants/enum';
+import { User } from '~/domain/databases/entity/User';
+import { AppError } from '~/models/Error';
+import { bool } from 'yup';
 
 @Service()
 class ConversationService {
@@ -25,7 +28,8 @@ class ConversationService {
     otherParticipant.user_id = other_user_id;
     otherParticipant.conversation_id = conversation.id;
     conversation.participants = [participant, otherParticipant];
-    return await this.conversationRepository.save(conversation);
+    const res = await this.conversationRepository.save(conversation);
+    return this.getConversationById(res.id);
   };
 
   public async getConversationByUserIdAndOtherUserId(user_id: string, other_user_id: string) {
@@ -33,8 +37,9 @@ class ConversationService {
       .createQueryBuilder('conversation')
       .innerJoinAndSelect('conversation.participants', 'participant')
       .leftJoinAndSelect('conversation.messages', 'message')
-      .where('participant.user_id = :user_id', { user_id })
-      .andWhere('conversation.id IN (SELECT conversation_id FROM participants WHERE user_id = :other_user_id)', {
+      .leftJoinAndMapMany('conversation.users', User, 'user', 'user.id = participant.user_id')
+      .where('conversation.id IN (SELECT A.conversation_id FROM participants A JOIN participants B ON A.conversation_id = B.conversation_id WHERE A.user_id = :user_id AND B.user_id = :other_user_id)', {
+        user_id,
         other_user_id,
       })
       .getOne();
@@ -46,6 +51,7 @@ class ConversationService {
       .createQueryBuilder('conversation')
       .innerJoinAndSelect('conversation.participants', 'participant')
       .leftJoinAndSelect('conversation.messages', 'message')
+      .leftJoinAndMapMany('conversation.users', User, 'user', 'user.id = participant.user_id')
       .where('participant.user_id = :user_id', { user_id })
       .andWhere('conversation.id = :conversation_id', { conversation_id })
       .getOne();
@@ -55,19 +61,25 @@ class ConversationService {
   public async getConversations(user_id: string) {
     const conversations = await this.conversationRepository
       .createQueryBuilder('conversation')
-      .innerJoinAndSelect('conversation.participants', 'participant')
-      .leftJoinAndSelect('conversation.messages', 'message')
-      .where('participant.user_id = :user_id', { user_id })
+      .where('conversation.id IN (SELECT conversation_id FROM participants WHERE user_id = :user_id)', { user_id })
+      .leftJoinAndSelect('conversation.participants', 'participant')
+      .leftJoinAndMapOne('conversation.last_message', Message, 'message', 'message.id = conversation.last_messsage_id')
+      .leftJoinAndMapMany('conversation.users', User, 'user', 'user.id = participant.user_id')
       .getMany();
     return conversations;
   }
 
   public async getOrCreateConversation(user_id: string, other_user_id: string) {
+    let isExist: boolean = true;
     let conversation = await this.getConversationByUserIdAndOtherUserId(user_id, other_user_id);
     if (!conversation) {
       conversation = await this.createConversation(user_id, other_user_id);
+      isExist = false;
     }
-    return conversation;
+    return {
+      conversation,
+      isExist,
+    };
   }
 
   public async deleteConversation(user_id: string, other_user_id: string) {
@@ -86,6 +98,7 @@ class ConversationService {
       .createQueryBuilder()
       .leftJoinAndSelect('Conversation.participants', 'participant')
       .leftJoinAndSelect('Conversation.messages', 'message')
+      .leftJoinAndMapMany('Conversation.users', User, 'user', 'user.id = participant.user_id')
       .where('Conversation.id = :conversation_id', { conversation_id })
       .getOne();
     return conversation;
@@ -101,6 +114,15 @@ class ConversationService {
     };
     return await this.messageRepository.save(message);
   };
+
+  public async getMessages(conversation_id: string):Promise<Message[]> {
+    const messages = await this.messageRepository
+      .createQueryBuilder('message')
+      .where('message.conversation_id = :conversation_id', { conversation_id })
+      .orderBy('message.sent_at', 'DESC')
+      .getMany();
+    return messages;
+  }
 }
 
 export default ConversationService;
