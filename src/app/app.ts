@@ -17,6 +17,7 @@ import AppResponse from '~/models/AppRespone';
 import { Express } from 'express';
 
 export function initApp(): Express {
+  console.log('Environment:', process.env.NODE_ENV);
   const app = express();
   app.use(cors());
   app.use((req: Request, res: Response, next) => {
