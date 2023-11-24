@@ -75,10 +75,13 @@ class CommonServices {
     return await this.repository.save(data);
   }
 
-  public async update(id: string, data: Record<string, any>) {
+  public async update(id: string, data: Record<string, any>) : Promise<any> {
     delete data.is_active;
+    const value = await this.repository.findOne({ where: { id: id, is_active: true } });
+    if (value === undefined || value === null) {
+      throw new AppError('Not found', 404);
+    }
     await this.repository.update(id, data);
-    return id;
   }
 }
 

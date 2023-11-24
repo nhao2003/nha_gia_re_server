@@ -8,6 +8,7 @@ interface IDiscountCode {
   description: string;
   created_at: Date;
   limited_quantity: number | null;
+  min_subscription_months: number;
   is_active: boolean;
 }
 export default IDiscountCode;

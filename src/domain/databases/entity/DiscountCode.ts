@@ -31,6 +31,10 @@ class DiscountCode extends BaseEntity implements IDiscountCode {
 
     @Column({ type: PostgresDataType.integer, nullable: true})
     limited_quantity!: number | null;
+
+    @Column({ type: PostgresDataType.integer, default: 1})
+    min_subscription_months!: number;
+
   
     @Column({ type: PostgresDataType.boolean, default: 'true'})
     is_active!: boolean;

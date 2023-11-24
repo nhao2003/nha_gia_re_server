@@ -54,14 +54,14 @@ router
   .post(adminController.createMembershipPackage);
 router
   .route('/membership-packages/:id')
-  // .patch(AdminController.updateMembershipPackage)
+  .patch(adminController.updateMembershipPackage)
   .delete(adminController.deleteMembershipPackage);
 
 // Discount Codes
 router.route('/discount-codes').get(adminController.getDiscountCodes).post(adminController.createDiscountCode);
 router
   .route('/discount-codes/:id')
-  // .patch(AdminController.updateDiscountCode)
+  .get(adminController.getDiscountCodeById)
   .delete(adminController.deleteDiscountCode);
 
 // Get all reports

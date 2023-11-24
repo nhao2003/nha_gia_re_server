@@ -15,14 +15,16 @@ import DiscountCode from '~/domain/databases/entity/DiscountCode';
 import AppResponse from '~/models/AppRespone';
 import { DataSource } from 'typeorm';
 import { Service } from 'typedi';
+import MembershipPackageServices from '~/services/membership_package.service';
+import { DiscountCodeService } from '~/services/discount_code.service';
 
 @Service()
 class AdminController {
   private UnitsService: CommonServices;
   private DeveloperService: CommonServices;
   private PropertyTypeService: CommonServices;
-  private MembershipPackageService: CommonServices;
-  private DiscountCodeService: CommonServices;
+  private membershipPackageService: MembershipPackageServices;
+  private discountCodeService: DiscountCodeService;
   private adminService: AdminService;
   private userServices: UserServices;
   private postServices: PostServices;
@@ -30,8 +32,8 @@ class AdminController {
     this.UnitsService = new CommonServices(Unit, dataSource);
     this.DeveloperService = new CommonServices(Developer, dataSource);
     this.PropertyTypeService = new CommonServices(PropertyType, dataSource);
-    this.MembershipPackageService = new CommonServices(MembershipPackage, dataSource);
-    this.DiscountCodeService = new CommonServices(DiscountCode, dataSource);
+    this.membershipPackageService = new MembershipPackageServices(dataSource);
+    this.discountCodeService = new DiscountCodeService(dataSource);
     this.adminService = adminService;
     this.userServices = userServices;
     this.postServices = postServices;
@@ -312,20 +314,20 @@ class AdminController {
 
   public readonly getMembershipPackages = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = buildBaseQuery(req.query);
-    const membershipPackages = await this.MembershipPackageService.getAllByQuery(query);
+    const membershipPackages = await this.membershipPackageService.getAllByQuery(query);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.GET_MEMBERSHIP_PACKAGE_INFO_SUCCESSFULLY,
-      result: membershipPackages,
+      num_of_pages: membershipPackages.num_of_pages,
+      result: membershipPackages.data,
     };
     res.status(200).json(appRes);
   });
 
   public readonly createMembershipPackage = wrapRequestHandler(async (req: Request, res: Response) => {
     const data = req.body;
-    const membershipPackage = await this.MembershipPackageService.create(data);
-
+    const membershipPackage = await this.membershipPackageService.create(data);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -335,10 +337,22 @@ class AdminController {
     res.status(200).json(appRes);
   });
 
+  public readonly updateMembershipPackage = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await this.membershipPackageService.update(id, req.body);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: "Update membership package successfully",
+      result: result,
+    };
+    res.status(200).json(appRes);
+  });
+
   // Delete membership package
   public readonly deleteMembershipPackage = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await this.MembershipPackageService.markDeleted(id);
+    const result = await this.membershipPackageService.markDeleted(id);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -350,20 +364,20 @@ class AdminController {
 
   public readonly getDiscountCodes = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = buildBaseQuery(req.query);
-    const discountCodes = await this.DiscountCodeService.getAllByQuery(query);
+    const discountCodes = await this.discountCodeService.getAllByQuery(query);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
-      message: APP_MESSAGES.SUCCESS_MESSAGE.GET_MEMBERSHIP_PACKAGE_INFO_SUCCESSFULLY,
-      result: discountCodes,
+      message: "Get discount code successfully",
+      num_of_pages: discountCodes.num_of_pages,
+      result: discountCodes.data,
     };
     res.status(200).json(appRes);
   });
 
   public readonly createDiscountCode = wrapRequestHandler(async (req: Request, res: Response) => {
     const data = req.body;
-    const discountCode = await this.DiscountCodeService.create(data);
-
+    const discountCode = await this.discountCodeService.create(data);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
@@ -373,10 +387,23 @@ class AdminController {
     res.status(200).json(appRes);
   });
 
+  //Get discount code by id
+  public readonly getDiscountCodeById = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const discountCode = await this.discountCodeService.getById(id);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: "Get discount code successfully",
+      result: discountCode,
+    };
+    res.status(200).json(appRes);
+  });
+
   // Delete discount code
   public readonly deleteDiscountCode = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await this.DiscountCodeService.markDeleted(id);
+    const result = await this.discountCodeService.markDeleted(id);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
