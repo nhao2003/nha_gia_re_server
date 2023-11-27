@@ -5,6 +5,7 @@ import DependencyInjection from '~/di/di';
 import ConversationService from '~/services/conversation.service';
 import { instrument } from '@socket.io/admin-ui';
 import AuthServices from '~/services/auth.service';
+import Conversation from '~/domain/databases/entity/Conversation';
 
 enum SocketEvent {
   Init = 'init',
@@ -38,6 +39,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
   // Conversations namespace
   const chatNamespace = io.of('/conversations');
   chatNamespace.on('connection', async (socket: Socket) => {
+    var conversations: Conversation[] = [];
     const token = getTokenFromSocket(socket);
     if (!token) {
       handleInvalidUserId(socket);
@@ -51,7 +53,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
         return;
       }
       user_id = user.id;
-    } catch (error : any) {
+    } catch (error: any) {
       handleSocketError(socket, error);
       return;
     }
@@ -60,7 +62,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
     console.log(socket.handshake.query);
     socket.join(user_id);
     try {
-      const conversations = await conversationService.getConversations(user_id);
+      conversations = await conversationService.getConversations(user_id);
       console.log(conversations);
       chatNamespace.to(user_id).emit('conversations', {
         type: SocketEvent.Init,
@@ -69,15 +71,13 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
     } catch (error: any) {
       handleSocketError(socket, error);
     }
-    socket.onAny((event, ...args) => {
-      console.log(event, args);
-    });
     socket.on('get_or_create_conversation', async (arg) => {
       console.log('Get_or_create_conversation: ', arg);
       try {
         const other_user_id = arg.other_user_id;
         const { conversation, isExist } = await conversationService.getOrCreateConversation(user_id, other_user_id);
         if (!isExist) {
+          conversations.push(conversation!);
           chatNamespace.to(other_user_id).emit('conversations', {
             type: SocketEvent.New,
             data: conversation,
@@ -96,14 +96,20 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
       const conversation_id = arg ?? null;
       console.log('Init chat: ', conversation_id);
       try {
-        const conversation = await conversationService.getConversationByUserIdAndConversationId(user_id, conversation_id);
+        const conversation = await conversationService.getConversationByUserIdAndConversationId(
+          user_id,
+          conversation_id,
+        );
         if (!conversation) {
           handleInvalidConversation(socket);
           return;
         }
-        socket.join(conversation_id);
-        console.log("Join conversation: ", conversation_id);
-        
+        // Join if haven't joined
+        if (!socket.rooms.has(conversation_id)) {
+          socket.join(conversation_id);
+        }
+        console.log('Join conversation: ', conversation_id);
+
         const messages = await conversationService.getMessages(conversation_id);
         console.log(messages);
         chatNamespace.to(conversation_id).emit('messages', {
@@ -114,20 +120,47 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
       } catch (error: any) {
         console.log(error);
         handleSocketError(socket, error);
-
       }
     });
     socket.on('send_message', async (arg) => {
-      console.log('Send message: ', arg);
       try {
         const content = arg.content;
         const conversation_id = arg.conversation_id;
-        const message = await conversationService.sendMessage(conversation_id, user_id, content);
+        var conversation_param: string | Conversation = conversation_id as string;
+        for (var i = 0; i < conversations.length; i++) {
+          if (conversations[i].id === conversation_id) {
+            conversation_param = conversations[i];
+            break;
+          }
+        }
+        const { conversation, message } = await conversationService.sendMessageToConversation(
+          conversation_param,
+          user_id,
+          content,
+        );
+
+        for (var i = 0; i < conversations.length; i++) {
+          if (conversations[i].id === conversation_id) {
+            conversations[i] = conversation!;
+            break;
+          }
+        }
+        console.log(socket.rooms.keys());
+
         chatNamespace.to(conversation_id).emit('messages', {
           type: SocketEvent.New,
           conversation_id,
           data: message,
         });
+        
+        chatNamespace.to(conversation_id).emit('conversations', {
+          type: SocketEvent.Update,
+          data: conversation,
+        });
+
+        
+      
+
       } catch (error: any) {
         handleSocketError(socket, error);
       }

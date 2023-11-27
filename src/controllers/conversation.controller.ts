@@ -63,7 +63,7 @@ class ConversationController {
 
   public sendMessage = wrapRequestHandler(async (req: Request, res: Response) => {
     const { user_id, conversation_id, content } = req.body;
-    const message = await this.conversationService.sendMessage(conversation_id, user_id, content);
+    const message = await this.conversationService.sendMessageToConversation(conversation_id, user_id, content);
     const appResponse: AppResponse = {
       status: 'success',
       code: 200,

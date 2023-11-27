@@ -38,10 +38,13 @@ class ConversationService {
       .innerJoinAndSelect('conversation.participants', 'participant')
       .leftJoinAndSelect('conversation.messages', 'message')
       .leftJoinAndMapMany('conversation.users', User, 'user', 'user.id = participant.user_id')
-      .where('conversation.id IN (SELECT A.conversation_id FROM participants A JOIN participants B ON A.conversation_id = B.conversation_id WHERE A.user_id = :user_id AND B.user_id = :other_user_id)', {
-        user_id,
-        other_user_id,
-      })
+      .where(
+        'conversation.id IN (SELECT A.conversation_id FROM participants A JOIN participants B ON A.conversation_id = B.conversation_id WHERE A.user_id = :user_id AND B.user_id = :other_user_id)',
+        {
+          user_id,
+          other_user_id,
+        },
+      )
       .getOne();
     return conversation;
   }
@@ -104,7 +107,7 @@ class ConversationService {
     return conversation;
   }
 
-  public sendMessage = async (conversation_id: string, user_id: string, content: string) => {
+  private sendMessage = async (conversation_id: string, user_id: string, content: string) => {
     const message = new Message();
     message.conversation_id = conversation_id;
     message.content_type = MessageTypes.text;
@@ -115,7 +118,26 @@ class ConversationService {
     return await this.messageRepository.save(message);
   };
 
-  public async getMessages(conversation_id: string):Promise<Message[]> {
+  public async sendMessageToConversation(conversation_param: string | Conversation, user_id: string, content: string) {
+    let conversation_id: string;
+    let conversation: Conversation | null = null;
+    if (typeof conversation_param === 'string') {
+      conversation_id = conversation_param;
+      conversation = await this.getConversationById(conversation_id);
+    } else {
+      conversation_id = conversation_param.id;
+      conversation = conversation_param;
+    }
+    const message = await this.sendMessage(conversation_id, user_id, content);
+    conversation!.last_message = message;
+    await this.conversationRepository.save(conversation!);
+    return {
+      conversation,
+      message,
+    }
+  }
+
+  public async getMessages(conversation_id: string): Promise<Message[]> {
     const messages = await this.messageRepository
       .createQueryBuilder('message')
       .where('message.conversation_id = :conversation_id', { conversation_id })
