@@ -93,7 +93,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
     });
 
     socket.on('init_chat', async (arg) => {
-      const conversation_id = arg ?? null;
+      const {conversation_id} = arg ?? null;
       console.log('Init chat: ', conversation_id);
       try {
         const conversation = await conversationService.getConversationByUserIdAndConversationId(
@@ -104,14 +104,10 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
           handleInvalidConversation(socket);
           return;
         }
-        // Join if haven't joined
-        if (!socket.rooms.has(conversation_id)) {
-          socket.join(conversation_id);
-        }
+        socket.join(conversation_id);
         console.log('Join conversation: ', conversation_id);
 
         const messages = await conversationService.getMessages(conversation_id);
-        console.log(messages);
         chatNamespace.to(conversation_id).emit('messages', {
           type: SocketEvent.Init,
           conversation_id,
@@ -145,22 +141,33 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
             break;
           }
         }
-        console.log(socket.rooms.keys());
 
         chatNamespace.to(conversation_id).emit('messages', {
           type: SocketEvent.New,
           conversation_id,
           data: message,
         });
-        
-        chatNamespace.to(conversation_id).emit('conversations', {
-          type: SocketEvent.Update,
-          data: conversation,
+
+        conversation!.participants.forEach((participant) => {
+          chatNamespace.to(participant.user_id).emit('conversations', {
+            type: SocketEvent.Update,
+            data: conversation,
+          });
         });
-
-        
-      
-
+      } catch (error: any) {
+        handleSocketError(socket, error);
+      }
+    });
+    socket.on('delete_conversation', async (arg) => {
+      try {
+        const conversation_id = arg.conversation_id;
+        await conversationService.deleteConversationOneSide(user_id, conversation_id);
+        chatNamespace.to(user_id).emit('conversations', {
+          type: SocketEvent.Delete,
+          data: {
+            id: conversation_id,
+          },
+        });
       } catch (error: any) {
         handleSocketError(socket, error);
       }
@@ -192,5 +199,6 @@ function handleInvalidConversation(socket: Socket): void {
 
 function handleSocketError(socket: Socket, error: Error): void {
   console.error(`Socket error: ${error.message}`);
+  console.error(error.stack);
   socket.disconnect();
 }

@@ -90,14 +90,14 @@ class AuthValidation {
     async (req: Request, res: Response, next: NextFunction) => {
       const { email, password } = req.body;
       const { user, password_is_correct } = await this.authServices.getUserByEmailAndPassword(email, password);
-      if (user === null || user === undefined) {
-        return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
+      if (user === null || user === undefined || password_is_correct === false) {
+        return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
       }
       if (user.status === UserStatus.unverified) {
         return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
       }
-      if (password_is_correct === false) {
-        return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
+      if(user.status === UserStatus.banned) {
+        return next(new AppError("Your account has been banned", 401));
       }
       req.user = user;
       next();

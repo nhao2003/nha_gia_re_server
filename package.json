@@ -42,7 +42,7 @@
 
   "scripts": {
     "dev": "npx nodemon",
-    "prod": "SET NODE_ENV=production&npx nodemon",
+    "prod": "rimraf ./dist && tsc && tsc-alias && SET NODE_ENV=production&node dist/index.js",
     "build": "rimraf ./dist && tsc && tsc-alias",
     "start": "SET NODE_ENV=production&node dist/index.js",
     "lint": "eslint .",

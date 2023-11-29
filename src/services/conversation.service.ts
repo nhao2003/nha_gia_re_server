@@ -33,6 +33,9 @@ class ConversationService {
   };
 
   public async getConversationByUserIdAndOtherUserId(user_id: string, other_user_id: string) {
+    if (user_id === other_user_id) {
+      throw new AppError('User id and other user id must be different', 400);
+    }
     const conversation = await this.conversationRepository
       .createQueryBuilder('conversation')
       .innerJoinAndSelect('conversation.participants', 'participant')
@@ -85,24 +88,23 @@ class ConversationService {
     };
   }
 
-  public async deleteConversation(user_id: string, other_user_id: string) {
-    const conversation = await this.getConversationByUserIdAndOtherUserId(user_id, other_user_id);
+  public async deleteConversation(conversation_id: string) {
+    const conversation = await this.getConversationById(conversation_id);
     if (!conversation) {
       throw new Error('Conversation not found');
     }
     await this.messageRepository.delete({ conversation_id: conversation.id });
     await this.participantRepository.delete({ conversation_id: conversation.id });
     await this.conversationRepository.delete({ id: conversation.id });
-    return conversation;
   }
 
   public async getConversationById(conversation_id: string) {
     const conversation = await this.conversationRepository
-      .createQueryBuilder()
-      .leftJoinAndSelect('Conversation.participants', 'participant')
-      .leftJoinAndSelect('Conversation.messages', 'message')
-      .leftJoinAndMapMany('Conversation.users', User, 'user', 'user.id = participant.user_id')
-      .where('Conversation.id = :conversation_id', { conversation_id })
+      .createQueryBuilder('conversation')
+      .where('conversation.id = :conversation_id', { conversation_id })
+      .leftJoinAndSelect('conversation.participants', 'participant')
+      .leftJoinAndMapOne('conversation.last_message', Message, 'message', 'message.id = conversation.last_messsage_id')
+      .leftJoinAndMapMany('conversation.users', User, 'user', 'user.id = participant.user_id')
       .getOne();
     return conversation;
   }
@@ -130,10 +132,44 @@ class ConversationService {
     }
     const message = await this.sendMessage(conversation_id, user_id, content);
     conversation!.last_message = message;
-    await this.conversationRepository.save(conversation!);
+    conversation!.last_messsage_id = message.id;
+    const tasks: Promise<any>[] = [];
+    for (let i = 0; i < conversation!.participants.length; i++) {
+      if (conversation!.participants[i].is_active === false) {
+        conversation!.participants[i].is_active = true;
+        conversation!.participants[i].joined_at = new Date();
+        tasks.push(this.participantRepository.save(conversation!.participants[i]));
+      }
+    }
+    tasks.push(this.conversationRepository.save(conversation!));
+    await Promise.all(tasks);
     return {
       conversation,
       message,
+    };
+  }
+
+  public async deleteConversationOneSide(user_id: string, conversation_id: string): Promise<void> {
+    const conversation = await this.getConversationById(conversation_id);
+    if (!conversation) {
+      throw new AppError('Conversation not found', 404);
+    }
+    const ids = [];
+    // Update is_active to false
+    conversation.participants.forEach((participant) => {
+      if (participant.user_id === user_id) {
+        participant.is_active = false;
+        ids.push(participant.user_id);
+      }
+    });
+    // If all participants are inactive, delete conversation
+    const isAllParticipantsInactive = conversation.participants.every((participant) => participant.is_active === false);
+    if (isAllParticipantsInactive) {
+      await this.deleteConversation(conversation_id);
+      console.log('delete conversation completely');
+    } else {
+      await this.participantRepository.save(conversation.participants);
+      console.log('Delete conversation one side');
     }
   }
 

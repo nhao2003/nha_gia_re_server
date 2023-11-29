@@ -34,8 +34,8 @@ class ConversationController {
     });
 
   public deleteConversation = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { user_id, other_user_id } = req.body;
-    const conversation = await this.conversationService.deleteConversation(user_id, other_user_id);
+    const { conversation_id } = req.body;
+    const conversation = await this.conversationService.deleteConversation(conversation_id);
     const appResponse: AppResponse = {
       status: 'success',
       code: 200,
@@ -69,6 +69,19 @@ class ConversationController {
       code: 200,
       message: 'Send message successfully',
       result: message,
+    };
+    res.status(200).json(appResponse);
+  });
+
+  public getOrCreateConversationByUserId = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { other_user_id } = req.body;
+    const user_id = req.user!.id;
+    const conversation = await this.conversationService.getOrCreateConversation(user_id, other_user_id);
+    const appResponse: AppResponse = {
+      status: 'success',
+      code: 200,
+      message: 'Get or create conversation by user id successfully',
+      result: conversation.conversation,
     };
     res.status(200).json(appResponse);
   });
