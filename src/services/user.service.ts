@@ -6,13 +6,16 @@ import AuthServices from './auth.service';
 import { AppError } from '~/models/Error';
 import { UserStatus } from '~/constants/enum';
 import { Service } from 'typedi';
+import { UserFollow } from '~/domain/databases/entity/UserFollow';
 @Service()
 class UserServices {
   private userRepository: Repository<User>;
+  private userFollowRepository: Repository<UserFollow>;
   private authServices: AuthServices;
   constructor(dataSource: DataSource, authServices: AuthServices) {
     this.userRepository = dataSource.getRepository(User);
     this.authServices = authServices;
+    this.userFollowRepository = dataSource.getRepository(UserFollow);
   }
   async updateUserInfo(user_id: string, data: any): Promise<boolean> {
     await this.userRepository.update(
@@ -28,6 +31,37 @@ class UserServices {
   async getUserInfo(id: string, is_active: boolean = true): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { id } });
     return user;
+  }
+
+  // Get following users
+  async getFollowingUsers(user_id: string): Promise<{
+    num_of_following: number;
+    num_of_followers: number;
+  }> {
+    const num_of_following = this.userFollowRepository.count({
+      where: { user_id },
+    });
+    const num_of_followers = this.userFollowRepository.count({
+      where: { follow_id: user_id },
+    });
+
+    return await Promise.all([num_of_following, num_of_followers]).then((result) => {
+      return {
+        num_of_following: result[0],
+        num_of_followers: result[1],
+      };
+    });
+  }
+
+  async followOrUnfollowUser(user_id: string, follow_id: string): Promise<boolean> {
+    const userFollow = await this.userFollowRepository.findOne({ where: { user_id, follow_id } });
+    if (userFollow) {
+      await this.userFollowRepository.delete({ user_id, follow_id });
+      return false;
+    } else {
+      await this.userFollowRepository.insert({ user_id, follow_id });
+      return true;
+    }
   }
   buildUserQuery(userQuery: any): UserQuery {
     const { page, orders } = userQuery;
@@ -75,10 +109,10 @@ class UserServices {
     if (!user) {
       throw new AppError('User not found', 404);
     }
-    if(user.status === UserStatus.banned) {
+    if (user.status === UserStatus.banned) {
       throw new AppError('User has been banned', 400);
     }
-    if(banned_util < new Date()) {
+    if (banned_util < new Date()) {
       throw new AppError('Banned util is not valid', 400);
     }
     user.status = UserStatus.banned;
@@ -94,7 +128,7 @@ class UserServices {
     if (!user) {
       throw new AppError('User not found', 404);
     }
-    if(user.status !== UserStatus.banned) {
+    if (user.status !== UserStatus.banned) {
       throw new AppError('User has not been banned', 400);
     }
     user.status = UserStatus.verified;

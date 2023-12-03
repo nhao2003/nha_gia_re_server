@@ -13,5 +13,7 @@ router
   .route('/update-profile')
   .patch(authValidation.accessTokenValidation, userValidation.updateProfileValidation, userControllers.updateProfile);
 router.route('/profile').get(authValidation.accessTokenValidation, userControllers.getUserProfile);
+router.route('/follows').get(authValidation.accessTokenValidation, userControllers.getNumberOfFollowingAndFollowers);
+router.route('/follow/:id').post(authValidation.accessTokenValidation, userControllers.followOrUnfollowUser);
 router.route('/:id').get(userValidation.getUserProfileValidation, userControllers.getUserProfile);
 export default router;

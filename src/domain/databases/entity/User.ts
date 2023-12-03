@@ -9,6 +9,7 @@ import { RealEstatePost } from './RealEstatePost';
 import Subscription from './Subscription ';
 import Transaction from './Transaction';
 import Report from './Report';
+import {UserFollow}  from './UserFollow';
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -79,4 +80,12 @@ export class User extends BaseEntity implements IUser {
   @OneToMany(() => Report, (report) => report.reporter)
   @JoinColumn({ name: 'id' })
   reports!: Report[];
+
+  @OneToMany(() => UserFollow, (user_follow) => user_follow.user)
+  @JoinColumn({ name: 'id' })
+  following!: UserFollow[];
+
+  @OneToMany(() => UserFollow, (user_follow) => user_follow.follow)
+  @JoinColumn({ name: 'id' })
+  followers!: UserFollow[];
 }

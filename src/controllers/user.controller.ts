@@ -53,6 +53,40 @@ class UserController {
     };
     res.status(200).json(appRes);
   });
+
+  // followOrUnfollowUser(accessTokenValidation: ((req: Request<import("express-serve-static-core").ParamsDictionary, any, any, import("qs").ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>)[], followOrUnfollowUser: any) {
+  //   throw new Error('Method not implemented.');
+  // }
+
+  public followOrUnfollowUser = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const user_id = req.user!.id;
+    const follow_id = req.params.id;
+    if (user_id === follow_id) {
+      return next(new AppError("You can't follow yourself", 400));
+    }
+    const userFollow = await this.userServices.followOrUnfollowUser(user_id, follow_id);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.UserCode.Success,
+      message: userFollow ? 'Followed successfully' : 'Unfollowed successfully',
+    };
+    res.status(200).json(appRes);
+  });
+
+  public getNumberOfFollowingAndFollowers = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const user_id = req.user!.id;
+    const { num_of_following, num_of_followers } = await this.userServices.getFollowingUsers(user_id);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.UserCode.Success,
+      message: "Get user's following and followers successfully",
+      result: {
+        num_of_following,
+        num_of_followers,
+      },
+    };
+    res.status(200).json(appRes);
+  });
 }
 
 export default UserController;
