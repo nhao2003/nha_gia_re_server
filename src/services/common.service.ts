@@ -10,6 +10,10 @@ class CommonServices {
     this.repository = dataSource.getRepository(entity);
   }
 
+  public getRepository() {
+    return this.repository;
+  }
+
   public buildBaseQuery(query: Record<string, any>): BaseQuery {
     const { page, sort_fields, sort_orders } = query;
     const handleQuery = {
@@ -75,7 +79,7 @@ class CommonServices {
     return await this.repository.save(data);
   }
 
-  public async update(id: string, data: Record<string, any>) : Promise<any> {
+  public async update(id: string, data: Record<string, any>): Promise<any> {
     delete data.is_active;
     const value = await this.repository.findOne({ where: { id: id, is_active: true } });
     if (value === undefined || value === null) {

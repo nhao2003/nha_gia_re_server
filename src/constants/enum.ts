@@ -130,3 +130,8 @@ export enum ProjectStatus {
   //Đã bàn giao
   delivered = 'delivered',
 }
+
+export enum TransactionStatus {
+  unpaid = 'unpaid',
+  paid = 'paid',
+}

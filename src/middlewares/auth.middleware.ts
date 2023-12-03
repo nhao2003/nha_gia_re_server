@@ -132,6 +132,7 @@ class AuthValidation {
     ),
     async (req: Request, res: Response, next: NextFunction) => {
       const authorization = req.headers.authorization;
+      console.log('authorization', authorization);
       const access_token = authorization?.split(' ')[1];
       if (!access_token) {
         return next(new AppError(APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED, HTTP_STATUS.UNAUTHORIZED));

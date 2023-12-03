@@ -2,16 +2,17 @@ import { Router } from 'express';
 import Membership_packageController from '~/controllers/membership_package.controller';
 import PaymentController from '~/controllers/payment.controller';
 import DependencyInjection from '../di/di';
+import AuthValidation from '~/middlewares/auth.middleware';
 const routes = Router();
 
 const membership_packageController =
   DependencyInjection.get<Membership_packageController>(Membership_packageController);
 const paymentController = DependencyInjection.get<PaymentController>(PaymentController);
-
+const authValiation = DependencyInjection.get<AuthValidation>(AuthValidation);
 routes.get('/', membership_packageController.getMembershipPackages);
-routes.get('/current-subscription', membership_packageController.getCurrentUserMembershipPackage);
+routes.get('/current-subscription', authValiation.accessTokenValidation, membership_packageController.getCurrentUserMembershipPackage);
 routes.get('/user-with-subscription', membership_packageController.getUserWithSubscriptionPackage);
-routes.get('/transactions', paymentController.getTransaction);
+routes.get('/transactions', authValiation.accessTokenValidation, paymentController.getTransactions);
 
 routes.post('/check-out', paymentController.createOrderMemberShipPayment);
 

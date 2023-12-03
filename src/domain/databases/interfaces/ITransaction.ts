@@ -1,3 +1,5 @@
+import { TransactionStatus } from "~/constants/enum";
+
 interface ITransaction {
   id: string;
   user_id: string;
@@ -5,7 +7,7 @@ interface ITransaction {
   package_id?: string;
   num_of_subscription_month: number;
   app_trans_id?: string | null;
-  status: string;
+  status: TransactionStatus;
   timestamp: Date;
   amount: number;
   platform: string;

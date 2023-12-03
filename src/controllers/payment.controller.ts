@@ -120,5 +120,18 @@ class PaymentController {
     };
     res.status(200).json(appRessponse);
   });
+
+  public readonly getTransactions = wrapRequestHandler (async (req: Request, res: Response) => {
+    const user_id = req.user!.id;
+    const result = await this.paymentServices.getAllTransactionByUser(user_id as string, req.query);
+    const appRessponse: AppResponse = {
+      status: 'success',
+      code: 200,
+      message: 'Get transactions successfully',
+      num_of_pages: result.num_of_pages,
+      result: result.data,
+    };
+    res.status(200).json(appRessponse);
+  });
 }
 export default PaymentController;

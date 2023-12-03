@@ -3,6 +3,7 @@ import { Entity } from 'typeorm';
 import { PostgresDataType } from '../constants/database_constants';
 import IMembershipPackage from '../interfaces/IMembershipPackage';
 import Subscription from './Subscription ';
+import Transaction from './Transaction';
 
 @Entity('membership_packages')
 class MembershipPackage  extends BaseEntity implements IMembershipPackage{
@@ -36,5 +37,9 @@ class MembershipPackage  extends BaseEntity implements IMembershipPackage{
   @OneToMany(() => Subscription, subscription => subscription.membership_package)
   @JoinColumn({ name: 'id' })
   subscriptions!: Subscription[];
+
+  @OneToMany(() => Transaction, transaction => transaction.package)
+  @JoinColumn({ name: 'id' })
+  transactions!: Transaction[];
 }
 export default MembershipPackage;

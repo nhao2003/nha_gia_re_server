@@ -4,6 +4,8 @@ import { DatabaseDefaultValues, PostgresDataType } from '../constants/database_c
 import { CreateDateColumn } from 'typeorm';
 import { User } from './User';
 import Subscription from './Subscription ';
+import { TransactionStatus } from '~/constants/enum';
+import MembershipPackage from './MembershipPackage';
 @Entity('transactions')
 class Transaction extends BaseEntity implements ITransaction {
   @PrimaryGeneratedColumn(PostgresDataType.uuid, { comment: 'This is the primary key' })
@@ -25,7 +27,7 @@ class Transaction extends BaseEntity implements ITransaction {
   app_trans_id: string | null = null;
 
   @Column({ type: PostgresDataType.varchar, length: 50, comment: 'This is the status of the transaction' })
-  status!: string;
+  status!: TransactionStatus;
 
   @CreateDateColumn({
     type: PostgresDataType.timestamp_without_timezone,
@@ -45,6 +47,10 @@ class Transaction extends BaseEntity implements ITransaction {
 
   @OneToOne(() => Subscription, subscription => subscription.transaction)
   subscription!: Subscription;
+
+  @ManyToOne(() => MembershipPackage, membershipPackage => membershipPackage.transactions)
+  @JoinColumn({ name: 'package_id' })
+  package!: MembershipPackage;
 
   @ManyToOne(() => User, user => user.transactions)
   @JoinColumn({ name: 'user_id' })

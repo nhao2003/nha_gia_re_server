@@ -11,6 +11,10 @@ import SubscriptionServices from './subscription.service';
 import MiniAppTransactionDataCallback from '~/models/Response/MiniAppTransactionDataCallback';
 import { Service } from 'typedi';
 import ZaloPayServices from './zalopay.service';
+import CommonServices from './common.service';
+import { BaseQuery } from '~/models/PostQuery';
+import { TransactionStatus } from '~/constants/enum';
+import { TransactionService } from './transaction.service';
 
 type OrderMembershipPackageRequest = {
   user_id: string;
@@ -59,7 +63,7 @@ class PaymentServices {
   private subcritpionRepository: Repository<Subscription>;
   private userRepository: Repository<User>;
   private membershipPackageRepository: Repository<MembershipPackage>;
-  private transactionRepository: Repository<Transaction>;
+  private transactionService: TransactionService;
   private discountCodeRepository: Repository<DiscountCode>;
   private zalopayServices: ZaloPayServices;
   private subscriptionServices: SubscriptionServices;
@@ -67,7 +71,7 @@ class PaymentServices {
     this.subcritpionRepository = dataSource.getRepository(Subscription);
     this.userRepository = dataSource.getRepository(User);
     this.membershipPackageRepository = dataSource.getRepository(MembershipPackage);
-    this.transactionRepository = dataSource.getRepository(Transaction);
+    this.transactionService = new TransactionService(dataSource);
     this.discountCodeRepository = dataSource.getRepository(DiscountCode);
     this.zalopayServices = zalopayServices;
     this.subscriptionServices = new SubscriptionServices(dataSource);
@@ -77,13 +81,13 @@ class PaymentServices {
 
   private async createTransaction(
     orderRequest: OrderMembershipPackageRequest,
-    status: string = 'pending',
+    status: string = TransactionStatus.unpaid,
   ): Promise<string> {
     const data = {
       ...orderRequest,
       status,
     };
-    const res = await this.transactionRepository.insert(data);
+    const res = await this.transactionService.create(data);
     return res.identifiers[0].id;
   }
 
@@ -212,13 +216,14 @@ class PaymentServices {
 
   //Update app_status_id to transaction
   public async miniAppUpdateTransaction(transaction_id: string, order_id: string) {
-    await this.transactionRepository.update(
+    await this.transactionService.update;
+    await this.transactionService.getRepository().update(
       {
         id: transaction_id,
       },
       {
         app_trans_id: order_id,
-        status: 'pending',
+        status: TransactionStatus.unpaid,
       },
     );
   }
@@ -232,7 +237,7 @@ class PaymentServices {
       };
     }
     console.log(data);
-    const transaction = await this.transactionRepository.findOne({
+    const transaction = await this.transactionService.getRepository().findOne({
       where: {
         app_trans_id: data.orderId,
       },
@@ -243,13 +248,13 @@ class PaymentServices {
         returnMessage: 'Transaction not found',
       };
     }
-    if (transaction.status === 'success') {
+    if (transaction.status === TransactionStatus.paid) {
       return {
         returnCode: 2,
         returnMessage: 'Trùng mã giao dịch transId',
       };
     }
-    transaction.status = 'success';
+    transaction.status = TransactionStatus.paid;
     const user_id = JSON.parse(decodeURIComponent(data.extradata));
     const date = new Date(data.transTime);
     const starting_date = date;
@@ -261,15 +266,17 @@ class PaymentServices {
       expiration_date,
       transaction_id: transaction.id,
     });
-    await Promise.all([create, this.transactionRepository.save(transaction)]);
+    await Promise.all([create, this.transactionService.getRepository().save(transaction)]);
     return {
       return_code: 1,
-      return_message: 'Success',
+      return_message: TransactionStatus.paid,
     };
   };
 
   public async checkTransaction(transaction_id: string): Promise<Transaction | null> {
-    const res = await this.transactionRepository.findOne({ where: { id: transaction_id, is_active: true } });
+    const res = await this.transactionService
+      .getRepository()
+      .findOne({ where: { id: transaction_id, is_active: true } });
     if (!res) {
       throw new AppError('Transaction not found', 404);
     }
@@ -290,7 +297,7 @@ class PaymentServices {
         return_message: 'Invalid mac',
       };
     }
-    const transaction = await this.transactionRepository.findOne({
+    const transaction = await this.transactionService.getRepository().findOne({
       where: {
         app_trans_id: (data as ZaloPayCallbackResponse).app_trans_id,
       },
@@ -302,7 +309,7 @@ class PaymentServices {
         return_message: 'Transaction not found',
       };
     }
-    if (transaction !== null && transaction.status === 'success') {
+    if (transaction !== null && transaction.status === TransactionStatus.paid) {
       console.log('app_trans_id has been received');
       return {
         return_code: 2,
@@ -334,15 +341,16 @@ class PaymentServices {
       expiration_date: expiration_date,
       transaction_id: transaction.id,
     });
-    await this.transactionRepository.update({ id: transaction.id }, { status: 'success' });
+    await this.transactionService.getRepository().update({ id: transaction.id }, { status: TransactionStatus.paid });
     return {
       return_code: 1,
-      return_message: 'Success',
+      return_message: TransactionStatus.paid,
     };
   }
 
   public async getTransaction(id: string): Promise<Transaction | null> {
-    const res = await this.transactionRepository
+    const res = await this.transactionService
+      .getRepository()
       .createQueryBuilder('transaction')
       .leftJoinAndSelect('transaction.subscription', 'subscription')
       .leftJoinAndSelect('transaction.user', 'user')
@@ -352,6 +360,26 @@ class PaymentServices {
     if (!res) {
       throw new AppError('Transaction not found', 404);
     }
+    return res;
+  }
+
+  public async getAllTransactionByQuery(query: Record<string, any>) {
+    const buildQuery = this.transactionService.buildBaseQuery(query);
+    return await this.transactionService.getAllByQuery(buildQuery);
+  }
+
+  public async getAllTransactionByUser(
+    user_id: string,
+    query: Record<string, any>,
+  ): Promise<{
+    num_of_pages: number;
+    data: Transaction[];
+  }> {
+    query.user_id = {
+      eq: `'${user_id}'`,
+    };
+    const buildQuery = this.transactionService.buildBaseQuery(query);
+    const res = await this.transactionService.getAllByQuery(buildQuery);
     return res;
   }
 }
