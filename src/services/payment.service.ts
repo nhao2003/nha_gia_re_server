@@ -33,7 +33,7 @@ type OrderMembershipPackageResponse = {
   order_token: string;
   qr_code: string;
   app_trans_id?: string | null;
-  transaction_id: string;
+  transaction: string;
 };
 type OrderMembershipPackagMiniAppeResponse = {
   amount: number;
@@ -88,7 +88,7 @@ class PaymentServices {
       status,
     };
     const res = await this.transactionService.create(data);
-    return res.identifiers[0].id;
+    return res;
   }
 
   public subscribePackage = async (orderRequest: {
@@ -144,9 +144,9 @@ class PaymentServices {
       app_trans_id: zalopayResponse.app_trans_id,
       timestamp: starting_date,
     };
-    const transaction_id = await this.createTransaction(create);
+    const transaction = await this.createTransaction(create);
     return {
-      transaction_id,
+      transaction,
       order_url: zalopayResponse.order_url,
       zp_trans_token: zalopayResponse.zp_trans_token,
       order_token: zalopayResponse.order_token,
