@@ -22,7 +22,7 @@ class MediaServices {
     const options: UploadApiOptions = {
       public_id: publicId,
       folder,
-      allowed_formats: ['jpg', 'jpeg', 'mp4'],
+      allowed_formats: ['jpg', 'jpeg', 'mp4', 'png'],
       resource_type: resourceType,
     };
     this.queue.add({

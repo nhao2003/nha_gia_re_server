@@ -118,6 +118,7 @@ class UserServices {
     user.status = UserStatus.banned;
     user.ban_reason = ban_reason;
     user.banned_util = banned_util;
+    
     const ban = this.userRepository.save(user);
     const signOutAll = this.authServices.signOutAll(id);
     await Promise.all([ban, signOutAll]);

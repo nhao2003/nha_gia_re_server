@@ -38,7 +38,7 @@ class MediaController {
           };
           return res.status(400).json(appRes);
         }
-        const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'video/mp4'];
+        const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'video/mp4', 'image/png'];
         const uploadedFiles = req.files as Express.Multer.File[];
 
         const fileUrls: string[] = [];
