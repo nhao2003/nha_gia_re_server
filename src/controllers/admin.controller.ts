@@ -424,6 +424,7 @@ class AdminController {
     const countUserByIdentityVerified = this.userServices.countUserByIdentityVerified();
     const countUserPerStatus = this.userServices.countUserPerStatus();
     const countSubscriptionPackage = this.membershipPackageService.countSubscriptionPackage();
+    const getTop10UsersHaveMostPosts = this.postServices.getTop10UsersHaveMostPosts();
 
     const result = await Promise.all([
       countPostByStatus,
@@ -431,6 +432,7 @@ class AdminController {
       countUserByIdentityVerified,
       countUserPerStatus,
       countSubscriptionPackage,
+      getTop10UsersHaveMostPosts,
     ]);
 
     const appRes: AppResponse = {
@@ -443,6 +445,7 @@ class AdminController {
         countUserByIdentityVerified: result[2],
         countUserPerStatus: result[3],
         countSubscriptionPackage: result[4],
+        getTop10UsersHaveMostPosts: result[5],
       },
     };
     res.status(200).json(appRes);

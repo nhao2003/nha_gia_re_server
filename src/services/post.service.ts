@@ -266,7 +266,7 @@ class PostServices {
       .getRawMany();
     return result;
   }
-  
+
   async countPostByStatus() {
     const result = await this.postRepository
       .createQueryBuilder()
@@ -275,6 +275,41 @@ class PostServices {
       .groupBy('status')
       .orderBy('status')
       .getRawMany();
+    return result;
+  }
+
+  // Get id, first_name, last_name, number of posts of users have the most posts
+  async getTop10UsersHaveMostPosts() {
+  //   SELECT
+  //   u.id AS user_id,
+  //   u.first_name,
+  //   u.last_name,
+  //   COUNT(rp.id) AS post_count
+  // FROM
+  //   users u
+  // JOIN
+  //   real_estate_posts rp ON u.id = rp.user_id
+  // GROUP BY
+  //   u.id, u.first_name, u.last_name
+  // ORDER BY
+  //   post_count DESC
+  // LIMIT 10;
+
+    const query = this.postRepository
+      .createQueryBuilder('real_estate_post')
+      .select('user.id', 'user_id')
+      .addSelect('user.first_name', 'first_name')
+      .addSelect('user.last_name', 'last_name')
+      .addSelect('COUNT(real_estate_post.id)', 'post_count')
+      .leftJoin('real_estate_post.user', 'user')
+      .groupBy('user.id')
+      .addGroupBy('user.first_name')
+      .addGroupBy('user.last_name')
+      .orderBy('post_count', 'DESC')
+      .limit(10);
+    const result = await query.getRawMany();
+  
+  
     return result;
   }
 }
