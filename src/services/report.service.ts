@@ -75,6 +75,16 @@ class ReportService extends CommonServices {
     report.status = status;
     return await this.repository.save(report);
   };
+
+  // Count report per status
+  countReportPerStatus = async () => {
+    const report = await this.repository
+      .createQueryBuilder('report')
+      .select('report.status, COUNT(report.status) as count')
+      .groupBy('report.status')
+      .getRawMany();
+    return report;
+  };
 }
 
 export default ReportService;

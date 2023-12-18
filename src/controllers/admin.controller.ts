@@ -17,6 +17,8 @@ import { DataSource } from 'typeorm';
 import { Service } from 'typedi';
 import MembershipPackageServices from '~/services/membership_package.service';
 import { DiscountCodeService } from '~/services/discount_code.service';
+import BlogService from '~/services/blog.service';
+import ReportService from '~/services/report.service';
 
 @Service()
 class AdminController {
@@ -28,11 +30,15 @@ class AdminController {
   private adminService: AdminService;
   private userServices: UserServices;
   private postServices: PostServices;
+  private blogServices: BlogService;
+  private reportService: ReportService;
   constructor(
     dataSource: DataSource,
     adminService: AdminService,
     userServices: UserServices,
     postServices: PostServices,
+    blogServices: BlogService,
+    reportService: ReportService,
   ) {
     this.UnitsService = new CommonServices(Unit, dataSource);
     this.DeveloperService = new CommonServices(Developer, dataSource);
@@ -42,6 +48,8 @@ class AdminController {
     this.adminService = adminService;
     this.userServices = userServices;
     this.postServices = postServices;
+    this.blogServices = blogServices;
+    this.reportService = reportService;
   }
 
   public readonly getUnits = wrapRequestHandler(async (req: Request, res: Response) => {
@@ -425,6 +433,8 @@ class AdminController {
     const countUserPerStatus = this.userServices.countUserPerStatus();
     const countSubscriptionPackage = this.membershipPackageService.countSubscriptionPackage();
     const getTop10UsersHaveMostPosts = this.postServices.getTop10UsersHaveMostPosts();
+    const countReportPerStatus = this.reportService.countReportPerStatus();
+    const countBlog = this.blogServices.countBlog();
 
     const result = await Promise.all([
       countPostByStatus,
@@ -433,6 +443,8 @@ class AdminController {
       countUserPerStatus,
       countSubscriptionPackage,
       getTop10UsersHaveMostPosts,
+      countReportPerStatus,
+      countBlog,
     ]);
 
     const appRes: AppResponse = {
@@ -446,6 +458,8 @@ class AdminController {
         countUserPerStatus: result[3],
         countSubscriptionPackage: result[4],
         getTop10UsersHaveMostPosts: result[5],
+        countReportPerStatus: result[6],
+        countBlog: result[7],
       },
     };
     res.status(200).json(appRes);

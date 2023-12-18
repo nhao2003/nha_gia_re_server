@@ -37,6 +37,11 @@ class BlogService extends CommonServices {
       data: res[0],
     };
   }
+
+  // Count blog 
+  async countBlog() {
+    return await this.repository.count();
+  }
 }
 
 export default BlogService;
