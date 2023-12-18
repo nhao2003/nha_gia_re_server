@@ -120,6 +120,8 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
     });
     socket.on('send_message', async (arg) => {
       try {
+        console.log('Send message: ', arg);
+        return;
         const content = arg.content;
         const conversation_id = arg.conversation_id;
         var conversation_param: string | Conversation = conversation_id as string;

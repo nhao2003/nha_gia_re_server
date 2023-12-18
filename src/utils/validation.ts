@@ -20,6 +20,9 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
         value: error.value
       };
     });
-    next(new AppError(APP_MESSAGES.INVALID_REQUEST_PARAMS, HTTP_STATUS.BAD_REQUEST, details));
+    next(new AppError(APP_MESSAGES.INVALID_REQUEST_PARAMS, HTTP_STATUS.BAD_REQUEST, {
+      code: 400,
+      details
+    }));
   };
 };

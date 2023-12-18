@@ -141,21 +141,18 @@ class AuthController {
     }
     const isMatch = verifyPassword(old_password, user.password as string);
     if (!isMatch) {
-      return next(new AppError(APP_MESSAGES.INCORRECT_PASSWORD, 400));
+      return next(
+        new AppError(APP_MESSAGES.INCORRECT_PASSWORD, 400, {
+          code: ServerCodes.AuthCode.PasswordIsIncorrect,
+        }),
+      );
     }
     await this.authServices.changePassword(user.id, new_password);
-    // Sign out all session
-    await this.authServices.signOutAll(user.id);
     // Create new session
-    const { access_token, refresh_token } = await this.authServices.createSession(user.id);
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AuthCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.CHANGE_PASSWORD_SUCCESSFULLY,
-      result: {
-        access_token,
-        refresh_token,
-      },
     };
     res.status(200).json(appRes);
   });

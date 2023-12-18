@@ -73,7 +73,7 @@ class AuthValidation {
       if (user) {
         return res.status(HTTP_STATUS.CONFLICT).json({
           status: 'error',
-          code: ServerCodes.AuthCode.EMAIL_ALREADY_EXISTS,
+          code: ServerCodes.AuthCode.EmailIsAlreadyExist,
           message: APP_MESSAGES.ERROR_MESSAGE.EMAIL_ALREADY_EXISTS,
         });
       }
@@ -278,7 +278,7 @@ class AuthValidation {
 
   changePasswordValidation = validate(
     checkSchema({
-      newPassword: {
+      old_password: {
         in: ['body'],
         isLength: {
           errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
@@ -287,6 +287,36 @@ class AuthValidation {
         trim: true,
         notEmpty: {
           errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
+        },
+      },
+      new_password: {
+        in: ['body'],
+        isLength: {
+          errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
+          options: { min: 8, max: 32 },
+        },
+        trim: true,
+        notEmpty: {
+          errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
+        },
+      },
+      confirm_new_password: {
+        in: ['body'],
+        isLength: {
+          errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
+          options: { min: 8, max: 32 },
+        },
+        trim: true,
+        notEmpty: {
+          errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
+        },
+        custom: {
+          options: (value, { req }) => {
+            if (value !== req.body.new_password) {
+              throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+            }
+            return true;
+          },
         },
       },
     }),
