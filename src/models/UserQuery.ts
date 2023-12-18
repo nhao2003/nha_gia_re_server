@@ -1,5 +1,5 @@
 export type UserQuery = {
-  page: number;
+  page: number | string | null;
   wheres: string[] | null;
   orders: {};
 };

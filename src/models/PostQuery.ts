@@ -1,5 +1,5 @@
 export type PostQuery = {
-  page: number;
+  page: number | string | null;
   postWhere: string[];
   order: any;
   userWhere: string[];
@@ -7,7 +7,7 @@ export type PostQuery = {
 };
 
 export type BaseQuery = {
-  page: number;
+  page: number | string | null;
   wheres: string[];
   orders: any;
 };

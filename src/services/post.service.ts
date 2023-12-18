@@ -11,7 +11,7 @@ import Subscription from '~/domain/databases/entity/Subscription ';
 import { AppError } from '~/models/Error';
 import MembershipPackageServices from './membership_package.service';
 import { Service } from 'typedi';
-
+import AppConfig from '~/constants/configs';
 @Service()
 class PostServices {
   postRepository: Repository<RealEstatePost>;
@@ -89,7 +89,7 @@ class PostServices {
 
   buildPostQuery(query: Record<string, any>): PostQuery {
     const { page, orders, search } = query;
-    const pageParam = Number(page) || 1;
+    const pageParam = page === 'all' ? page : isNaN(Number(page)) ? 1 : Number(page);
     const postQueries: {
       [key: string]: any;
     } = {};
@@ -126,7 +126,14 @@ class PostServices {
     postQuery: PostQuery,
     user_id: string | null = null,
   ): Promise<{ data: RealEstatePost[]; numberOfPages: number }> {
-    const page = postQuery.page || 1;
+    let { page, postWhere, order } = postQuery;
+    let skip = undefined;
+    let take = undefined;
+    if (page !== 'all') {
+      page = isNaN(Number(page)) ? 1 : Number(page);
+      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
+      take = AppConfig.RESULT_PER_PAGE;
+    }
     let query = this.postRepository.createQueryBuilder().leftJoinAndSelect('RealEstatePost.user', 'user');
 
     if (postQuery.postWhere) {
@@ -153,8 +160,8 @@ class PostServices {
 
     const total = query.getCount();
     const data = query
-      .skip((page - 1) * 10)
-      .take(10)
+      .skip(skip)
+      .take(take)
       .getMany();
     const result = await Promise.all([total, data]);
     return {

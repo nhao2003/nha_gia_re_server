@@ -7,6 +7,7 @@ import { AppError } from '~/models/Error';
 import { UserStatus } from '~/constants/enum';
 import { Service } from 'typedi';
 import { UserFollow } from '~/domain/databases/entity/UserFollow';
+import AppConfig from '~/constants/configs';
 @Service()
 class UserServices {
   private userRepository: Repository<User>;
@@ -79,27 +80,32 @@ class UserServices {
     num_of_pages: number;
     users: User[];
   }> {
-    const page = userQuery.page || 1;
+    let { page, wheres, orders } = userQuery;
+    let skip = undefined;
+    let take = undefined;
+    if (page !== 'all') {
+      page = isNaN(Number(page)) ? 1 : Number(page);
+      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
+      take = AppConfig.RESULT_PER_PAGE;
+    }
     let query = this.userRepository.createQueryBuilder();
-    const wheres = userQuery.wheres;
     if (wheres) {
       wheres.forEach((where) => {
         query = query.andWhere(where);
       });
     }
-    const orders = userQuery.orders;
     if (orders) {
       query = query.orderBy(orders);
     }
     const total = query.getCount();
 
-    query = query.skip((page - 1) * 10).take(10);
+    query = query.skip(skip).take(take);
     const users = query.getMany();
 
     const result = await Promise.all([total, users]);
 
     return {
-      num_of_pages: Math.ceil(result[0] / 10),
+      num_of_pages: Math.ceil(result[0] / AppConfig.RESULT_PER_PAGE),
       users: result[1],
     };
   }

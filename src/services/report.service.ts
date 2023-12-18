@@ -7,6 +7,7 @@ import { AppError } from '~/models/Error';
 import { ReportStatus } from '~/constants/enum';
 import { DataSource } from 'typeorm';
 import { Service } from 'typedi';
+import AppConfig from '~/constants/configs';
 @Service()
 class ReportService extends CommonServices {
   constructor(dataSource: DataSource) {
@@ -18,9 +19,13 @@ class ReportService extends CommonServices {
     data: any;
   }> {
     let { page, wheres, orders } = query;
-    page = Number(page) || 1;
-    const skip = (page - 1) * 10;
-    const take = 10;
+    let skip = undefined;
+    let take = undefined;
+    if (page !== 'all') {
+      page = isNaN(Number(page)) ? 1 : Number(page);
+      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
+      take = AppConfig.RESULT_PER_PAGE;
+    }
     let devQuery = this.repository.createQueryBuilder();
     devQuery = devQuery.leftJoinAndSelect('Report.reporter', 'user');
     devQuery = devQuery.setParameters({ current_user_id: null });
@@ -47,7 +52,7 @@ class ReportService extends CommonServices {
     const values_2 = await Promise.all([getCount, getMany]);
     const [count, reports] = values_2;
     return {
-      num_of_pages: Math.ceil(count / 10),
+      num_of_pages: Math.ceil(count / AppConfig.RESULT_PER_PAGE),
       data: reports,
     };
   }

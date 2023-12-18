@@ -116,7 +116,7 @@ const buildOrder = (
 
 function buildBaseQuery(query: Record<string, any>): BaseQuery {
   let { page, orders } = query;
-  if (!page) {
+  if (page !== 'all' && isNaN(Number(page))) {
     page = 1;
   }
   const handleQuery = {

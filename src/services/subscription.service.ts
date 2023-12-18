@@ -5,7 +5,7 @@ import { AppError } from '~/models/Error';
 import CommonServices from './common.service';
 import { AppDataSource } from '~/app/database';
 import { Service } from 'typedi';
-
+import AppConfig from '~/constants/configs';
 export type CreateSubscription = {
   user_id: string;
   package_id: string;

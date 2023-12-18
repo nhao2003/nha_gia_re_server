@@ -2,16 +2,21 @@ import { DataSource } from 'typeorm';
 import CommonServices from './common.service';
 import Transaction from '~/domain/databases/entity/Transaction';
 import { BaseQuery } from '~/models/PostQuery';
-
+import AppConfig from '~/constants/configs';
 export class TransactionService extends CommonServices {
   constructor(dataSource: DataSource) {
     super(Transaction, dataSource);
   }
 
   public getAllByQuery(query: BaseQuery): Promise<{ num_of_pages: number; data: Transaction[] }> {
-    const { page = 1, wheres, orders } = query;
-    const skip = (page - 1) * 10;
-    const take = 10;
+    let { page, wheres, orders } = query;
+    let skip = undefined;
+    let take = undefined;
+    if (page !== 'all') {
+      page = isNaN(Number(page)) ? 1 : Number(page);
+      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
+      take = AppConfig.RESULT_PER_PAGE;
+    }
     let devQuery = this.repository.createQueryBuilder().leftJoinAndSelect('Transaction.package', 'package');
     wheres.forEach((where) => {
       devQuery = devQuery.andWhere('Transaction.' + where);
@@ -21,7 +26,7 @@ export class TransactionService extends CommonServices {
     devQuery = devQuery.take(take);
     return devQuery.getManyAndCount().then(([data, count]) => {
       return {
-        num_of_pages: Math.ceil(count / 10),
+        num_of_pages: Math.ceil(count / AppConfig.RESULT_PER_PAGE),
         data,
       };
     });

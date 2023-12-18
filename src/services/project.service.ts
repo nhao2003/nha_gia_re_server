@@ -6,7 +6,7 @@ import ProjectScale from '~/domain/databases/entity/ProjectScale';
 import { BaseQuery } from '~/models/PostQuery';
 import { AppDataSource } from '~/app/database';
 import { Service } from 'typedi';
-
+import AppConfig from '~/constants/configs';
 @Service()
 class ProjectServices extends CommonServices {
   propertyTypeProjectRepo: Repository<PropertyTypeProject>;
@@ -55,9 +55,13 @@ class ProjectServices extends CommonServices {
     data: Project[];
   }> {
     let { page, wheres, orders } = query;
-    page = Number(page) || 1;
-    const skip = (page - 1) * 10;
-    const take = 10;
+    let skip = undefined;
+    let take = undefined;
+    if (page !== 'all') {
+      page = isNaN(Number(page)) ? 1 : Number(page);
+      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
+      take = AppConfig.RESULT_PER_PAGE;
+    }
     let baseQuery = this.repository.createQueryBuilder();
     baseQuery = baseQuery.leftJoinAndSelect('Project.developer', 'developer');
     // baseQuery = baseQuery.leftJoinAndSelect('Project.property_types', 'property_types');
@@ -74,7 +78,7 @@ class ProjectServices extends CommonServices {
     const getMany = baseQuery.skip(skip).take(take).getMany();
     const res = await Promise.all([getMany, getCount]);
     return {
-      num_of_pages: Math.ceil(res[1] / 10),
+      num_of_pages: Math.ceil(res[1] / AppConfig.RESULT_PER_PAGE),
       data: res[0],
     };
   }

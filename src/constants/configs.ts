@@ -35,5 +35,7 @@ class AppConfig {
   public readonly CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
   public readonly CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
   public readonly ZALOPAY_API = process.env.ZALOPAY_API;
+
+  public readonly  RESULT_PER_PAGE = 10;
 }
 export default new AppConfig();
