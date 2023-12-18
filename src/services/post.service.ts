@@ -250,6 +250,33 @@ class PostServices {
       .getCount();
     return count;
   }
+
+  // Thống kê số lượng bài theo loại bất động sản theo tháng trong năm
+  async countPostByTypeInMonthOfYear() {
+    const result = await this.postRepository
+      .createQueryBuilder()
+      .select('EXTRACT(MONTH FROM posted_date)', 'month')
+      .addSelect('EXTRACT(YEAR FROM posted_date)', 'year')
+      .addSelect('type_id')
+      .addSelect('COUNT(*)', 'total_posts_by_type')
+      .addSelect('is_lease')
+      .where('EXTRACT(YEAR FROM posted_date) = EXTRACT(YEAR FROM CURRENT_TIMESTAMP)')
+      .groupBy('EXTRACT(MONTH FROM posted_date), EXTRACT(YEAR FROM posted_date), type_id, is_lease')
+      .orderBy('EXTRACT(YEAR FROM posted_date), EXTRACT(MONTH FROM posted_date), type_id, is_lease')
+      .getRawMany();
+    return result;
+  }
+  
+  async countPostByStatus() {
+    const result = await this.postRepository
+      .createQueryBuilder()
+      .select('status')
+      .addSelect('COUNT(*)', 'total_posts_by_status')
+      .groupBy('status')
+      .orderBy('status')
+      .getRawMany();
+    return result;
+  }
 }
 
 export default PostServices;

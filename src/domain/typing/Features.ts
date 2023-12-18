@@ -27,7 +27,7 @@ class Motel implements PropertyFeature {
   ) {}
 
   static fromJson(json: Record<string, any>): Motel {
-    if (json.water_price == null || json.electric_price == null || json.furniture_status == null) {
+    if (json.water_price == null || json.electric_price == null) {
       throw new Error('Invalid motel');
     }
     return new Motel(json.water_price, json.electric_price, json.furniture_status);

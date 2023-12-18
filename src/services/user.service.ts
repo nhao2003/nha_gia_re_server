@@ -124,7 +124,7 @@ class UserServices {
     user.status = UserStatus.banned;
     user.ban_reason = ban_reason;
     user.banned_util = banned_util;
-    
+
     const ban = this.userRepository.save(user);
     const signOutAll = this.authServices.signOutAll(id);
     await Promise.all([ban, signOutAll]);
@@ -142,6 +142,51 @@ class UserServices {
     user.ban_reason = null;
     user.banned_util = null;
     await this.userRepository.save(user);
+  }
+
+  // Count user per status
+  async countUserPerStatus(): Promise<{
+    num_of_verified: number;
+    num_of_banned: number;
+    num_of_unverified: number;
+  }> {
+    const num_of_verified = this.userRepository.count({
+      where: { status: UserStatus.verified },
+    });
+    const num_of_banned = this.userRepository.count({
+      where: { status: UserStatus.banned },
+    });
+    const num_of_unverified = this.userRepository.count({
+      where: { status: UserStatus.unverified },
+    });
+
+    return await Promise.all([num_of_verified, num_of_banned, num_of_unverified]).then((result) => {
+      return {
+        num_of_verified: result[0],
+        num_of_banned: result[1],
+        num_of_unverified: result[2],
+      };
+    });
+  }
+
+  //Count user by identity verified
+  async countUserByIdentityVerified(): Promise<{
+    num_of_identity_verified: number;
+    num_of_identity_not_verified: number;
+  }> {
+    const num_of_identity_verified = this.userRepository.count({
+      where: { is_identity_verified: true },
+    });
+    const num_of_identity_not_verified = this.userRepository.count({
+      where: { is_identity_verified: false },
+    });
+
+    return await Promise.all([num_of_identity_verified, num_of_identity_not_verified]).then((result) => {
+      return {
+        num_of_identity_verified: result[0],
+        num_of_identity_not_verified: result[1],
+      };
+    });
   }
 }
 

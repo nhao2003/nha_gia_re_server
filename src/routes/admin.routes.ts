@@ -17,6 +17,7 @@ router.route('/posts').get(adminController.getPosts);
 router.route('/posts/approve').post(adminValidation.checkPostExisted, adminController.approvePost);
 router.route('/posts/reject').post(adminValidation.checkPostExisted, adminController.rejectPost);
 router.route('/posts/delete').patch(adminValidation.checkPostExisted, adminController.deletePost);
+router.route('/posts/dashboard').get(adminController.dashboard);
 
 router.route('/users').get(adminController.getUsers);
 router.route('/users/:id/ban').patch(adminController.banUser);
@@ -72,5 +73,7 @@ router.route('/reports/:id').patch(reportController.updateReport);
 router.route('/blogs').get(blogController.getAllBlog).post(blogController.createBlog);
 router.route('/blogs/:id').patch(blogController.updateBlog).delete(blogController.deleteBlog);
 router.route('/blogs/:id/view').get(blogController.viewBlog);
+
+
 
 export default router;

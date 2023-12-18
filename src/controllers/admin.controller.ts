@@ -28,7 +28,12 @@ class AdminController {
   private adminService: AdminService;
   private userServices: UserServices;
   private postServices: PostServices;
-  constructor(dataSource: DataSource, adminService: AdminService, userServices: UserServices, postServices: PostServices) {
+  constructor(
+    dataSource: DataSource,
+    adminService: AdminService,
+    userServices: UserServices,
+    postServices: PostServices,
+  ) {
     this.UnitsService = new CommonServices(Unit, dataSource);
     this.DeveloperService = new CommonServices(Developer, dataSource);
     this.PropertyTypeService = new CommonServices(PropertyType, dataSource);
@@ -343,7 +348,7 @@ class AdminController {
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
-      message: "Update membership package successfully",
+      message: 'Update membership package successfully',
       result: result,
     };
     res.status(200).json(appRes);
@@ -368,7 +373,7 @@ class AdminController {
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
-      message: "Get discount code successfully",
+      message: 'Get discount code successfully',
       num_of_pages: discountCodes.num_of_pages,
       result: discountCodes.data,
     };
@@ -394,7 +399,7 @@ class AdminController {
     const appRes: AppResponse = {
       status: 'success',
       code: ServerCodes.AdminCode.Success,
-      message: "Get discount code successfully",
+      message: 'Get discount code successfully',
       result: discountCode,
     };
     res.status(200).json(appRes);
@@ -409,6 +414,36 @@ class AdminController {
       code: ServerCodes.AdminCode.Success,
       message: APP_MESSAGES.SUCCESS_MESSAGE.DELETE_DISCOUNT_CODE_SUCCESSFULLY,
       result: result,
+    };
+    res.status(200).json(appRes);
+  });
+
+  public readonly dashboard = wrapRequestHandler(async (req: Request, res: Response) => {
+    const countPostByStatus = this.postServices.countPostByStatus();
+    const countPostByTypeInMonthOfYear = this.postServices.countPostByTypeInMonthOfYear();
+    const countUserByIdentityVerified = this.userServices.countUserByIdentityVerified();
+    const countUserPerStatus = this.userServices.countUserPerStatus();
+    const countSubscriptionPackage = this.membershipPackageService.countSubscriptionPackage();
+
+    const result = await Promise.all([
+      countPostByStatus,
+      countPostByTypeInMonthOfYear,
+      countUserByIdentityVerified,
+      countUserPerStatus,
+      countSubscriptionPackage,
+    ]);
+
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.AdminCode.Success,
+      message: 'Get dashboard successfully',
+      result: {
+        countPostByStatus: result[0],
+        countPostByTypeInMonthOfYear: result[1],
+        countUserByIdentityVerified: result[2],
+        countUserPerStatus: result[3],
+        countSubscriptionPackage: result[4],
+      },
     };
     res.status(200).json(appRes);
   });

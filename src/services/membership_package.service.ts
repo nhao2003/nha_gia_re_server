@@ -87,6 +87,32 @@ class MembershipPackageServices extends CommonServices {
     await this.membershipPackageRepository.save(membershipPackage);
     return membershipPackage;
   }
+
+  public async countSubscriptionPackage(): Promise<any> {
+//     SELECT
+//   mp.id AS package_id,
+//   mp.name AS package_name,
+//   COUNT(s.id) AS subscription_count
+// FROM
+//   membership_packages mp
+// LEFT JOIN
+//   subscriptions s ON mp.id = s.package_id
+// GROUP BY
+//   mp.id, mp.name
+// ORDER BY
+//   mp.id;
+    const query = this.membershipPackageRepository
+      .createQueryBuilder('membership_package')
+      .select('membership_package.id', 'package_id')
+      .addSelect('membership_package.name', 'package_name')
+      .addSelect('COUNT(subscription.id)', 'subscription_count')
+      .leftJoin('membership_package.subscriptions', 'subscription')
+      .groupBy('membership_package.id')
+      .addGroupBy('membership_package.name')
+      .orderBy('membership_package.id');
+    const result = await query.getRawMany();
+    return result;
+  }
 }
 
 export default MembershipPackageServices;
