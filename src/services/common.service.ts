@@ -29,7 +29,16 @@ class CommonServices {
   }
 
   public async markDeleted(id: string): Promise<void> {
-    const value = await this.repository.findOne({ where: { id: id, is_active: true } });
+    const value = await this.repository
+      .createQueryBuilder()
+      .where({
+        id: id,
+        is_active: true,
+      })
+      .setParameters({
+        current_user_id: null,
+      })
+      .getOne();
     if (value === undefined || value === null) {
       throw new AppError('Not found', 404);
     }
@@ -86,7 +95,13 @@ class CommonServices {
 
   public async update(id: string, data: Record<string, any>): Promise<any> {
     delete data.is_active;
-    const value = await this.repository.findOne({ where: { id: id, is_active: true } });
+    // const value = await this.repository.findOne({ where: { id: id, is_active: true } });
+    const value = await this.repository
+      .createQueryBuilder()
+      .where({ id: id, is_active: true })
+      .setParameters({ current_user_id: null })
+      .getOne();
+
     if (value === undefined || value === null) {
       throw new AppError('Not found', 404);
     }
