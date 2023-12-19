@@ -85,7 +85,7 @@ class AuthServices {
     const user = await this.userRepository.insert({ email, password: hashPassword(password) });
     const user_id = user.identifiers[0].id;
     const otp_code = await this.generateOTPCode(OTPTypes.account_activation, user_id);
-    await this.mailService.sendConfirmationEmail(email, otp_code);
+    // await this.mailService.sendConfirmationEmail(email, otp_code);
     return otp_code;
   }
 
@@ -98,7 +98,7 @@ class AuthServices {
     }
 
     const otp_code = await this.generateOTPCode(OTPTypes.account_activation, user.id);
-    await this.mailService.sendConfirmationEmail(email, otp_code);
+    //await this.mailService.sendConfirmationEmail(email, otp_code);
     return otp_code;
   }
 
@@ -234,7 +234,7 @@ class AuthServices {
     const user = await this.userRepository.findOne({ where: { email } });
     if (user) {
       const otp_code = await this.generateOTPCode(OTPTypes.password_recovery, user.id);
-      await this.mailService.sendRecoveryPasswordEmail(email, otp_code)
+      //await this.mailService.sendRecoveryPasswordEmail(email, otp_code)
       return otp_code;
     } else {
       return null;
