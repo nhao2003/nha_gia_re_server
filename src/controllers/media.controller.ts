@@ -51,7 +51,6 @@ class MediaController {
               message: 'Invalid file type.',
             });
           }
-          // File size limit is 50MB
           if (file.size > 50 * 1024 * 1024) {
             return res.status(400).json({
               code: 400,

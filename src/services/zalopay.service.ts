@@ -98,8 +98,6 @@ class ZaloPayServices {
     );
   }
   public verifyMiniAppOrderMac(data: MiniAppTransactionDataCallback, mac: string): boolean {
-    // const data =
-    //   'appId={appId}&amount={amount}&description={description}&orderId={orderId}&message={message}&resultCode={resultCode}&transId={transId}';
     const callbackData = `appId=${data.appId}&amount=${data.amount}&description=${data.description}&orderId=${data.orderId}&message=${data.message}&resultCode=${data.resultCode}&transId=${data.transId}`;
     const hmac = crypto
       .createHmac('sha256', AppConfig.ZALOPAY_SANDBOX.privateKey as string)
