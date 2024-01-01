@@ -121,9 +121,9 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
     socket.on('send_message', async (arg) => {
       try {
         console.log('Send message: ', arg);
-        return;
         const content = arg.content;
         const conversation_id = arg.conversation_id;
+        const type = arg.type;
         var conversation_param: string | Conversation = conversation_id as string;
         for (var i = 0; i < conversations.length; i++) {
           if (conversations[i].id === conversation_id) {
@@ -134,6 +134,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
         const { conversation, message } = await conversationService.sendMessageToConversation(
           conversation_param,
           user_id,
+          type,
           content,
         );
 

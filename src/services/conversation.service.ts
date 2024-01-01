@@ -109,18 +109,32 @@ class ConversationService {
     return conversation;
   }
 
-  private sendMessage = async (conversation_id: string, user_id: string, content: string) => {
+  private sendMessage = async (conversation_id: string, user_id: string, type: MessageTypes, content: string) => {
     const message = new Message();
     message.conversation_id = conversation_id;
-    message.content_type = MessageTypes.text;
+    message.content_type = type;
     message.sender_id = user_id;
-    message.content = {
-      text: content,
-    };
+    // message.content = {
+    //   text: content,
+    // };
+    if (type === MessageTypes.text) {
+      message.content = {
+        text: content,
+      };
+    } else if (type === MessageTypes.media) {
+      message.content = {
+        media: content,
+      };
+    }
     return await this.messageRepository.save(message);
   };
 
-  public async sendMessageToConversation(conversation_param: string | Conversation, user_id: string, content: string) {
+  public async sendMessageToConversation(
+    conversation_param: string | Conversation,
+    user_id: string,
+    type: MessageTypes,
+    content: string,
+  ) {
     let conversation_id: string;
     let conversation: Conversation | null = null;
     if (typeof conversation_param === 'string') {
@@ -130,7 +144,7 @@ class ConversationService {
       conversation_id = conversation_param.id;
       conversation = conversation_param;
     }
-    const message = await this.sendMessage(conversation_id, user_id, content);
+    const message = await this.sendMessage(conversation_id, user_id, type, content);
     conversation!.last_message = message;
     conversation!.last_messsage_id = message.id;
     const tasks: Promise<any>[] = [];

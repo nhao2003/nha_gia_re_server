@@ -9,7 +9,7 @@ export class DiscountCodeService extends CommonServices {
   constructor(dataSource: DataSource) {
     super(DiscountCode, dataSource);
   }
-  public create(data: Record<string, any>): Promise<DiscountCode> {
+  public async create(data: Record<string, any>): Promise<DiscountCode> {
     const {
       package_id,
       code,
@@ -20,12 +20,12 @@ export class DiscountCodeService extends CommonServices {
       limited_quantity,
       min_subscription_months,
     } = data;
-    const discountCode =(this.repository as Repository<DiscountCode>).findOne({
+    const discountCode = await (this.repository as Repository<DiscountCode>).findOne({
       where: {
         code,
       },
     });
-    if (discountCode !== undefined || discountCode !== null) {
+    if (discountCode !== null) {
       throw new AppError('Code is already exist', 400);
     }
     return (this.repository as Repository<DiscountCode>).save({

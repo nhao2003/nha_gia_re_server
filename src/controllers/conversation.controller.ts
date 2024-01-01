@@ -21,17 +21,17 @@ class ConversationController {
     res.status(200).json(appResponse);
   });
 
-    public getConversations = wrapRequestHandler(async (req: Request, res: Response) => {
-        const { user_id } = req.body;
-        const conversations = await this.conversationService.getConversations(user_id);
-        const appResponse: AppResponse = {
-        status: 'success',
-        code: 200,
-        message: 'Get conversations successfully',
-        result: conversations,
-        };
-        res.status(200).json(appResponse);
-    });
+  public getConversations = wrapRequestHandler(async (req: Request, res: Response) => {
+    const { user_id } = req.body;
+    const conversations = await this.conversationService.getConversations(user_id);
+    const appResponse: AppResponse = {
+      status: 'success',
+      code: 200,
+      message: 'Get conversations successfully',
+      result: conversations,
+    };
+    res.status(200).json(appResponse);
+  });
 
   public deleteConversation = wrapRequestHandler(async (req: Request, res: Response) => {
     const { conversation_id } = req.body;
@@ -57,13 +57,11 @@ class ConversationController {
     res.status(200).json(appResponse);
   });
 
-  public getConversationByUserIdAndConversationId = wrapRequestHandler(async (req: Request, res: Response) => {
-
-  });
+  public getConversationByUserIdAndConversationId = wrapRequestHandler(async (req: Request, res: Response) => {});
 
   public sendMessage = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { user_id, conversation_id, content } = req.body;
-    const message = await this.conversationService.sendMessageToConversation(conversation_id, user_id, content);
+    const { user_id, type, conversation_id, content } = req.body;
+    const message = await this.conversationService.sendMessageToConversation(conversation_id, type, user_id, content);
     const appResponse: AppResponse = {
       status: 'success',
       code: 200,
