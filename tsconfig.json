@@ -1,5 +1,5 @@
 {
-  "exclude": ["./coverage", "./dist", "tests", "jest.config.ts"], // Đường dẫn exclude cho các file không cần build
+  "exclude": ["./coverage", "./dist", "tests", "jest.config.ts", "./sample"], // Đường dẫn exclude cho các file không cần build
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -17,7 +17,7 @@
     "types": ["node"]
   },
   "ts-node": {
-    "require": ["tsconfig-paths/register"],
+    "require": ["tsconfig-paths/register"]
   },
   "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
   "include": ["src/**/*", "tests/app/app.test.ts", "tests/user.service.test.ts"] // Đường dẫn include cho các file cần build

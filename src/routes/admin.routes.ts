@@ -7,12 +7,16 @@ import DependencyInjection from '~/di/di';
 import ProjectController from '~/controllers/project.controller';
 import BlogController from '~/controllers/blog.controller';
 import ReportController from '~/controllers/report.controller';
+import AccountVerificationRequestController from '~/controllers/account_verification_request.controller';
 const router = Router();
 const adminController = DependencyInjection.get<AdminController>(AdminController);
 const adminValidation = DependencyInjection.get<AdminValidation>(AdminValidation);
 const projectController = DependencyInjection.get<ProjectController>(ProjectController);
 const blogController = DependencyInjection.get<BlogController>(BlogController);
 const reportController = DependencyInjection.get<ReportController>(ReportController);
+const accountVerificationRequestController = DependencyInjection.get<AccountVerificationRequestController>(
+  AccountVerificationRequestController,
+);
 router.route('/posts').get(adminController.getPosts);
 router.route('/posts/approve').post(adminValidation.checkPostExisted, adminController.approvePost);
 router.route('/posts/reject').post(adminValidation.checkPostExisted, adminController.rejectPost);
@@ -60,10 +64,7 @@ router
 
 // Discount Codes
 router.route('/discount-codes').get(adminController.getDiscountCodes).post(adminController.createDiscountCode);
-router
-  .route('/discount-codes/:id')
-  .get(adminController.getDiscountCodeById)
-  .delete(adminController.deleteDiscountCode);
+router.route('/discount-codes/:id').get(adminController.getDiscountCodeById).delete(adminController.deleteDiscountCode);
 
 // Get all reports
 router.route('/reports').get(reportController.getAllReport);
@@ -74,6 +75,8 @@ router.route('/blogs').get(blogController.getAllBlog).post(blogController.create
 router.route('/blogs/:id').patch(blogController.updateBlog).delete(blogController.deleteBlog);
 router.route('/blogs/:id/view').get(blogController.viewBlog);
 
-
+// Account Verification Requests
+router.route('/account-verification-requests').get(accountVerificationRequestController.getAllByQuery);
+router.route('/account-verification-requests/:id').patch(accountVerificationRequestController.updateRequest);
 
 export default router;

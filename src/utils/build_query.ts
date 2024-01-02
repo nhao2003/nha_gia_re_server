@@ -23,20 +23,27 @@ const getOperatorValueString = (operatorAndValue: Record<string, any>): string =
     nregex: '!~',
     iregex: '~*',
     niregex: '!~*',
+    is: 'IS',
+    not: 'IS NOT',
   };
   const operator = Object.keys(operatorAndValue)[0];
   // const value = operatorAndValue[operator];
   // decodeURIComponent operatorAndValue[operator]
-  const value = operatorAndValue[operator]
-    .replace(/%20/g, ' ')
-    .replace(/%2C/g, ',')
-    .replace(/%27/g, "'")
-    .replace(/%22/g, '"')
-    .replace(/%3E/g, '>')
-    .replace(/%3C/g, '<')
-    .replace(/%3D/g, '=')
-    .replace(/%3B/g, ';')
-    .replace(/%2F/g, '/');
+  let value;
+  if (typeof operatorAndValue[operator] === 'string') {
+    value = operatorAndValue[operator]
+      .replace(/%20/g, ' ')
+      .replace(/%2C/g, ',')
+      .replace(/%27/g, "'")
+      .replace(/%22/g, '"')
+      .replace(/%3E/g, '>')
+      .replace(/%3C/g, '<')
+      .replace(/%3D/g, '=')
+      .replace(/%3B/g, ';')
+      .replace(/%2F/g, '/');
+  } else {
+    value = operatorAndValue[operator];
+  }
   if (operatorMapping[operator]) {
     let query = operatorMapping[operator];
 
@@ -63,7 +70,10 @@ const getOperatorValueString = (operatorAndValue: Record<string, any>): string =
       const from = value.split(',')[0];
       const to = value.split(',')[1];
       query += ` ${from} AND ${to}`;
-    } else {
+    } else if (['is', 'not'].includes(operator)) {
+      query += ` ${value}`;
+    } 
+    else {
       query += ` ${value}`;
     }
 

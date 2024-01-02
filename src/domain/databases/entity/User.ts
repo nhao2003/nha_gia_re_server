@@ -10,6 +10,7 @@ import Subscription from './Subscription ';
 import Transaction from './Transaction';
 import Report from './Report';
 import {UserFollow}  from './UserFollow';
+import { AccountVerificationRequest } from './AccountVerificationRequest';
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -88,4 +89,8 @@ export class User extends BaseEntity implements IUser {
   @OneToMany(() => UserFollow, (user_follow) => user_follow.follow)
   @JoinColumn({ name: 'id' })
   followers!: UserFollow[];
+
+  @OneToMany(() => AccountVerificationRequest, (account_verification_request) => account_verification_request.user)
+  @JoinColumn({ name: 'id' })
+  account_verification_requests!: AccountVerificationRequest[];
 }
