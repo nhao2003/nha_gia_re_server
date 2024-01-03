@@ -135,3 +135,10 @@ export enum TransactionStatus {
   unpaid = 'unpaid',
   paid = 'paid',
 }
+
+export enum NotificationType {
+  'info',
+  'warning',
+  'error',
+  'message',
+}

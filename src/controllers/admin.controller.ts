@@ -7,7 +7,6 @@ import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
 import { buildBaseQuery } from '~/utils/build_query';
 import CommonServices from '~/services/common.service';
-import { Unit } from '~/domain/databases/entity/Unit';
 import { Developer } from '~/domain/databases/entity/Developer';
 import { PropertyType } from '~/domain/databases/entity/PropertyType';
 import MembershipPackage from '~/domain/databases/entity/MembershipPackage';
@@ -22,7 +21,6 @@ import ReportService from '~/services/report.service';
 
 @Service()
 class AdminController {
-  private UnitsService: CommonServices;
   private DeveloperService: CommonServices;
   private PropertyTypeService: CommonServices;
   private membershipPackageService: MembershipPackageServices;
@@ -40,7 +38,6 @@ class AdminController {
     blogServices: BlogService,
     reportService: ReportService,
   ) {
-    this.UnitsService = new CommonServices(Unit, dataSource);
     this.DeveloperService = new CommonServices(Developer, dataSource);
     this.PropertyTypeService = new CommonServices(PropertyType, dataSource);
     this.membershipPackageService = new MembershipPackageServices(dataSource);
@@ -51,60 +48,6 @@ class AdminController {
     this.blogServices = blogServices;
     this.reportService = reportService;
   }
-
-  public readonly getUnits = wrapRequestHandler(async (req: Request, res: Response) => {
-    const baseQuery = buildBaseQuery(req.query);
-    const data = await this.UnitsService.getAllByQuery(baseQuery);
-    const appRes: AppResponse = {
-      status: 'success',
-      code: ServerCodes.AdminCode.Success,
-      message: APP_MESSAGES.SUCCESS_MESSAGE.GET_UNIT_INFO_SUCCESSFULLY,
-      result: data,
-    };
-    res.status(200).json(appRes);
-  });
-  public readonly createUnit = wrapRequestHandler(async (req: Request, res: Response) => {
-    const data = {
-      id: req.body.id,
-      unit_name: req.body.unit_name,
-    };
-    const unit = await this.UnitsService.create(data);
-    const appRes: AppResponse = {
-      status: 'success',
-      code: ServerCodes.AdminCode.Success,
-      message: 'APP_MESSAGES.SUCCESS_MESSAGE.CREATE_UNIT_SUCCESSFULLY',
-      result: unit,
-    };
-    res.status(200).json(appRes);
-  });
-
-  public readonly updateUnit = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    let data: Record<string, any> = {};
-    if (req.body.unit_name) {
-      data.unit_name = req.body.unit_name;
-    }
-    const result = await this.UnitsService.update(id, data);
-    const appRes: AppResponse = {
-      status: 'success',
-      code: ServerCodes.AdminCode.Success,
-      message: 'APP_MESSAGES.SUCCESS_MESSAGE.UPDATE_UNIT_SUCCESSFULLY',
-      result: result,
-    };
-    res.status(200).json(appRes);
-  });
-
-  public readonly deleteUnit = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const result = await this.UnitsService.markDeleted(id);
-    const appRes: AppResponse = {
-      status: 'success',
-      code: ServerCodes.AdminCode.Success,
-      message: 'APP_MESSAGES.SUCCESS_MESSAGE.DELETE_UNIT_SUCCESSFULLY',
-      result: result,
-    };
-    res.status(200).json(appRes);
-  });
 
   public readonly getPosts = wrapRequestHandler(async (req: Request, res: Response) => {
     const query = this.postServices.buildPostQuery(req.query);

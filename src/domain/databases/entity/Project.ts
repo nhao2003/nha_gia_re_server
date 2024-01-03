@@ -6,8 +6,6 @@ import { ManyToOne } from 'typeorm';
 import { Developer } from './Developer';
 import { JoinColumn } from 'typeorm';
 import { OneToMany } from 'typeorm';
-import PropertyTypeProject from './PropertyTypeProject';
-import ProjectScale from './ProjectScale';
 import { Progression as ProjectProgression, ProjectStatus } from '~/constants/enum';
 
 @Entity('projects')
@@ -48,19 +46,14 @@ export class Project extends BaseEntity implements IProject {
   @Column({ type: PostgresDataType.boolean, default: false, nullable: true })
   verified!: boolean;
 
+  @Column({ type: PostgresDataType.jsonb, nullable: true, array: true })
+  scale!: Array<any> | null;
+
   @Column({ type: PostgresDataType.boolean, default: true })
   is_active!: boolean;
 
   @ManyToOne(() => Developer, (developer) => developer.projects)
   @JoinColumn({ name: 'developer_id' })
   developer!: Developer;
-
-  @OneToMany(() => PropertyTypeProject, (propertyTypeProject) => propertyTypeProject.project)
-  @JoinColumn({ name: 'id' })
-  property_types!: PropertyTypeProject[];
-
-  @OneToMany(() => ProjectScale, (projectScale) => projectScale.project)
-  @JoinColumn({ name: 'id'})
-  scales!: ProjectScale[];
   
 }

@@ -17,10 +17,4 @@ export class Session extends BaseEntity implements ISession {
 
   @Column({ type: PostgresDataType.timestamp_without_timezone })
   expiration_date!: Date;
-
-  @Column({ type: PostgresDataType.timestamp_without_timezone, default:() => DatabaseDefaultValues.now })
-  updated_at!: Date;
-
-  @Column({ type: PostgresDataType.boolean, default: 'true' })
-  is_active!: boolean;
 }

@@ -8,6 +8,7 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
+    "@onesignal/node-onesignal": "^2.0.1-beta2",
     "@socket.io/admin-ui": "^0.5.1",
     "@socket.io/postgres-adapter": "^0.3.1",
     "@types/axios": "^0.14.0",

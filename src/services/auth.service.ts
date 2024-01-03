@@ -128,7 +128,6 @@ class AuthServices {
       where: { id: session_id, user_id, expiration_date: MoreThanOrEqual(new Date()) },
     });
     if (session === null || session === undefined) return session;
-    session.updated_at = new Date();
     await this.sessionRepository.save(session);
     return this.generateAccessToken(user_id, session_id);
   }

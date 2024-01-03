@@ -5,13 +5,11 @@ interface IRealEstatePost {
   user_id: string;
   project_id: string;
   type_id: string;
-  unit_id: string;
   status: string;
   title: string;
   description: string;
   area: number;
   address: Address; // Define an appropriate type for your address JSON
-  address_point: string | null;
   price: number;
   deposit: number | null;
   is_lease: boolean;

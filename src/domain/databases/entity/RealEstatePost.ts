@@ -30,9 +30,6 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @Column({ type: PostgresDataType.varchar, length: 50 })
   type_id!: string;
 
-  @Column({ type: PostgresDataType.varchar, length: 50, nullable: true })
-  unit_id!: string;
-
   @Column({ type: PostgresDataType.varchar, nullable: true })
   status!: string;
 
@@ -47,9 +44,6 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
 
   @Column(PostgresDataType.jsonb)
   address!: Address;
-
-  @Column(PostgresDataType.point, { nullable: true })
-  address_point!: string;
 
   @Column(PostgresDataType.bigint)
   price!: number;

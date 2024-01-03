@@ -37,5 +37,11 @@ class AppConfig {
   public readonly ZALOPAY_API = process.env.ZALOPAY_API;
 
   public readonly  RESULT_PER_PAGE = 10;
+
+  public readonly OneSignal = {
+    userKey: process.env.ONESIGNAL_USER_KEY,
+    appKey: process.env.ONESIGNAL_APP_KEY,
+    appId: process.env.ONESIGNAL_APP_ID,
+  }
 }
 export default new AppConfig();

@@ -11,6 +11,7 @@ import Transaction from './Transaction';
 import Report from './Report';
 import {UserFollow}  from './UserFollow';
 import { AccountVerificationRequest } from './AccountVerificationRequest';
+import { Notification } from './Notification';
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -52,9 +53,6 @@ export class User extends BaseEntity implements IUser {
   @Column({ type: PostgresDataType.varchar, default: DefaultValue.UNKNOW })
   phone!: string;
 
-  @Column({ type: PostgresDataType.timestamp_without_timezone, default: () => DatabaseDefaultValues.now })
-  last_active_at!: Date;
-
   @CreateDateColumn({ type: PostgresDataType.timestamp_without_timezone, default: () => DatabaseDefaultValues.now })
   created_at!: Date;
 
@@ -93,4 +91,8 @@ export class User extends BaseEntity implements IUser {
   @OneToMany(() => AccountVerificationRequest, (account_verification_request) => account_verification_request.user)
   @JoinColumn({ name: 'id' })
   account_verification_requests!: AccountVerificationRequest[];
+
+  @OneToMany(() => Notification, (notification) => notification.user)
+  @JoinColumn({ name: 'id' })
+  notifications!: Notification[];
 }

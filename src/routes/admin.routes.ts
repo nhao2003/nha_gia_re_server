@@ -30,9 +30,6 @@ router.route('/users/:id/unban').patch(adminController.unbanUser);
 router.route('/developers').get(adminController.getDevelopers).post(adminController.createDeveloper);
 router.route('/developers/:id').patch(adminController.updateDeveloper).delete(adminController.deleteDeveloper);
 
-// Units
-router.route('/units').get(adminController.getUnits).post(adminController.createUnit);
-router.route('/units/:id').patch(adminController.updateUnit).delete(adminController.deleteUnit);
 
 //PropertyTypes
 router.route('/property-types').get(adminController.getPropertyTypes).post(adminController.createPropertyType);

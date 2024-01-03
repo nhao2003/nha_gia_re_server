@@ -15,7 +15,6 @@ export interface IUser {
   avatar: string | null;
   dob: Date;
   phone: string | null;
-  last_active_at: Date;
   created_at: Date;
   updated_at: Date | null;
   banned_util: Date | null;
