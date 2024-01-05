@@ -18,9 +18,9 @@ class PostServices {
   postFavoriteRepository: Repository<UserPostFavorite>;
   postViewRepository: Repository<UserPostView>;
   subscriptionRepository: Repository<Subscription>;
-  membershipPackageServices: MembershipPackageServices
+  membershipPackageServices: MembershipPackageServices;
   projectServices: ProjectServices;
-  constructor(dataSource: DataSource ) {
+  constructor(dataSource: DataSource) {
     this.postRepository = dataSource.getRepository(RealEstatePost);
     this.postFavoriteRepository = dataSource.getRepository(UserPostFavorite);
     this.postViewRepository = dataSource.getRepository(UserPostView);
@@ -175,10 +175,7 @@ class PostServices {
     query = query.orderBy(postQuery.order);
 
     const total = query.getCount();
-    const data = query
-      .skip(skip)
-      .take(take)
-      .getMany();
+    const data = query.skip(skip).take(take).getMany();
     const result = await Promise.all([total, data]);
     return {
       numberOfPages: Math.ceil(result[0] / 10),
@@ -296,20 +293,20 @@ class PostServices {
 
   // Get id, first_name, last_name, number of posts of users have the most posts
   async getTop10UsersHaveMostPosts() {
-  //   SELECT
-  //   u.id AS user_id,
-  //   u.first_name,
-  //   u.last_name,
-  //   COUNT(rp.id) AS post_count
-  // FROM
-  //   users u
-  // JOIN
-  //   real_estate_posts rp ON u.id = rp.user_id
-  // GROUP BY
-  //   u.id, u.first_name, u.last_name
-  // ORDER BY
-  //   post_count DESC
-  // LIMIT 10;
+    //   SELECT
+    //   u.id AS user_id,
+    //   u.first_name,
+    //   u.last_name,
+    //   COUNT(rp.id) AS post_count
+    // FROM
+    //   users u
+    // JOIN
+    //   real_estate_posts rp ON u.id = rp.user_id
+    // GROUP BY
+    //   u.id, u.first_name, u.last_name
+    // ORDER BY
+    //   post_count DESC
+    // LIMIT 10;
 
     const query = this.postRepository
       .createQueryBuilder('real_estate_post')
@@ -324,10 +321,46 @@ class PostServices {
       .orderBy('post_count', 'DESC')
       .limit(10);
     const result = await query.getRawMany();
-  
-  
+
     return result;
   }
-}
 
+  async getFavoritePostsByUserId(
+    user_id: string,
+    page: number = 1,
+  ): Promise<{
+    data: RealEstatePost[];
+    numberOfPages: number;
+  }> {
+    {
+      // SELECT * FROM real_estate_posts
+      // JOIN user_post_favorites ON
+      // user_post_favorites.real_estate_posts_id = real_estate_posts.id
+      // AND user_post_favorites.user_id = '1a9a5785-721a-4bb5-beb7-9d752e2070d4'
+      const query = this.postRepository
+        .createQueryBuilder('real_estate_posts')
+        .leftJoinAndSelect(
+          'real_estate_posts.user_post_favorites',
+          'user_post_favorites'
+        )
+        .where('user_post_favorites.user_id = :user_id', { user_id })
+        .andWhere('real_estate_posts.is_active = :is_active', { is_active: true })
+        .andWhere('real_estate_posts.expiry_date >= :expiry_date', { expiry_date: new Date() })
+        .setParameters({ current_user_id: user_id });
+
+      // const result = await query.getMany();
+      const count = query.getCount();
+      console.log(user_id);
+      const result = query
+        .skip((page - 1) * AppConfig.RESULT_PER_PAGE)
+        .take(AppConfig.RESULT_PER_PAGE)
+        .getMany();
+      const data = await Promise.all([count, result]);
+      return {
+        numberOfPages: Math.ceil(data[0] / 10),
+        data: data[1],
+      };
+    }
+  }
+}
 export default PostServices;

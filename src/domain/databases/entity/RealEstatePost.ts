@@ -16,6 +16,7 @@ import Address from '~/domain/typing/address';
 import { User } from './User';
 import address_utils from '~/utils/address_utils';
 import Report from './Report';
+import UserPostFavorite from './UserPostFavorite';
 @Entity('real_estate_posts')
 export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   @PrimaryGeneratedColumn(PostgresDataType.uuid)
@@ -86,6 +87,10 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
 
   @Column({ type: PostgresDataType.boolean, default: true })
   is_active!: boolean;
+
+  @OneToMany(() => UserPostFavorite, (userPostFavorite) => userPostFavorite.real_estate_post)
+  @JoinColumn({ name: 'id' })
+  user_post_favorites!: UserPostFavorite[];
 
   @VirtualColumn({
     query: (alias) =>

@@ -158,7 +158,7 @@ class PostController {
   // Favorite post
   favoritePost = wrapRequestHandler(async (req: any, res: any) => {
     const id = req.params.id;
-    const post = await this.postServices.toggleFavorite(id, req.user.id);
+    const post = await this.postServices.toggleFavorite(req.user.id, id);
 
     if (post === false) {
       const appRes: AppResponse = {
@@ -184,6 +184,22 @@ class PostController {
       code: ServerCodes.PostCode.Success,
       message: 'Check limit post successfully',
       result: limit,
+    };
+    res.status(200).json(appRes);
+  });
+
+  // Get favorite post
+  getFavoritePost = wrapRequestHandler(async (req: any, res: any) => {
+    const user_id = req.user.id;
+    let { page } = req.query;
+    page = isNaN(Number(page)) ? 1 : Number(page);
+    const posts = await this.postServices.getFavoritePostsByUserId(user_id, page);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.PostCode.Success,
+      message: 'Get favorite post successfully',
+      num_of_pages: posts.numberOfPages,
+      result: posts.data,
     };
     res.status(200).json(appRes);
   });

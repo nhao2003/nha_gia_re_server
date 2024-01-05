@@ -12,6 +12,7 @@ import Report from './Report';
 import {UserFollow}  from './UserFollow';
 import { AccountVerificationRequest } from './AccountVerificationRequest';
 import { Notification } from './Notification';
+import UserPostFavorite from './UserPostFavorite';
 @Entity('users')
 export class User extends BaseEntity implements IUser {
   @PrimaryGeneratedColumn('uuid')
@@ -95,4 +96,8 @@ export class User extends BaseEntity implements IUser {
   @OneToMany(() => Notification, (notification) => notification.user)
   @JoinColumn({ name: 'id' })
   notifications!: Notification[];
+
+  @OneToMany(() => UserPostFavorite, (user_post_favorite) => user_post_favorite.user)
+  @JoinColumn({ name: 'id' })
+  user_post_favorites!: UserPostFavorite[];
 }

@@ -15,6 +15,9 @@ router
 router
   .route('/favorite/:id')
   .put(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.favoritePost);
+// Get favorite post
+router.route('/favorites').get(authValidation.accessTokenValidation, postController.getFavoritePost);
+
 router.route('/check-limit-post').get(authValidation.accessTokenValidation, postController.checkLimitPost);
 // Create a post
 router
