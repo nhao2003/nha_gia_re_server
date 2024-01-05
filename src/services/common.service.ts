@@ -7,8 +7,10 @@ import { AppError } from '~/models/Error';
 import AppConfig from '~/constants/configs';
 class CommonServices {
   protected repository: Repository<any>;
+  private entity: EntityTarget<any>;
   constructor(entity: EntityTarget<any>, dataSource: DataSource) {
     this.repository = dataSource.getRepository(entity);
+    this.entity = entity;
   }
 
   public getRepository() {
@@ -16,16 +18,16 @@ class CommonServices {
   }
 
   public buildBaseQuery(query: Record<string, any>): BaseQuery {
-    const { page, sort_fields, sort_orders } = query;
+    const { page, orders } = query;
     const handleQuery = {
       ...query,
     };
     delete handleQuery.page;
-    delete handleQuery.sort_fields;
-    delete handleQuery.sort_orders;
+    delete handleQuery.orders;
     const wheres = buildQuery(handleQuery);
-    const orders = buildOrder(sort_fields, sort_orders);
-    return { page, wheres, orders };
+    // Get Name of entity
+    const entityName = this.repository.metadata.name;
+    return { page, wheres, orders: buildOrder(orders, entityName) };
   }
 
   public async markDeleted(id: string): Promise<void> {

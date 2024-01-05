@@ -176,6 +176,17 @@ class PostController {
       res.status(200).json(appRes);
     }
   });
+
+  checkLimitPost = wrapRequestHandler(async (req: any, res: any) => {
+    const limit = await this.postServices.checkLimitPostInMonth(req.user.id);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.PostCode.Success,
+      message: 'Check limit post successfully',
+      result: limit,
+    };
+    res.status(200).json(appRes);
+  });
 }
 
 export default PostController;

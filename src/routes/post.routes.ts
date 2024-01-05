@@ -8,7 +8,14 @@ const router = Router();
 const postController = DependencyInjection.get<PostController>(PostController);
 const postValidation = DependencyInjection.get<PostValidation>(PostValidation);
 const authValidation = DependencyInjection.get<AuthValidation>(AuthValidation);
-
+//Mark read post
+router
+  .route('/mark-read/:id')
+  .put(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.markReadPost);
+router
+  .route('/favorite/:id')
+  .put(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.favoritePost);
+router.route('/check-limit-post').get(authValidation.accessTokenValidation, postController.checkLimitPost);
 // Create a post
 router
   .route('/create')
@@ -19,12 +26,7 @@ router
   .patch(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.updatePost)
   .delete(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.deletePost);
 
-//Mark read post
-router
-  .route('/mark-read/:id')
-  .put(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.markReadPost);
-router
-  .route('/favorite/:id')
-  .put(authValidation.accessTokenValidation, postValidation.checkPostExist, postController.favoritePost);
+
 router.route('/').get(authValidation.getUserByTokenIfExist, postController.getAllPost);
+
 export default router;

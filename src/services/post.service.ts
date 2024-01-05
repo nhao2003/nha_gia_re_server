@@ -29,6 +29,7 @@ class PostServices {
     this.projectServices = new ProjectServices(dataSource);
   }
   async createPost(data: Record<string, any>) {
+    const user_id = data.user_id;
     const subscriptionPackage = await this.membershipPackageServices.getCurrentUserSubscriptionPackage(data.user_id);
     const countPostInMonth = await this.countPostInMonth(data.user_id);
     const limitPostInMonth = subscriptionPackage ? subscriptionPackage.membership_package.monthly_post_limit : 3;
@@ -58,6 +59,21 @@ class PostServices {
     delete data.project;
     await this.postRepository.insert(data);
     return data;
+  }
+
+  async checkLimitPostInMonth(user_id: string): Promise<{
+    isExceeded: boolean;
+    limit_post_in_month: number;
+    count_post_in_month: number;
+  }> {
+    const subscriptionPackage = await this.membershipPackageServices.getCurrentUserSubscriptionPackage(user_id);
+    const countPostInMonth = await this.countPostInMonth(user_id);
+    const limitPostInMonth = subscriptionPackage ? subscriptionPackage.membership_package.monthly_post_limit : 3;
+    return {
+      isExceeded: countPostInMonth >= limitPostInMonth,
+      limit_post_in_month: limitPostInMonth,
+      count_post_in_month: countPostInMonth,
+    };
   }
 
   async getPostById(id: any): Promise<RealEstatePost | null> {
