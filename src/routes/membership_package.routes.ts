@@ -13,9 +13,10 @@ routes.get('/', membership_packageController.getMembershipPackages);
 routes.get('/current-subscription', authValiation.accessTokenValidation, membership_packageController.getCurrentUserMembershipPackage);
 routes.get('/user-with-subscription', membership_packageController.getUserWithSubscriptionPackage);
 routes.get('/transactions', authValiation.accessTokenValidation, paymentController.getTransactions);
-
+// unsubscription
+routes.post('/unsubscribe', authValiation.accessTokenValidation, membership_packageController.unsubscribe);
 routes.post('/check-out', paymentController.createOrderMemberShipPayment);
-
+routes.get('/discounts', membership_packageController.getDiscounts);
 // Get current user's membership package
 routes.post('/create-mini-app-order', paymentController.createMiniAppOrder);
 routes.post('/mini-app-update-payment-status', paymentController.updatePaymentStatus);

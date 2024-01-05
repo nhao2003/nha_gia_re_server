@@ -101,10 +101,10 @@ class PaymentServices {
     if (checkUserHasSubscription) {
       throw new AppError('User has subscription', 400);
     }
-    const { user_id, package_id, discount_code: discount_id, num_of_subscription_month } = orderRequest;
+    const { user_id, package_id, discount_code, num_of_subscription_month } = orderRequest;
     let discount = null;
-    if (discount_id) {
-      discount = await this.discountCodeRepository.findOne({ where: { code: discount_id } });
+    if (discount_code) {
+      discount = await this.discountCodeRepository.findOne({ where: { code: discount_code } });
       if (!discount) {
         throw new AppError('Discount code not found', 404);
       }
@@ -114,7 +114,11 @@ class PaymentServices {
       throw new AppError('Membership package not found', 404);
     }
     const amount = membershipPackage.price_per_month * num_of_subscription_month;
-    const discount_percent = discount ? discount.discount_percent : 0;
+    // const discount_percent = discount ? discount.discount_percent : 0;
+    let discount_percent = 0;
+    if(discount?.min_subscription_months && discount?.min_subscription_months <= num_of_subscription_month){
+      discount_percent = discount.discount_percent;
+    }
     const discount_amount = amount * discount_percent;
     const total_amount = amount - discount_amount;
     const starting_date = new Date();

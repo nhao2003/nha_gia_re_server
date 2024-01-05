@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { AppDataSource } from '../src/app/database';
-import { AccountVerificationRequest } from '../src/domain/databases/entity/AccountVerificationRequest';
 import { Repository } from 'typeorm';
+import { AccountVerificationRequest } from '../src/domain/databases/entity/AccountVerificationRequest';
 
 const requests = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'sample' ,'account_verification_requests.json'), 'utf8'));
 
