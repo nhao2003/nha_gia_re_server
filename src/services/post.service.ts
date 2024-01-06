@@ -273,7 +273,7 @@ class PostServices {
       .addSelect('type_id')
       .addSelect('COUNT(*)', 'total_posts_by_type')
       .addSelect('is_lease')
-      .where('EXTRACT(YEAR FROM posted_date) = EXTRACT(YEAR FROM CURRENT_TIMESTAMP)')
+      .where('EXTRACT(YEAR FROM posted_date) = 2023')
       .groupBy('EXTRACT(MONTH FROM posted_date), EXTRACT(YEAR FROM posted_date), type_id, is_lease')
       .orderBy('EXTRACT(YEAR FROM posted_date), EXTRACT(MONTH FROM posted_date), type_id, is_lease')
       .getRawMany();
