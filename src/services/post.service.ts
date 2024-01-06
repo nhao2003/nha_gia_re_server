@@ -343,6 +343,7 @@ class PostServices {
           'real_estate_posts.user_post_favorites',
           'user_post_favorites'
         )
+        .leftJoinAndSelect('real_estate_posts.user', 'user')
         .where('user_post_favorites.user_id = :user_id', { user_id })
         .andWhere('real_estate_posts.is_active = :is_active', { is_active: true })
         .andWhere('real_estate_posts.expiry_date >= :expiry_date', { expiry_date: new Date() })
