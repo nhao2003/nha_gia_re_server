@@ -12,13 +12,6 @@ class ProjectServices extends CommonServices {
   }
 
   public async create(data: Record<string, any>) {
-    const project_types: string[] | null = data.project_types;
-    const scales:
-      | {
-          scale: number;
-          unit_id: string;
-        }[]
-      | null = data.scales;
     data.verified = true;
     const project: Project = await super.create(data);
     return project;
@@ -28,13 +21,14 @@ class ProjectServices extends CommonServices {
     num_of_pages: number;
     data: Project[];
   }> {
-    let { page, wheres, orders } = query;
+    let { page } = query;
+    const { wheres, orders } = query;
     let skip = undefined;
     let take = undefined;
     if (page !== 'all') {
       page = isNaN(Number(page)) ? 1 : Number(page);
-      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
-      take = AppConfig.RESULT_PER_PAGE;
+      skip = (page - 1) * AppConfig.ResultPerPage;
+      take = AppConfig.ResultPerPage;
     }
     let baseQuery = this.repository.createQueryBuilder();
     baseQuery = baseQuery.leftJoinAndSelect('Project.developer', 'developer');
@@ -52,35 +46,13 @@ class ProjectServices extends CommonServices {
     const getMany = baseQuery.skip(skip).take(take).getMany();
     const res = await Promise.all([getMany, getCount]);
     return {
-      num_of_pages: Math.ceil(res[1] / AppConfig.RESULT_PER_PAGE),
+      num_of_pages: Math.ceil(res[1] / AppConfig.ResultPerPage),
       data: res[0],
     };
   }
   async update(id: string, data: Record<string, any>): Promise<any> {
-    const project: Project = (await super.getById(id)) as Project;
-    const project_types: string[] | null = data.project_types;
     const promieses = [];
-    const scales:
-      | {
-          scale: number;
-          unit_id: string;
-        }[]
-      | null = data.scales;
 
-    if (project_types !== null && Array.isArray(project_types)) {
-      const propertyTypeProjects = project_types.map((property_type_id: string) => ({
-        projects_id: project.id,
-        property_types_id: property_type_id,
-      }));
-
-    }
-    if (scales !== null && Array.isArray(scales)) {
-      const projectScales = scales.map((scale: any) => ({
-        project_id: project.id,
-        scale: scale.scale,
-        unit_id: scale.unit_id,
-      }));
-    }
     // Update project
     delete data.project_types;
     delete data.scales;

@@ -89,18 +89,18 @@ class MembershipPackageServices extends CommonServices {
   }
 
   public async countSubscriptionPackage(): Promise<any> {
-//     SELECT
-//   mp.id AS package_id,
-//   mp.name AS package_name,
-//   COUNT(s.id) AS subscription_count
-// FROM
-//   membership_packages mp
-// LEFT JOIN
-//   subscriptions s ON mp.id = s.package_id
-// GROUP BY
-//   mp.id, mp.name
-// ORDER BY
-//   mp.id;
+    //     SELECT
+    //   mp.id AS package_id,
+    //   mp.name AS package_name,
+    //   COUNT(s.id) AS subscription_count
+    // FROM
+    //   membership_packages mp
+    // LEFT JOIN
+    //   subscriptions s ON mp.id = s.package_id
+    // GROUP BY
+    //   mp.id, mp.name
+    // ORDER BY
+    //   mp.id;
     const query = this.membershipPackageRepository
       .createQueryBuilder('membership_package')
       .select('membership_package.id', 'package_id')

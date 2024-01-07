@@ -1,13 +1,12 @@
-import { Request, Response, NextFunction } from "express";
-import { validationResult, ValidationChain } from "express-validator";
-import { RunnableValidationChains } from "express-validator/src/middlewares/schema";
-import HTTP_STATUS from "~/constants/httpStatus";
-import { APP_MESSAGES } from "~/constants/message";
-import { AppError } from "~/models/Error";
+import { Request, Response, NextFunction } from 'express';
+import { validationResult, ValidationChain } from 'express-validator';
+import { RunnableValidationChains } from 'express-validator/src/middlewares/schema';
+import HttpStatus from '~/constants/httpStatus';
+import ServerCodes from '~/constants/server_codes';
+import { AppError } from '~/models/Error';
 
 export const validate = (validation: RunnableValidationChains<ValidationChain>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const body = req.body;
     await validation.run(req);
     const errors = validationResult(req);
     if (errors.isEmpty()) {
@@ -17,12 +16,14 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
       return {
         message: error.msg,
         path: error.path,
-        value: error.value
+        value: error.value,
       };
     });
-    next(new AppError(APP_MESSAGES.INVALID_REQUEST_PARAMS, HTTP_STATUS.BAD_REQUEST, {
-      code: 400,
-      details
-    }));
+    next(
+      new AppError(HttpStatus.BAD_REQUEST, 'Invalid Request Body', {
+        serverCode: ServerCodes.CommomCode.FieldValidationFailed,
+        details,
+      }),
+    );
   };
 };

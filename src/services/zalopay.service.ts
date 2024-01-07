@@ -2,7 +2,6 @@ import ZaloPayOrderRequest from '~/models/Request/ZaloPayOrderRequest';
 import AppConfig from '../constants/configs';
 import crypto from 'crypto';
 import ZaloPayOrderResponse from '~/models/Response/ZaloPayOrderResponse';
-import ZaloPayCallbackResponse from '~/models/Response/ZaloPayCallbackResponse';
 import MiniAppTransactionDataCallback from '~/models/Response/MiniAppTransactionDataCallback';
 interface BodyCreateOrderRequest {
   app_id: number;

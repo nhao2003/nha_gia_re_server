@@ -12,7 +12,7 @@ class OneSignalService {
     this.userKey = appConfig.OneSignal.userKey as string;
     this.appKey = appConfig.OneSignal.appKey as string;
     const configuration = OneSignal.createConfiguration({
-      userKey: this.userKey, 
+      userKey: this.userKey,
       appKey: this.appKey,
     });
     this.client = new OneSignal.DefaultApi(configuration);

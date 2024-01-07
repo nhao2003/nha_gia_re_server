@@ -1,5 +1,5 @@
 import { checkSchema } from 'express-validator';
-import HTTP_STATUS from '~/constants/httpStatus';
+import HttpStatus from '~/constants/httpStatus';
 import { APP_MESSAGES } from '~/constants/message';
 import { AppError } from '~/models/Error';
 import { UserPayload, VerifyResult, verifyToken } from '~/utils/jwt';
@@ -7,11 +7,12 @@ import { validate } from '~/utils/validation';
 import { NextFunction, Request, Response } from 'express';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { UserStatus } from '~/constants/enum';
+import AuthServices from '~/services/auth.service';
 import ServerCodes from '~/constants/server_codes';
 import { Service } from 'typedi';
-import { User } from '~/domain/databases/entity/User';
-import AuthServices from '~/services/auth.service';
+
 import { ParamsValidation } from '~/validations/params_validation';
+import { User } from '~/domain/databases/entity/User';
 
 @Service()
 class AuthValidation {
@@ -19,36 +20,54 @@ class AuthValidation {
   constructor(auth: AuthServices) {
     this.authServices = auth;
   }
-  public getUserByTokenIfExist = wrapRequestHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
-      const authorization = req.headers.authorization;
-      if(!authorization) {
-        return next();
-      }
-      const access_token = authorization?.split(' ')[1];
-      if (!access_token) {
-        return next(new AppError(APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED, HTTP_STATUS.UNAUTHORIZED));
-      }
-      const result = await verifyToken(access_token, process.env.JWT_SECRET_KEY as string);
-      if (!result) {
-        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED));
-      }
-      if (result.expired || !result.payload) {
-        return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
-      }
-      const session = await this.authServices.checkSessionExist((result.payload as UserPayload).session_id);
-      if (session === null || session === undefined) {
-        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
-      }
-      const user = await this.authServices.checkUserExistByID(session.user_id);
-      if (user === null || user === undefined) {
-        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
-      }
-      req.user = user;
-      req.session = session;
-      next();
-    },
-  );
+  public getUserByTokenIfExist = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+      return next();
+    }
+    const access_token = authorization?.split(' ')[1];
+    if (!access_token) {
+      // return next(new AppError(APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED, HTTP_STATUS.UNAUTHORIZED));
+      const error = new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED, {
+        serverCode: ServerCodes.AuthCode.AccessTokenIsRequired,
+      });
+      return next(error);
+    }
+    const result = await verifyToken(access_token, process.env.JWT_SECRET_KEY as string);
+    if (!result) {
+      // return next(new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED));
+      const error = new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.INVALID_TOKEN, {
+        serverCode: ServerCodes.AuthCode.InvalidCredentials,
+      });
+      return next(error);
+    }
+    if (result.expired || !result.payload) {
+      // return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
+      const error = new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.TOKEN_IS_EXPIRED, {
+        serverCode: ServerCodes.AuthCode.TokenIsExpired,
+      });
+      return next(error);
+    }
+    const session = await this.authServices.checkSessionExist((result.payload as UserPayload).session_id);
+    if (session === null || session === undefined) {
+      // return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+      const error = new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.INVALID_TOKEN, {
+        serverCode: ServerCodes.AuthCode.InvalidCredentials,
+      });
+      return next(error);
+    }
+    const user = await this.authServices.checkUserExistByID(session.user_id);
+    if (user === null || user === undefined) {
+      // return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+      const error = new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.INVALID_TOKEN, {
+        serverCode: ServerCodes.AuthCode.InvalidCredentials,
+      });
+      return next(error);
+    }
+    req.user = user;
+    req.session = session;
+    next();
+  });
   public readonly signUpValidation = [
     validate(
       checkSchema({
@@ -59,7 +78,7 @@ class AuthValidation {
           custom: {
             options: (value, { req }) => {
               if (value !== req.body.password) {
-                throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+                return false;
               }
               return true;
             },
@@ -68,12 +87,12 @@ class AuthValidation {
       }),
     ),
     async (req: Request, res: Response, next: NextFunction) => {
-      const { email, password } = req.body;
+      const { email } = req.body;
       const user = await this.authServices.checkUserExistByEmail(email);
       if (user) {
-        return res.status(HTTP_STATUS.CONFLICT).json({
+        return res.status(HttpStatus.CONFLICT).json({
           status: 'error',
-          code: ServerCodes.AuthCode.EmailIsAlreadyExist,
+          code: ServerCodes.AuthCode.EmailAlreadyExsist,
           message: APP_MESSAGES.ERROR_MESSAGE.EMAIL_ALREADY_EXISTS,
         });
       }
@@ -90,14 +109,28 @@ class AuthValidation {
     async (req: Request, res: Response, next: NextFunction) => {
       const { email, password } = req.body;
       const { user, password_is_correct } = await this.authServices.getUserByEmailAndPassword(email, password);
-      if (user === null || user === undefined || password_is_correct === false) {
-        return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
+      if (user === null || user === undefined) {
+        return next(
+          AppError.notFound({
+            message: APP_MESSAGES.USER_NOT_FOUND,
+          }),
+        );
       }
       if (user.status === UserStatus.unverified) {
-        return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+        // return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+        return next(
+          new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.USER_NOT_VERIFIED, {
+            serverCode: ServerCodes.AuthCode.UserIsNotVerified,
+          }),
+        );
       }
-      if(user.status === UserStatus.banned) {
-        return next(new AppError("Your account has been banned", 401));
+      if (password_is_correct === false) {
+        // return next(new AppError(APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, 400));
+        return next(
+          new AppError(HttpStatus.BAD_REQUEST, APP_MESSAGES.INCORRECT_EMAIL_OR_PASSWORD, {
+            serverCode: ServerCodes.AuthCode.InvalidCredentials,
+          }),
+        );
       }
       req.user = user;
       next();
@@ -119,43 +152,51 @@ class AuthValidation {
   );
 
   public readonly accessTokenValidation = [
-    validate(
-      checkSchema({
-        Authorization: {
-          in: ['headers'],
-          notEmpty: {
-            errorMessage: APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
-          },
-          trim: true,
-        },
-      }),
-    ),
-    async (req: Request, res: Response, next: NextFunction) => {
+    wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
       const authorization = req.headers.authorization;
-      console.log('authorization', authorization);
       const access_token = authorization?.split(' ')[1];
       if (!access_token) {
-        return next(new AppError(APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED, HTTP_STATUS.UNAUTHORIZED));
+        return next(
+          new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED, {
+            serverCode: ServerCodes.AuthCode.AccessTokenIsRequired,
+          }),
+        );
       }
-      const result = await verifyToken(access_token, process.env.JWT_SECRET_KEY as string);
-      if (!result) {
-        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED));
+      const { payload, expired } = await verifyToken(access_token, process.env.JWT_SECRET_KEY as string);
+      if (expired) {
+        return next(
+          new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.TOKEN_IS_EXPIRED, {
+            serverCode: ServerCodes.AuthCode.TokenIsExpired,
+          }),
+        );
       }
-      if (result.expired || !result.payload) {
-        return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
+      if (!payload) {
+        return next(
+          new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.INVALID_TOKEN, {
+            serverCode: ServerCodes.AuthCode.InvalidCredentials,
+          }),
+        );
       }
-      const session = await this.authServices.checkSessionExist((result.payload as UserPayload).session_id);
+      const session = await this.authServices.checkSessionExist((payload as UserPayload).session_id);
       if (session === null || session === undefined) {
-        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+        return next(
+          new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.INVALID_TOKEN, {
+            serverCode: ServerCodes.AuthCode.InvalidCredentials,
+          }),
+        );
       }
       const user = await this.authServices.checkUserExistByID(session.user_id);
       if (user === null || user === undefined) {
-        return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+        return next(
+          new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.INVALID_TOKEN, {
+            serverCode: ServerCodes.AuthCode.InvalidCredentials,
+          }),
+        );
       }
       req.user = user;
       req.session = session;
       next();
-    },
+    }),
   ];
 
   public refreshTokenValidation = validate(
@@ -194,7 +235,8 @@ class AuthValidation {
           custom: {
             options: (value, { req }) => {
               if (value !== req.body.confirm_password) {
-                throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+                // return next( new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+                return false;
               }
               return true;
             },
@@ -217,68 +259,46 @@ class AuthValidation {
     // },
   ];
 
-  tokenValidation = validate(
-    checkSchema({
-      Authorization: {
-        in: ['headers'],
-        notEmpty: {
-          errorMessage: APP_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
-        },
-        trim: true,
-        custom: {
-          options: async (value, { req }) => {
-            const accessToken = value.split(' ')[1];
-            if (!accessToken) {
-              return false;
-            }
-            const result = await verifyToken(accessToken, process.env.JWT_SECRET_KEY as string);
-            if (!result) {
-              throw new AppError(APP_MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED);
-            }
-            if (result.expired || !result.payload) {
-              throw new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401);
-            }
-            (req as Request).verifyResult = result;
-            return true;
-          },
-        },
-      },
-    }),
-  );
-
   protect = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
     const { payload, expired } = req.verifyResult as VerifyResult;
 
     if (payload !== null && !expired) {
-      // req.user = await UserModel.findById((payload as UserPayload).id);
-      // if (req.user === null || req.user === undefined) {
-      //   return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
-      // }
-      // if (req.user.status === UserStatus.unverified) {
-      //   return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
-      // }
-      // return next();
       const userRepo = User.getRepository();
       const user = await userRepo.findOne({ where: { id: (payload as UserPayload).id } });
       if (user !== null) {
         if (user.status === UserStatus.unverified) {
-          return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+          // return next(new AppError(APP_MESSAGES.USER_NOT_VERIFIED, 401));
+          return next(
+            new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.USER_NOT_VERIFIED, {
+              serverCode: ServerCodes.AuthCode.UserIsNotVerified,
+            }),
+          );
         } else {
           return next();
         }
       } else {
-        return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
+        next(
+          AppError.notFound({
+            message: APP_MESSAGES.USER_NOT_FOUND,
+          }),
+        );
       }
     }
     if (expired) {
-      return next(new AppError(APP_MESSAGES.TOKEN_IS_EXPIRED, 401));
+      const error = new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.TOKEN_IS_EXPIRED, {
+        serverCode: ServerCodes.AuthCode.TokenIsExpired,
+      });
+      next(error);
     }
-    return next(new AppError(APP_MESSAGES.INVALID_TOKEN, 401));
+    const error = new AppError(HttpStatus.UNAUTHORIZED, APP_MESSAGES.INVALID_TOKEN, {
+      serverCode: ServerCodes.AuthCode.InvalidCredentials,
+    });
+    next(error);
   });
 
   changePasswordValidation = validate(
     checkSchema({
-      old_password: {
+      newPassword: {
         in: ['body'],
         isLength: {
           errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
@@ -287,36 +307,6 @@ class AuthValidation {
         trim: true,
         notEmpty: {
           errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
-        },
-      },
-      new_password: {
-        in: ['body'],
-        isLength: {
-          errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
-          options: { min: 8, max: 32 },
-        },
-        trim: true,
-        notEmpty: {
-          errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
-        },
-      },
-      confirm_new_password: {
-        in: ['body'],
-        isLength: {
-          errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,
-          options: { min: 8, max: 32 },
-        },
-        trim: true,
-        notEmpty: {
-          errorMessage: APP_MESSAGES.PASSWORD_IS_REQUIRED,
-        },
-        custom: {
-          options: (value, { req }) => {
-            if (value !== req.body.new_password) {
-              throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
-            }
-            return true;
-          },
         },
       },
     }),
@@ -324,5 +314,3 @@ class AuthValidation {
 }
 
 export default AuthValidation;
-
-

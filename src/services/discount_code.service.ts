@@ -3,6 +3,8 @@ import CommonServices from './common.service';
 import { DataSource, Repository } from 'typeorm';
 import DiscountCode from '~/domain/databases/entity/DiscountCode';
 import { AppError } from '~/models/Error';
+import HTTP_STATUS from '~/constants/httpStatus';
+import ServerCodes from '~/constants/server_codes';
 
 @Service()
 export class DiscountCodeService extends CommonServices {
@@ -26,7 +28,9 @@ export class DiscountCodeService extends CommonServices {
       },
     });
     if (discountCode !== null) {
-      throw new AppError('Code is already exist', 400);
+      throw new AppError(HTTP_STATUS.BAD_REQUEST, 'Code already exists', {
+        serverCode: ServerCodes.DiscountCode.CodeAlreadyExists,
+      });
     }
     return (this.repository as Repository<DiscountCode>).save({
       package_id,

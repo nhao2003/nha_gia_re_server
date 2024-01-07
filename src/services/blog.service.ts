@@ -10,13 +10,14 @@ class BlogService extends CommonServices {
   }
 
   async getAllWithFavoriteByQuery(query: any, current_user_id: string | null) {
-    let { page, wheres, orders } = query;
+    let { page } = query;
+    const { wheres, orders } = query;
     let skip = undefined;
     let take = undefined;
     if (page !== 'all') {
       page = isNaN(Number(page)) ? 1 : Number(page);
-      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
-      take = AppConfig.RESULT_PER_PAGE;
+      skip = (page - 1) * AppConfig.ResultPerPage;
+      take = AppConfig.ResultPerPage;
     }
     let devQuery = (this.repository as Repository<Blog>).createQueryBuilder();
     if (wheres) {
@@ -32,7 +33,7 @@ class BlogService extends CommonServices {
     const getMany = devQuery.skip(skip).take(take).getMany();
     const res = await Promise.all([getMany, getCount]);
     return {
-      num_of_pages: Math.ceil(res[1] / AppConfig.RESULT_PER_PAGE),
+      num_of_pages: Math.ceil(res[1] / AppConfig.ResultPerPage),
       data: res[0],
     };
   }

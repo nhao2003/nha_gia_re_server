@@ -22,7 +22,8 @@ class BlogController {
     blog.thumbnail = req.body.thumbnail;
     blog.short_description = req.body.short_description;
     if (!blog.title || !blog.content || !blog.author || !blog.thumbnail || !blog.short_description) {
-      throw new AppError('Missing fields', 400);
+      // throw new AppError('Missing fields', 400);
+      
     }
     await this.blogService.create(blog);
     const appResponse: AppResponse = {

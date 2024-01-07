@@ -202,9 +202,8 @@ class PostValidation {
     ),
     wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
       const post = await this.postServices.checkPostExist(req.params.id);
-      console.log(post);
-      if (post === null || post === undefined) next(new AppError('Post is not exist', 404));
-      if (req.user!.id !== post!.user_id) next(new AppError('You are not authorized to perform this action', 403));
+      if (post === null || post === undefined) return next(AppError.notFound());
+      if (req.user!.id !== post!.user_id) return next(AppError.forbiden());
       req.post = post;
       next();
     }),

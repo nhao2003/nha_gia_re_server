@@ -179,7 +179,7 @@ class AdminController {
 
   public readonly updateDeveloper = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    let data: Record<string, any> = {};
+    const data: Record<string, any> = {};
     if (req.body.name) {
       data.name = req.body.name;
     }
@@ -241,7 +241,7 @@ class AdminController {
 
   public readonly updatePropertyType = wrapRequestHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    let data: Record<string, any> = {};
+    const data: Record<string, any> = {};
     if (req.body.name) {
       data.name = req.body.name;
     }

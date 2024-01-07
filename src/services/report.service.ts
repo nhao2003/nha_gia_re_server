@@ -8,6 +8,7 @@ import { ReportStatus } from '~/constants/enum';
 import { DataSource } from 'typeorm';
 import { Service } from 'typedi';
 import AppConfig from '~/constants/configs';
+import ServerCodes from '~/constants/server_codes';
 @Service()
 class ReportService extends CommonServices {
   constructor(dataSource: DataSource) {
@@ -18,13 +19,14 @@ class ReportService extends CommonServices {
     num_of_pages: number;
     data: any;
   }> {
-    let { page, wheres, orders } = query;
+    let { page } = query;
+    const { wheres, orders } = query;
     let skip = undefined;
     let take = undefined;
     if (page !== 'all') {
       page = isNaN(Number(page)) ? 1 : Number(page);
-      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
-      take = AppConfig.RESULT_PER_PAGE;
+      skip = (page - 1) * AppConfig.ResultPerPage;
+      take = AppConfig.ResultPerPage;
     }
     let devQuery = this.repository.createQueryBuilder();
     devQuery = devQuery.leftJoinAndSelect('Report.reporter', 'user');
@@ -52,7 +54,7 @@ class ReportService extends CommonServices {
     const values_2 = await Promise.all([getCount, getMany]);
     const [count, reports] = values_2;
     return {
-      num_of_pages: Math.ceil(count / AppConfig.RESULT_PER_PAGE),
+      num_of_pages: Math.ceil(count / AppConfig.ResultPerPage),
       data: reports,
     };
   }
@@ -64,13 +66,16 @@ class ReportService extends CommonServices {
       },
     });
     if (!Object.values(ReportStatus).includes(status) || status === ReportStatus.pending) {
-      throw new AppError('Status is not valid', 400);
+      // throw new AppError('Status is not valid', 400);
+      throw AppError.badRequest(ServerCodes.CommomCode.InvalidField, 'Status is not valid');
     }
     if (report.status !== ReportStatus.pending) {
-      throw new AppError('Report has been processed', 400);
+      // throw new AppError('Report has been processed', 400);
+      throw AppError.badRequest(ServerCodes.CommomCode.BadRequest, 'Report has been processed');
     }
     if (!report) {
-      throw new AppError('Report not found', 404);
+      // throw new AppError('Report not found', 404);
+      throw AppError.notFound();
     }
     report.status = status;
     return await this.repository.save(report);

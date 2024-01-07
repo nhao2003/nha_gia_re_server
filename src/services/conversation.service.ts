@@ -3,11 +3,10 @@ import { Repository, DataSource } from 'typeorm';
 import Participant from '~/domain/databases/entity/Participant';
 import Message from '~/domain/databases/entity/Message';
 import Conversation from '~/domain/databases/entity/Conversation';
-import e from 'express';
 import { MessageTypes } from '~/constants/enum';
 import { User } from '~/domain/databases/entity/User';
 import { AppError } from '~/models/Error';
-import { bool } from 'yup';
+import ServerCodes from '~/constants/server_codes';
 
 @Service()
 class ConversationService {
@@ -34,7 +33,7 @@ class ConversationService {
 
   public async getConversationByUserIdAndOtherUserId(user_id: string, other_user_id: string) {
     if (user_id === other_user_id) {
-      throw new AppError('User id and other user id must be different', 400);
+      throw AppError.badRequest(ServerCodes.ConversationCode.CanNotChatWithYourself, 'Can not chat with yourself');
     }
     const conversation = await this.conversationRepository
       .createQueryBuilder('conversation')
@@ -166,7 +165,7 @@ class ConversationService {
   public async deleteConversationOneSide(user_id: string, conversation_id: string): Promise<void> {
     const conversation = await this.getConversationById(conversation_id);
     if (!conversation) {
-      throw new AppError('Conversation not found', 404);
+      throw AppError.notFound();
     }
     const ids = [];
     // Update is_active to false

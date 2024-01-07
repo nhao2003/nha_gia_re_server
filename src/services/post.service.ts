@@ -12,6 +12,7 @@ import { AppError } from '~/models/Error';
 import MembershipPackageServices from './membership_package.service';
 import { Service } from 'typedi';
 import AppConfig from '~/constants/configs';
+import ServerCodes from '~/constants/server_codes';
 @Service()
 class PostServices {
   postRepository: Repository<RealEstatePost>;
@@ -28,22 +29,26 @@ class PostServices {
     this.membershipPackageServices = new MembershipPackageServices(dataSource);
     this.projectServices = new ProjectServices(dataSource);
   }
-  async createPost(data: Record<string, any>) {
-    const user_id = data.user_id;
-    const subscriptionPackage = await this.membershipPackageServices.getCurrentUserSubscriptionPackage(data.user_id);
-    const countPostInMonth = await this.countPostInMonth(data.user_id);
+  async createPost(user_id: string, data: Record<string, any>) {
+    const subscriptionPackage = await this.membershipPackageServices.getCurrentUserSubscriptionPackage(user_id);
+    const countPostInMonth = await this.countPostInMonth(user_id);
     const limitPostInMonth = subscriptionPackage ? subscriptionPackage.membership_package.monthly_post_limit : 3;
     if (countPostInMonth >= limitPostInMonth) {
-      throw new AppError(`You have exceeded the number of posts in the month (${limitPostInMonth} posts).`, 400);
+      // throw new AppError(`You have exceeded the number of posts in the month (${limitPostInMonth} posts).`, 400);
+      throw AppError.badRequest(
+        ServerCodes.PostCode.ExceededNumberOfPostsInMonth,
+        `You have exceeded the number of posts in the month (${limitPostInMonth} posts).`,
+      );
     }
-    var display_priority_point = 0;
-    var post_approval_priority_point = 0;
+    let display_priority_point = 0;
+    let post_approval_priority_point = 0;
     if (subscriptionPackage) {
       display_priority_point += subscriptionPackage.membership_package.display_priority_point;
       post_approval_priority_point += subscriptionPackage.membership_package.post_approval_priority_point;
       display_priority_point += subscriptionPackage.user.is_identity_verified ? 1 : 0;
     }
     data = {
+      user_id,
       ...data,
       status: PostStatus.pending,
       //expiry_date 14 days from now
@@ -142,13 +147,13 @@ class PostServices {
     postQuery: PostQuery,
     user_id: string | null = null,
   ): Promise<{ data: RealEstatePost[]; numberOfPages: number }> {
-    let { page, postWhere, order } = postQuery;
+    let { page } = postQuery;
     let skip = undefined;
     let take = undefined;
     if (page !== 'all') {
       page = isNaN(Number(page)) ? 1 : Number(page);
-      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
-      take = AppConfig.RESULT_PER_PAGE;
+      skip = (page - 1) * AppConfig.ResultPerPage;
+      take = AppConfig.ResultPerPage;
     }
     let query = this.postRepository.createQueryBuilder().leftJoinAndSelect('RealEstatePost.user', 'user');
 
@@ -166,7 +171,7 @@ class PostServices {
 
     query = query.setParameters({ current_user_id: user_id });
 
-    var { search } = postQuery;
+    let { search } = postQuery;
     if (search) {
       search = search.replace(/ /g, ' | ');
       query = query.andWhere(`"RealEstatePost".document @@ to_tsquery('simple', unaccent('${search}'))`);
@@ -339,10 +344,7 @@ class PostServices {
       // AND user_post_favorites.user_id = '1a9a5785-721a-4bb5-beb7-9d752e2070d4'
       const query = this.postRepository
         .createQueryBuilder('real_estate_posts')
-        .leftJoinAndSelect(
-          'real_estate_posts.user_post_favorites',
-          'user_post_favorites'
-        )
+        .leftJoinAndSelect('real_estate_posts.user_post_favorites', 'user_post_favorites')
         .leftJoinAndSelect('real_estate_posts.user', 'user')
         .where('user_post_favorites.user_id = :user_id', { user_id })
         .andWhere('real_estate_posts.is_active = :is_active', { is_active: true })
@@ -353,8 +355,8 @@ class PostServices {
       const count = query.getCount();
       console.log(user_id);
       const result = query
-        .skip((page - 1) * AppConfig.RESULT_PER_PAGE)
-        .take(AppConfig.RESULT_PER_PAGE)
+        .skip((page - 1) * AppConfig.ResultPerPage)
+        .take(AppConfig.ResultPerPage)
         .getMany();
       const data = await Promise.all([count, result]);
       return {

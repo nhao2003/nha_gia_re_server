@@ -1,6 +1,4 @@
-import { BaseEntity, DataSource, EntityTarget, getRepository, Repository } from 'typeorm';
-import { User } from '~/domain/databases/entity/User';
-import { AppDataSource } from '~/app/database';
+import { BaseEntity, DataSource, EntityTarget, Repository } from 'typeorm';
 import { BaseQuery as BaseQuery } from '~/models/PostQuery';
 import { buildOrder, buildQuery } from '~/utils/build_query';
 import { AppError } from '~/models/Error';
@@ -42,7 +40,7 @@ class CommonServices {
       })
       .getOne();
     if (value === undefined || value === null) {
-      throw new AppError('Not found', 404);
+      throw AppError.notFound();
     }
     await this.repository.update(id, { is_active: false });
   }
@@ -65,13 +63,14 @@ class CommonServices {
   }
 
   public async getAllByQuery(query: BaseQuery) {
-    let { page, wheres, orders } = query;
+    let { page } = query;
+    const { wheres, orders } = query;
     let skip = undefined;
     let take = undefined;
     if (page !== 'all') {
       page = isNaN(Number(page)) ? 1 : Number(page);
-      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
-      take = AppConfig.RESULT_PER_PAGE;
+      skip = (page - 1) * AppConfig.ResultPerPage;
+      take = AppConfig.ResultPerPage;
     }
     let devQuery = this.repository.createQueryBuilder();
     if (wheres) {
@@ -86,7 +85,7 @@ class CommonServices {
     const getMany = devQuery.skip(skip).take(take).getMany();
     const res = await Promise.all([getMany, getCount]);
     return {
-      num_of_pages: Math.ceil(res[1] / AppConfig.RESULT_PER_PAGE),
+      num_of_pages: Math.ceil(res[1] / AppConfig.ResultPerPage),
       data: res[0],
     };
   }
@@ -105,7 +104,7 @@ class CommonServices {
       .getOne();
 
     if (value === undefined || value === null) {
-      throw new AppError('Not found', 404);
+      throw AppError.notFound();
     }
     await this.repository.update(id, data);
   }

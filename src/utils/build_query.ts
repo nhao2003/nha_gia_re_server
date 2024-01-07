@@ -1,5 +1,8 @@
-import { BaseQuery } from '~/models/PostQuery';
 import { AppError } from '../models/Error';
+import { APP_MESSAGES } from '~/constants/message';
+import ServerCodes from '~/constants/server_codes';
+import HttpStatus from '~/constants/httpStatus';
+import { BaseQuery } from '~/models/PostQuery';
 
 const getOperatorValueString = (operatorAndValue: Record<string, any>): string => {
   const operatorMapping: { [key: string]: string } = {
@@ -23,15 +26,14 @@ const getOperatorValueString = (operatorAndValue: Record<string, any>): string =
     nregex: '!~',
     iregex: '~*',
     niregex: '!~*',
-    is: 'IS',
-    not: 'IS NOT',
   };
   const operator = Object.keys(operatorAndValue)[0];
   // const value = operatorAndValue[operator];
   // decodeURIComponent operatorAndValue[operator]
-  let value;
-  if (typeof operatorAndValue[operator] === 'string') {
-    value = operatorAndValue[operator]
+  let value = operatorAndValue[operator];
+
+  if (typeof value === 'string') {
+    value = value
       .replace(/%20/g, ' ')
       .replace(/%2C/g, ',')
       .replace(/%27/g, "'")
@@ -41,9 +43,8 @@ const getOperatorValueString = (operatorAndValue: Record<string, any>): string =
       .replace(/%3D/g, '=')
       .replace(/%3B/g, ';')
       .replace(/%2F/g, '/');
-  } else {
-    value = operatorAndValue[operator];
   }
+  // DecodeURIComponent
   if (operatorMapping[operator]) {
     let query = operatorMapping[operator];
 
@@ -70,16 +71,16 @@ const getOperatorValueString = (operatorAndValue: Record<string, any>): string =
       const from = value.split(',')[0];
       const to = value.split(',')[1];
       query += ` ${from} AND ${to}`;
-    } else if (['is', 'not'].includes(operator)) {
-      query += ` ${value}`;
-    } 
-    else {
+    } else {
       query += ` ${value}`;
     }
 
     return query;
   }
-  throw new AppError('Invalid operator', 400);
+  throw new AppError(HttpStatus.BAD_REQUEST, APP_MESSAGES.InvalidQueryOperator, {
+    details: `Operator ${operator} is not supported`,
+    serverCode: ServerCodes.CommomCode.InvalidQueryOperator,
+  });
 };
 
 const buildQuery = (query: Record<string, any>): string[] => {
@@ -106,7 +107,7 @@ const buildOrder = (
       sort: string;
       order?: 'ASC' | 'DESC';
     }
-  | {} => {
+  | object => {
   if (!orders) {
     return {};
   }
@@ -125,10 +126,7 @@ const buildOrder = (
 };
 
 function buildBaseQuery(query: Record<string, any>): BaseQuery {
-  let { page, orders } = query;
-  if (page !== 'all' && isNaN(Number(page))) {
-    page = 1;
-  }
+  const { page, orders } = query;
   const handleQuery = {
     ...query,
   };
@@ -136,7 +134,7 @@ function buildBaseQuery(query: Record<string, any>): BaseQuery {
   delete handleQuery.orders;
   const wheres = buildQuery(handleQuery);
   const buildOrders = buildOrder(orders);
-  return { page, wheres, orders: buildOrders };
+  return { page: page || 1, wheres, orders: buildOrders };
 }
 
 export { buildQuery, getOperatorValueString, buildOrder, buildBaseQuery };

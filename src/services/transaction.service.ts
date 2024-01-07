@@ -9,13 +9,15 @@ export class TransactionService extends CommonServices {
   }
 
   public getAllByQuery(query: BaseQuery): Promise<{ num_of_pages: number; data: Transaction[] }> {
-    let { page, wheres, orders } = query;
+    // let { page, wheres, orders } = query;
+    let { page } = query;
+    const { wheres, orders } = query;
     let skip = undefined;
     let take = undefined;
     if (page !== 'all') {
       page = isNaN(Number(page)) ? 1 : Number(page);
-      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
-      take = AppConfig.RESULT_PER_PAGE;
+      skip = (page - 1) * AppConfig.ResultPerPage;
+      take = AppConfig.ResultPerPage;
     }
     let devQuery = this.repository.createQueryBuilder().leftJoinAndSelect('Transaction.package', 'package');
     wheres.forEach((where) => {
@@ -26,7 +28,7 @@ export class TransactionService extends CommonServices {
     devQuery = devQuery.take(take);
     return devQuery.getManyAndCount().then(([data, count]) => {
       return {
-        num_of_pages: Math.ceil(count / AppConfig.RESULT_PER_PAGE),
+        num_of_pages: Math.ceil(count / AppConfig.ResultPerPage),
         data,
       };
     });

@@ -31,7 +31,7 @@ class SubscriptionService extends CommonServices {
     });
     return res;
   }
-  public async createSubscription(create: CreateSubscription): Promise<String> {
+  public async createSubscription(create: CreateSubscription): Promise<string> {
     const res = await this.subcritpionRepository.insert({
       user_id: create.user_id,
       package_id: create.package_id,

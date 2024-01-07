@@ -15,6 +15,8 @@ import CommonServices from './common.service';
 import { BaseQuery } from '~/models/PostQuery';
 import { TransactionStatus } from '~/constants/enum';
 import { TransactionService } from './transaction.service';
+import { App } from '@onesignal/node-onesignal';
+import ServerCodes from '~/constants/server_codes';
 
 type OrderMembershipPackageRequest = {
   user_id: string;
@@ -99,24 +101,25 @@ class PaymentServices {
   }): Promise<OrderMembershipPackageResponse> => {
     const checkUserHasSubscription = await this.subscriptionServices.checkUserHasSubscription(orderRequest.user_id);
     if (checkUserHasSubscription) {
-      throw new AppError('User has subscription', 400);
+      // throw new AppError('User has subscription', 400);
+      throw AppError.badRequest(ServerCodes.MembershipPackageCode.UserHasSubscription, 'User has subscription');
     }
     const { user_id, package_id, discount_code, num_of_subscription_month } = orderRequest;
     let discount = null;
     if (discount_code) {
       discount = await this.discountCodeRepository.findOne({ where: { code: discount_code } });
       if (!discount) {
-        throw new AppError('Discount code not found', 404);
+        throw AppError.notFound();
       }
     }
     const membershipPackage = await this.membershipPackageRepository.findOne({ where: { id: package_id } });
     if (!membershipPackage) {
-      throw new AppError('Membership package not found', 404);
+      throw AppError.notFound();
     }
     const amount = membershipPackage.price_per_month * num_of_subscription_month;
     // const discount_percent = discount ? discount.discount_percent : 0;
     let discount_percent = 0;
-    if(discount?.min_subscription_months && discount?.min_subscription_months <= num_of_subscription_month){
+    if (discount?.min_subscription_months && discount?.min_subscription_months <= num_of_subscription_month) {
       discount_percent = discount.discount_percent;
     }
     const discount_amount = amount * discount_percent;
@@ -138,7 +141,7 @@ class PaymentServices {
     });
 
     if (zalopayResponse.return_code !== 1) {
-      throw new AppError('Đã có lỗi xảy ra, vui lòng thử lại sau', 500);
+      throw AppError.internalServerError();
     }
     const create: OrderMembershipPackageRequest = {
       amount: total_amount,
@@ -177,19 +180,20 @@ class PaymentServices {
   }): Promise<OrderMembershipPackagMiniAppeResponse> => {
     const checkUserHasSubscription = await this.subscriptionServices.checkUserHasSubscription(orderRequest.user_id);
     if (checkUserHasSubscription) {
-      throw new AppError('User has subscription', 400);
+      // throw new AppError('User has subscription', 400);
+      throw AppError.badRequest(ServerCodes.MembershipPackageCode.UserHasSubscription, 'User has subscription');
     }
     const { user_id, package_id, discount_code: discount_id, num_of_subscription_month } = orderRequest;
     let discount = null;
     if (discount_id) {
       discount = await this.discountCodeRepository.findOne({ where: { code: discount_id } });
       if (!discount) {
-        throw new AppError('Discount code not found', 404);
+        throw AppError.notFound();
       }
     }
     const membershipPackage = await this.membershipPackageRepository.findOne({ where: { id: package_id } });
     if (!membershipPackage) {
-      throw new AppError('Membership package not found', 404);
+      throw AppError.notFound();
     }
     const amount = Number(membershipPackage.price_per_month) * num_of_subscription_month;
     const discount_percent = discount ? discount.discount_percent : 0;
@@ -282,7 +286,7 @@ class PaymentServices {
       .getRepository()
       .findOne({ where: { id: transaction_id, is_active: true } });
     if (!res) {
-      throw new AppError('Transaction not found', 404);
+      throw AppError.notFound();
     }
     return res;
   }
@@ -362,7 +366,7 @@ class PaymentServices {
       .andWhere('app_trans_id = :app_trans_id', { app_trans_id: id })
       .getOne();
     if (!res) {
-      throw new AppError('Transaction not found', 404);
+      throw AppError.notFound();
     }
     return res;
   }

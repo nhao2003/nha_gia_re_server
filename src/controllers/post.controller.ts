@@ -39,7 +39,7 @@ class PostController {
       user_id: req.user.id,
       project: req.body.project,
     };
-    const post = await this.postServices.createPost(data);
+    const post = await this.postServices.createPost(req.user.id, data);
 
     const appRes: AppResponse = {
       status: 'success',
@@ -83,7 +83,9 @@ class PostController {
   deletePost = wrapRequestHandler(async (req: any, res: any, next: NextFunction) => {
     const post = req.post;
     if (post.is_active === false) {
-      return next(new AppError('Post is already deleted', 400));
+      // return next(new AppError(APP_MESSAGES.ERROR_MESSAGE.POST_IS_DELETED, 400));
+      // return next(new AppError(APP_MESSAGES.ERROR_MESSAGE.POST_IS_DELETED, ServerCodes.PostCode.PostIsDeleted));
+      return next(AppError.badRequest(ServerCodes.CommomCode.BadRequest, 'Post is deleted'));
     }
     await this.postServices.deletePost(req.params.id);
     // res.status(200).json({ message: 'Delete success' });

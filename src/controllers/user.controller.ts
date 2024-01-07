@@ -8,6 +8,7 @@ import ServerCodes from '~/constants/server_codes';
 import { APP_MESSAGES } from '~/constants/message';
 import AppResponse from '~/models/AppRespone';
 import { Service } from 'typedi';
+import { App } from '@onesignal/node-onesignal';
 @Service()
 class UserController {
   private userServices: UserServices;
@@ -40,10 +41,14 @@ class UserController {
   });
 
   public getUserProfile = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
-    let id = req.params.id === null || req.params.id === undefined ? req.user!.id : req.params.id;
+    const id = req.params.id === null || req.params.id === undefined ? req.user!.id : req.params.id;
     const data = await this.userServices.getUserInfo(id as string);
     if (data === null || data === undefined) {
-      return next(new AppError(APP_MESSAGES.USER_NOT_FOUND, 404));
+      return next(
+        AppError.notFound({
+          message: 'User not found',
+        }),
+      );
     }
     const appRes: AppResponse = {
       status: 'success',
@@ -62,7 +67,7 @@ class UserController {
     const user_id = req.user!.id;
     const follow_id = req.params.id;
     if (user_id === follow_id) {
-      return next(new AppError("You can't follow yourself", 400));
+      return next(AppError.badRequest(ServerCodes.CommomCode.BadRequest, 'You can not follow yourself'));
     }
     const userFollow = await this.userServices.followOrUnfollowUser(user_id, follow_id);
     const appRes: AppResponse = {
@@ -73,20 +78,22 @@ class UserController {
     res.status(200).json(appRes);
   });
 
-  public getNumberOfFollowingAndFollowers = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const user_id = req.user!.id;
-    const { num_of_following, num_of_followers } = await this.userServices.getFollowingUsers(user_id);
-    const appRes: AppResponse = {
-      status: 'success',
-      code: ServerCodes.UserCode.Success,
-      message: "Get user's following and followers successfully",
-      result: {
-        num_of_following,
-        num_of_followers,
-      },
-    };
-    res.status(200).json(appRes);
-  });
+  public getNumberOfFollowingAndFollowers = wrapRequestHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const user_id = req.user!.id;
+      const { num_of_following, num_of_followers } = await this.userServices.getFollowingUsers(user_id);
+      const appRes: AppResponse = {
+        status: 'success',
+        code: ServerCodes.UserCode.Success,
+        message: "Get user's following and followers successfully",
+        result: {
+          num_of_following,
+          num_of_followers,
+        },
+      };
+      res.status(200).json(appRes);
+    },
+  );
 }
 
 export default UserController;

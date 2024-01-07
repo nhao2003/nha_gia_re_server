@@ -33,7 +33,10 @@ export class ParamsValidation {
     custom: {
       options: (value, { req }) => {
         if (value !== req.body.new_password) {
-          throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+          // throw new AppError(APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, 400);
+          throw new AppError(400, APP_MESSAGES.VALIDATION_MESSAGE.PASSWORD_AND_CONFIRM_PASSWORD_DO_NOT_MATCH, {
+            serverCode: 400,
+          });
         }
         return true;
       },
@@ -100,7 +103,7 @@ export class ParamsValidation {
   public static gender: ParamSchema = {
     isBoolean: {
       errorMessage: 'Gender is boolean',
-    }
+    },
   };
 
   public static uuid: ParamSchema = {

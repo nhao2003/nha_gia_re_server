@@ -8,6 +8,7 @@ import { UserStatus } from '~/constants/enum';
 import { Service } from 'typedi';
 import { UserFollow } from '~/domain/databases/entity/UserFollow';
 import AppConfig from '~/constants/configs';
+import ServerCodes from '~/constants/server_codes';
 @Service()
 class UserServices {
   private userRepository: Repository<User>;
@@ -80,13 +81,15 @@ class UserServices {
     num_of_pages: number;
     users: User[];
   }> {
-    let { page, wheres, orders } = userQuery;
+    // let { page, wheres, orders } = userQuery;
+    let { page } = userQuery;
+    const { wheres, orders } = userQuery;
     let skip = undefined;
     let take = undefined;
     if (page !== 'all') {
       page = isNaN(Number(page)) ? 1 : Number(page);
-      skip = (page - 1) * AppConfig.RESULT_PER_PAGE;
-      take = AppConfig.RESULT_PER_PAGE;
+      skip = (page - 1) * AppConfig.ResultPerPage;
+      take = AppConfig.ResultPerPage;
     }
     let query = this.userRepository.createQueryBuilder();
     if (wheres) {
@@ -105,7 +108,7 @@ class UserServices {
     const result = await Promise.all([total, users]);
 
     return {
-      num_of_pages: Math.ceil(result[0] / AppConfig.RESULT_PER_PAGE),
+      num_of_pages: Math.ceil(result[0] / AppConfig.ResultPerPage),
       users: result[1],
     };
   }
@@ -113,13 +116,16 @@ class UserServices {
   async banUser(id: string, ban_reason: string, banned_util: Date): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
-      throw new AppError('User not found', 404);
+      // throw new AppError('User not found', 404);
+      throw AppError.notFound();
     }
     if (user.status === UserStatus.banned) {
-      throw new AppError('User has been banned', 400);
+      // throw new AppError('User has been banned', 400);
+      throw AppError.badRequest(ServerCodes.CommomCode.BadRequest, 'User has been banned');
     }
     if (banned_util < new Date()) {
-      throw new AppError('Banned util is not valid', 400);
+      // throw new AppError('Banned util is not valid', 400);
+      throw AppError.badRequest(ServerCodes.CommomCode.BadRequest, 'Banned util is not valid');
     }
     user.status = UserStatus.banned;
     user.ban_reason = ban_reason;
@@ -133,10 +139,12 @@ class UserServices {
   async unbanUser(id: string): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
-      throw new AppError('User not found', 404);
+      // throw new AppError('User not found', 404);
+      throw AppError.notFound();
     }
     if (user.status !== UserStatus.banned) {
-      throw new AppError('User has not been banned', 400);
+      // throw new AppError('User has not been banned', 400);
+      throw AppError.badRequest(ServerCodes.CommomCode.BadRequest, 'User has not been banned');
     }
     user.status = UserStatus.verified;
     user.ban_reason = null;
