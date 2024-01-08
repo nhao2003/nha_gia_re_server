@@ -203,7 +203,7 @@ class PostValidation {
     wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
       const post = await this.postServices.checkPostExist(req.params.id);
       if (post === null || post === undefined) return next(AppError.notFound());
-      if (req.user!.id !== post!.user_id) return next(AppError.forbiden());
+      // if (req.user!.id !== post!.user_id) return next(AppError.forbiden());
       req.post = post;
       next();
     }),

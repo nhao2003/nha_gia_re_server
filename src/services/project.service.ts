@@ -16,12 +16,6 @@ class ProjectServices extends CommonServices {
 
   public async create(data: Record<string, any>) {
     const project_types: string[] | null = data.project_types;
-    const scales:
-      | {
-          scale: number;
-          unit_id: string;
-        }[]
-      | null = data.scales;
     data.verified = true;
     const project: Project = await super.create(data);
     if (project_types) {
@@ -87,7 +81,6 @@ class ProjectServices extends CommonServices {
       promieses.push(this.propertyTypeProjectRepo.delete({ project_id: project.id }));
       promieses.push(this.propertyTypeProjectRepo.save(propertyTypeProjects));
     }
-    // Update project
     delete data.project_types;
     promieses.push(this.repository.update(id, data));
     const results = await Promise.all(promieses);

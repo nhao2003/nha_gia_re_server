@@ -30,7 +30,6 @@ router.route('/users/:id/unban').patch(adminController.unbanUser);
 router.route('/developers').get(adminController.getDevelopers).post(adminController.createDeveloper);
 router.route('/developers/:id').patch(adminController.updateDeveloper).delete(adminController.deleteDeveloper);
 
-
 //PropertyTypes
 router.route('/property-types').get(adminController.getPropertyTypes).post(adminController.createPropertyType);
 router
@@ -48,6 +47,8 @@ router
   .get(projectController.getProjects)
   .post(projectController.createProject)
   .delete(projectController.deleteProject);
+
+router.route('/projects/:id').patch(projectController.updateProject).delete(projectController.deleteProject);
 
 // MembemshipPackages
 router
