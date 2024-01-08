@@ -167,6 +167,7 @@ class PostController {
         status: 'success',
         code: ServerCodes.PostCode.Success,
         message: APP_MESSAGES.SUCCESS_MESSAGE.UNFAVORITE_POST_SUCCESSFULLY,
+        result: post,
       };
       res.status(200).json(appRes);
     } else {
@@ -174,6 +175,7 @@ class PostController {
         status: 'success',
         code: ServerCodes.PostCode.Success,
         message: APP_MESSAGES.SUCCESS_MESSAGE.FAVORITE_POST_SUCCESSFULLY,
+        result: post,
       };
       res.status(200).json(appRes);
     }

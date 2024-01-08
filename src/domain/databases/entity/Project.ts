@@ -7,6 +7,7 @@ import { Developer } from './Developer';
 import { JoinColumn } from 'typeorm';
 import { OneToMany } from 'typeorm';
 import { Progression as ProjectProgression, ProjectStatus } from '~/constants/enum';
+import PropertyTypeProject from './PropertyTypeProject';
 
 @Entity('projects')
 export class Project extends BaseEntity implements IProject {
@@ -31,8 +32,8 @@ export class Project extends BaseEntity implements IProject {
   @Column({ type: PostgresDataType.date, nullable: true })
   address!: Address;
 
-  @Column({ type: PostgresDataType.point, nullable: true })
-  address_point: any;
+  // @Column({ type: PostgresDataType.point, nullable: true })
+  // address_point: any;
 
   @Column({ type: PostgresDataType.varchar, length: 50, nullable: true })
   progression!: ProjectProgression;
@@ -55,5 +56,8 @@ export class Project extends BaseEntity implements IProject {
   @ManyToOne(() => Developer, (developer) => developer.projects)
   @JoinColumn({ name: 'developer_id' })
   developer!: Developer;
-  
+
+  @OneToMany(() => PropertyTypeProject, (propertyTypeProject) => propertyTypeProject.project)
+  @JoinColumn({ name: 'id' })
+  property_types!: PropertyTypeProject[];
 }

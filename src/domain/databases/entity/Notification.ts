@@ -5,19 +5,24 @@ import { PostgresDataType } from '../constants/database_constants';
 
 interface INotification {
   id: string;
+  user_id?: string;
   type: NotificationType;
   title: string;
   content: string;
   is_read: boolean;
-  image: string | null;
-  link: string | null;
-  createdAt: Date;
+  image: string | undefined;
+  url: string | undefined;
+  created_at: Date;
+  data?: any;
 }
 
 @Entity('notifications')
 class Notification extends BaseEntity implements INotification {
   @PrimaryColumn(PostgresDataType.uuid)
   id!: string;
+
+  @Column({ type: PostgresDataType.uuid, name: 'user_id' })
+  user_id?: string;
 
   @Column({ type: PostgresDataType.varchar, length: 255, enum: NotificationType })
   type!: NotificationType;
@@ -32,13 +37,16 @@ class Notification extends BaseEntity implements INotification {
   is_read!: boolean;
 
   @Column({ type: PostgresDataType.text, nullable: true })
-  image!: string | null;
+  image!: string | undefined;
 
   @Column({ type: PostgresDataType.text, nullable: true })
-  link!: string | null;
+  url!: string | undefined;
+
+  @Column({ type: PostgresDataType.jsonb, nullable: true })
+  data?: any;
 
   @Column({ type: PostgresDataType.timestamp_without_timezone, default: () => 'now()' })
-  createdAt!: Date;
+  created_at!: Date;
 
   @ManyToOne(() => User, (user) => user.notifications)
   @JoinColumn({ name: 'user_id' })

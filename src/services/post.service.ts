@@ -13,6 +13,7 @@ import MembershipPackageServices from './membership_package.service';
 import { Service } from 'typedi';
 import AppConfig from '~/constants/configs';
 import ServerCodes from '~/constants/server_codes';
+import { NotificationService } from './nofitication.service';
 @Service()
 class PostServices {
   postRepository: Repository<RealEstatePost>;
@@ -21,13 +22,15 @@ class PostServices {
   subscriptionRepository: Repository<Subscription>;
   membershipPackageServices: MembershipPackageServices;
   projectServices: ProjectServices;
-  constructor(dataSource: DataSource) {
+  notificationServices: NotificationService;
+  constructor(dataSource: DataSource, notificationServices: NotificationService) {
     this.postRepository = dataSource.getRepository(RealEstatePost);
     this.postFavoriteRepository = dataSource.getRepository(UserPostFavorite);
     this.postViewRepository = dataSource.getRepository(UserPostView);
     this.subscriptionRepository = dataSource.getRepository(Subscription);
     this.membershipPackageServices = new MembershipPackageServices(dataSource);
     this.projectServices = new ProjectServices(dataSource);
+    this.notificationServices = notificationServices;
   }
   async createPost(user_id: string, data: Record<string, any>) {
     const subscriptionPackage = await this.membershipPackageServices.getCurrentUserSubscriptionPackage(user_id);
@@ -296,23 +299,7 @@ class PostServices {
     return result;
   }
 
-  // Get id, first_name, last_name, number of posts of users have the most posts
   async getTop10UsersHaveMostPosts() {
-    //   SELECT
-    //   u.id AS user_id,
-    //   u.first_name,
-    //   u.last_name,
-    //   COUNT(rp.id) AS post_count
-    // FROM
-    //   users u
-    // JOIN
-    //   real_estate_posts rp ON u.id = rp.user_id
-    // GROUP BY
-    //   u.id, u.first_name, u.last_name
-    // ORDER BY
-    //   post_count DESC
-    // LIMIT 10;
-
     const query = this.postRepository
       .createQueryBuilder('real_estate_post')
       .select('user.id', 'user_id')

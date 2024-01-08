@@ -103,15 +103,15 @@ export class RealEstatePost extends BaseEntity implements IRealEstatePost {
   })
   num_views!: number;
 
-  //Check the user who query the post is favorite or not. True if favorite, false if not
-  @VirtualColumn({
-    query: (alias) =>
-      `SELECT CASE
-      WHEN EXISTS (SELECT * FROM user_post_favorites WHERE user_post_favorites.real_estate_posts_id = ${alias}.id AND user_post_favorites.user_id = :current_user_id) THEN TRUE
-      ELSE FALSE
-  END`,
-  })
-  is_favorite!: boolean;
+  // //Check the user who query the post is favorite or not. True if favorite, false if not
+  // @VirtualColumn({
+  //   query: (alias) =>
+  //     `SELECT CASE
+  //     WHEN EXISTS (SELECT * FROM user_post_favorites WHERE user_post_favorites.real_estate_posts_id = ${alias}.id AND user_post_favorites.user_id = :current_user_id) THEN TRUE
+  //     ELSE FALSE
+  // END`,
+  // })
+  // is_favorite!: boolean;
 
   // Many-to-One relationship with User
   @ManyToOne(() => User, (user) => user.posts)

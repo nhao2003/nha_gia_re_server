@@ -26,6 +26,7 @@ const getOperatorValueString = (operatorAndValue: Record<string, any>): string =
     nregex: '!~',
     iregex: '~*',
     niregex: '!~*',
+    is: 'IS',
   };
   const operator = Object.keys(operatorAndValue)[0];
   // const value = operatorAndValue[operator];
@@ -62,6 +63,7 @@ const getOperatorValueString = (operatorAndValue: Record<string, any>): string =
         'nregex',
         'iregex',
         'niregex',
+        'is',
       ].includes(operator)
     ) {
       query += ` ${value}`;
@@ -132,9 +134,10 @@ function buildBaseQuery(query: Record<string, any>): BaseQuery {
   };
   delete handleQuery.page;
   delete handleQuery.orders;
+  delete handleQuery.search;
   const wheres = buildQuery(handleQuery);
   const buildOrders = buildOrder(orders);
-  return { page: page || 1, wheres, orders: buildOrders };
+  return { page: page || 1, wheres, orders: buildOrders, search: query.search || null };
 }
 
 export { buildQuery, getOperatorValueString, buildOrder, buildBaseQuery };

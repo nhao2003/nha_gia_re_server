@@ -1,27 +1,27 @@
 export enum UserStatus {
-  unverified = "unverified",
-  not_update = "not_update",
-  banned = "banned",
-  deleted = "deleted",
-  verified = "verified"
+  unverified = 'unverified',
+  not_update = 'not_update',
+  banned = 'banned',
+  deleted = 'deleted',
+  verified = 'verified',
 }
 
 export enum Role {
-  admin = "admin",
-  staff = "staff",
-  user = "user"
+  admin = 'admin',
+  staff = 'staff',
+  user = 'user',
 }
 
 export enum OTPTypes {
-  account_activation = "account_activation",
-  password_recovery = "password_recovery"
+  account_activation = 'account_activation',
+  password_recovery = 'password_recovery',
 }
 
 export enum PostStatus {
-  pending = "pending",
-  approved = "approved",
-  rejected = "rejected",
-  hided = "hided"
+  pending = 'pending',
+  approved = 'approved',
+  rejected = 'rejected',
+  hided = 'hided',
 }
 export enum PropertyTypes {
   apartment = 'apartment',
@@ -94,17 +94,15 @@ export enum MessageTypes {
 
 export enum ReportStatus {
   pending = 'pending',
-  resolved ='resolved',
-  rejected = 'rejected'
+  resolved = 'resolved',
+  rejected = 'rejected',
 }
-
 
 export enum ReportType {
   user = 'user',
   post = 'post',
   conversation = 'conversation',
 }
-
 
 export enum ReportContentType {
   spam = 'spam',
@@ -137,8 +135,13 @@ export enum TransactionStatus {
 }
 
 export enum NotificationType {
-  'info',
-  'warning',
-  'error',
-  'message',
+  info = 'info',
+  warning = 'warning',
+  error = 'error',
+  message = 'message',
+}
+
+export enum PropertyUnit {
+  m2 = 'm2',
+  m = 'm',
 }

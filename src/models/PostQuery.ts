@@ -7,6 +7,7 @@ export type PostQuery = {
 };
 
 export type BaseQuery = {
+  search?: string | null;
   page: number | string | null;
   wheres: string[];
   orders: any;

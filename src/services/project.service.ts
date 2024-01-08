@@ -1,5 +1,6 @@
 import { Project } from '~/domain/databases/entity/Project';
 import CommonServices from './common.service';
+import PropertyTypeProject from '~/domain/databases/entity/PropertyTypeProject';
 import { DataSource, Repository } from 'typeorm';
 import { BaseQuery } from '~/models/PostQuery';
 import { AppDataSource } from '~/app/database';
@@ -7,13 +8,32 @@ import { Service } from 'typedi';
 import AppConfig from '~/constants/configs';
 @Service()
 class ProjectServices extends CommonServices {
+  propertyTypeProjectRepo: Repository<PropertyTypeProject>;
   constructor(dataSource: DataSource) {
     super(Project, dataSource);
+    this.propertyTypeProjectRepo = AppDataSource.getRepository(PropertyTypeProject);
   }
 
   public async create(data: Record<string, any>) {
+    const project_types: string[] | null = data.project_types;
+    const scales:
+      | {
+          scale: number;
+          unit_id: string;
+        }[]
+      | null = data.scales;
     data.verified = true;
     const project: Project = await super.create(data);
+    if (project_types) {
+      const propertyTypeProjects: PropertyTypeProject[] = project_types.map((property_type_id: string) => {
+        const propertyTypeProject: PropertyTypeProject = new PropertyTypeProject();
+        propertyTypeProject.project;
+        propertyTypeProject.project_id = project.id;
+        propertyTypeProject.property_types_id = property_type_id;
+        return propertyTypeProject;
+      });
+      await this.propertyTypeProjectRepo.save(propertyTypeProjects);
+    }
     return project;
   }
 
@@ -32,8 +52,13 @@ class ProjectServices extends CommonServices {
     }
     let baseQuery = this.repository.createQueryBuilder();
     baseQuery = baseQuery.leftJoinAndSelect('Project.developer', 'developer');
-    // baseQuery = baseQuery.leftJoinAndSelect('Project.property_types', 'property_types');
-    baseQuery = baseQuery.leftJoinAndSelect('Project.scales', 'scales');
+    baseQuery = baseQuery.leftJoinAndSelect('Project.property_types', 'property_types');
+    let { search } = query;
+    if (search) {
+      search = search.replace(/ /g, ' | ');
+      baseQuery = baseQuery.andWhere(`"Project".document @@ to_tsquery('simple', unaccent('${search}'))`);
+      baseQuery = baseQuery.orderBy(`ts_rank(document, to_tsquery('simple', unaccent('${search}')))`, 'DESC');
+    }
     if (wheres) {
       wheres.forEach((where) => {
         baseQuery = baseQuery.andWhere(where);
@@ -51,14 +76,22 @@ class ProjectServices extends CommonServices {
     };
   }
   async update(id: string, data: Record<string, any>): Promise<any> {
+    const project: Project = (await super.getById(id)) as Project;
+    const project_types: string[] | null = data.project_types;
     const promieses = [];
-
+    if (project_types !== null && Array.isArray(project_types)) {
+      const propertyTypeProjects = project_types.map((property_type_id: string) => ({
+        projects_id: project.id,
+        property_types_id: property_type_id,
+      }));
+      promieses.push(this.propertyTypeProjectRepo.delete({ project_id: project.id }));
+      promieses.push(this.propertyTypeProjectRepo.save(propertyTypeProjects));
+    }
     // Update project
     delete data.project_types;
-    delete data.scales;
     promieses.push(this.repository.update(id, data));
     const results = await Promise.all(promieses);
-    return results[results.length - 1];
+    return results;
   }
 
   async deleteUnverifiedProject(id: string): Promise<void> {
