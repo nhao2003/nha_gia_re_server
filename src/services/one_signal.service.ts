@@ -37,10 +37,14 @@ export default OneSignalService;
 
 // oneSignalService
 //   .createNotification({
-//     contents: {
-//       en: 'Test notification for 1a9a5785-721a-4bb5-beb7-9d752e2070d4',
+//     headings: {
+//       en: 'Minh ngu',
 //     },
-//     include_external_user_ids: ['1a9a5785-721a-4bb5-beb7-9d752e2070d4'],
+//     contents: {
+//       en: 'A lô, a lô, a lô',
+//     },
+//     // include_external_user_ids: ['1a9a5785-721a-4bb5-beb7-9d752e2070d4'],
+//     included_segments: ['All'],
 //   })
 //   .then((res) => {
 //     console.log('Success: \n', res);

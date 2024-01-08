@@ -30,7 +30,7 @@ class AdminService {
     post!.info_message = null;
     await this.postRepo.save(post!);
 
-    this.notificationService.createNotification({
+    await this.notificationService.createNotification({
       type: NotificationType.info,
       headings: {
         vi: 'Bài đăng được duyệt',
@@ -38,7 +38,7 @@ class AdminService {
       },
       content: {
         vi: 'Bài đăng ' + post!.title + ' của bạn đã được duyệt',
-        en: 'Your post has been approved',
+        en: 'Your post ' + post!.title + ' has been approved',
       },
       data: {
         post_id: id,
@@ -61,15 +61,15 @@ class AdminService {
     post!.info_message = reason;
     await this.postRepo.save(post!);
 
-    this.notificationService.createNotification({
+    await this.notificationService.createNotification({
       type: NotificationType.info,
       headings: {
         vi: 'Bài đăng bị từ chối',
         en: 'Post rejected',
       },
       content: {
-        vi: 'Bài đăng ' + post!.title + ' của bạn đã bị từ chối',
-        en: 'Your post has been rejected',
+        vi: 'Bài đăng ' + post!.title + ' của bạn đã bị từ chối vì ' + reason,
+        en: 'Your post ' + post!.title + ' has been rejected because ' + reason,
       },
       data: {
         post_id: id,
@@ -79,6 +79,7 @@ class AdminService {
     });
     return id;
   }
+
   async deletePost(id: string) {
     const post = await this.postRepo
       .createQueryBuilder()
@@ -89,15 +90,15 @@ class AdminService {
     post!.is_active = false;
     await this.postRepo.save(post!);
 
-    this.notificationService.createNotification({
+    await this.notificationService.createNotification({
       type: NotificationType.info,
       headings: {
         vi: 'Bài đăng bị xóa bởi quản trị viên',
-        en: 'Post deleted',
+        en: 'Post deleted by admin',
       },
       content: {
         vi: 'Bài đăng ' + post!.title + ' của bạn đã bị xóa bởi quản trị viên',
-        en: 'Your post has been deleted',
+        en: 'Your post ' + post!.title + ' has been deleted by admin',
       },
       data: {
         post_id: id,
