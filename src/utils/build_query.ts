@@ -27,6 +27,7 @@ const getOperatorValueString = (operatorAndValue: Record<string, any>): string =
     iregex: '~*',
     niregex: '!~*',
     is: 'IS',
+    not: 'IS NOT',
   };
   const operator = Object.keys(operatorAndValue)[0];
   // const value = operatorAndValue[operator];
@@ -64,6 +65,7 @@ const getOperatorValueString = (operatorAndValue: Record<string, any>): string =
         'iregex',
         'niregex',
         'is',
+        'not'
       ].includes(operator)
     ) {
       query += ` ${value}`;
