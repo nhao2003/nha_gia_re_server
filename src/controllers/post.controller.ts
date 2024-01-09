@@ -114,34 +114,14 @@ class PostController {
 
   getPostById = wrapRequestHandler(async (req: Request, res: Response) => {
     const id = req.params.id;
-    const query: {
-      [key: string]: any;
-    } = {
-      'post.id[eq]': `'` + id + `'`,
-      'post.expiry_date[gte]': `'${new Date().toJSON()}'`,
-      'post.is_active[eq]': 'eq:true',
-      'user.status[eq]': "'verified'",
+    const post = await this.postServices.getPostById(id);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.PostCode.Success,
+      message: APP_MESSAGES.SUCCESS_MESSAGE.GET_POST_SUCCESSFULLY,
+      result: post,
     };
-    const postQuery = this.postServices.buildPostQuery(query);
-    const { data, numberOfPages } = await this.postServices.getPostsByQuery(postQuery, req.user ? req.user.id : null);
-    let appRes: AppResponse;
-
-    if (data.length === 0) {
-      appRes = {
-        status: 'fail',
-        code: ServerCodes.PostCode.PostNotFound,
-        message: APP_MESSAGES.POST_NOT_FOUND,
-      };
-      return res.status(404).json(appRes);
-    } else {
-      appRes = {
-        status: 'success',
-        code: ServerCodes.PostCode.Success,
-        message: APP_MESSAGES.SUCCESS_MESSAGE.GET_POST_SUCCESSFULLY,
-        result: data,
-      };
-      return res.status(200).json(appRes);
-    }
+    res.status(200).json(appRes);
   });
 
   // Mark read post
