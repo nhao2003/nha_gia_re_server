@@ -135,10 +135,14 @@ export enum TransactionStatus {
 }
 
 export enum NotificationType {
+  post_approved = 'post_approved',
+  post_rejected = 'post_rejected',
+  post_warning_expired = 'post_warning_expired',
+  post_deleted = 'post_deleted',
+  follow = 'follow',
+  news = 'news',
   info = 'info',
-  warning = 'warning',
-  error = 'error',
-  message = 'message',
+  chat = 'chat',
 }
 
 export enum PropertyUnit {

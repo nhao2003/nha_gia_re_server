@@ -9,6 +9,9 @@ const accountVerificationRequestControllers = DependencyInjection.get<AccountVer
   AccountVerificationRequestController,
 );
 
-router.route('/').post(authValidation.accessTokenValidation, accountVerificationRequestControllers.sendRequest);
+router
+  .route('/')
+  .post(authValidation.accessTokenValidation, accountVerificationRequestControllers.sendRequest)
+  .get(authValidation.accessTokenValidation, accountVerificationRequestControllers.getLatestRequest);
 
 export default router;

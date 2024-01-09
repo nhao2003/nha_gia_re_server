@@ -34,14 +34,14 @@ class AdminService {
       .execute();
 
     await this.notificationService.createNotification({
-      type: NotificationType.info,
+      type: NotificationType.post_approved,
       headings: {
-        vi: 'Bài đăng được duyệt',
-        en: 'Post approved',
+        vi: post!.title,
+        en: post!.title,
       },
       content: {
-        vi: 'Bài đăng ' + post!.title + ' của bạn đã được duyệt',
-        en: 'Your post ' + post!.title + ' has been approved',
+        vi: 'Bài đăng của bạn đã được duyệt thành công',
+        en: 'Your post has been approved',
       },
       data: {
         post_id: id,
@@ -69,14 +69,14 @@ class AdminService {
       .execute();
 
     await this.notificationService.createNotification({
-      type: NotificationType.info,
+      type: NotificationType.post_rejected,
       headings: {
-        vi: 'Bài đăng bị từ chối',
-        en: 'Post rejected',
+        vi: post!.title,
+        en: post!.title,
       },
       content: {
-        vi: 'Bài đăng ' + post!.title + ' của bạn đã bị từ chối vì ' + reason,
-        en: 'Your post ' + post!.title + ' has been rejected because ' + reason,
+        vi: 'Bài đăng của bạn đã bị từ chối vì ' + reason,
+        en: 'Your post has been rejected because ' + reason,
       },
       data: {
         post_id: id,
@@ -98,10 +98,10 @@ class AdminService {
     await this.postRepo.createQueryBuilder().update().set({ is_active: false }).where('id = :id', { id }).execute();
 
     await this.notificationService.createNotification({
-      type: NotificationType.info,
+      type: NotificationType.post_deleted,
       headings: {
-        vi: 'Bài đăng bị xóa bởi quản trị viên',
-        en: 'Post deleted by admin',
+        vi: post!.title,
+        en: post!.title,
       },
       content: {
         vi: 'Bài đăng ' + post!.title + ' của bạn đã bị xóa bởi quản trị viên',

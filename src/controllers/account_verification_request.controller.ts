@@ -44,6 +44,18 @@ class AccountVerificationRequestController {
     };
     res.status(200).json(appResponse);
   });
+
+  public getLatestRequest = wrapRequestHandler(async (req: Request, res: Response) => {
+    const user_id = req.user!.id;
+    const result = await this.accountVerificationRequestService.getLastestRequest(user_id);
+    const appResponse: AppResponse = {
+      status: 'success',
+      code: ServerCodes.CommomCode.Success,
+      message: 'Get latest account verification request successfully',
+      result,
+    };
+    res.status(200).json(appResponse);
+  });
 }
 
 export default AccountVerificationRequestController;

@@ -93,6 +93,35 @@ class AccountVerificationRequestService extends CommonServices {
     }
     return await this.accountVerificationRequestRepository.save({ user_id, ...data });
   }
+
+  // Get lastest request of user by user_id
+  public async getLastestRequest(
+    user_id: string,
+  ): Promise<{ status: 'not_sent' | 'pending' | 'verified' | 'rejected'; rejected_info?: string | null }> {
+    const res = await this.accountVerificationRequestRepository
+      .createQueryBuilder()
+      .where({ user_id })
+      .orderBy('request_date', 'DESC')
+      .getOne();
+    if (res === null) {
+      return {
+        status: 'not_sent',
+      };
+    } else if (res.is_verified === null) {
+      return {
+        status: 'pending',
+      };
+    } else if (res.is_verified === true) {
+      return {
+        status: 'verified',
+      };
+    } else {
+      return {
+        status: 'rejected',
+        rejected_info: res.rejected_info,
+      };
+    }
+  }
 }
 
 export default AccountVerificationRequestService;
