@@ -23,10 +23,9 @@ const userIds = [
   '8f021f08-c21e-4d5b-8880-bd8954f37e45',
 ];
 
-for (let i = 0; i < 100; i++) {
+for ( const user_id of userIds) {
   const random = 123456789102;
   const is_verified = Math.random() > 0.9;
-  const user_id = userIds[Math.floor(Math.random() * userIds.length)];
   const request: IAccountVerificationRequest = {
     id: genUUID(),
     is_verified,
@@ -40,7 +39,7 @@ for (let i = 0; i < 100; i++) {
     full_name: generateRandomText(10),
     sex: Math.random() > 0.5,
     dob: genRandomDate(new Date(1970, 1, 1), new Date()).toISOString(),
-    identity_card_no: (random + i).toString(),
+    identity_card_no: (random).toString(),
     identity_card_issued_date: genRandomDate(new Date(2000, 1, 1), new Date()).toISOString(),
     issued_by: 'Công an Hà Nội',
   };

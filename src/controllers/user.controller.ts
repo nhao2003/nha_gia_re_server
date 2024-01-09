@@ -95,7 +95,19 @@ class UserController {
       res.status(200).json(appRes);
     },
   );
-  
+
+  public checkFollowUser = wrapRequestHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const user_id = req.user!.id;
+    const follow_id = req.params.id;
+    const isFollow = await this.userServices.checkFollowUser(user_id, follow_id);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.UserCode.Success,
+      message: 'Check follow user successfully',
+      result: isFollow,
+    };
+    res.status(200).json(appRes);
+  });
 }
 
 export default UserController;

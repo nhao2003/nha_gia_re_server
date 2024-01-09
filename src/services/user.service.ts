@@ -65,6 +65,12 @@ class UserServices {
       return true;
     }
   }
+
+  async checkFollowUser(user_id: string, follow_id: string): Promise<boolean> {
+    const userFollow = await this.userFollowRepository.findOne({ where: { user_id, follow_id } });
+    return userFollow ? true : false;
+  }
+
   buildUserQuery(userQuery: any): UserQuery {
     const { page, orders } = userQuery;
     const handleQuery = {
