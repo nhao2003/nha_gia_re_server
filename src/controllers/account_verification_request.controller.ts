@@ -1,4 +1,6 @@
+import { Request, Response } from 'express';
 import { Service } from 'typedi';
+import ServerCodes from '~/constants/server_codes';
 import AppResponse from '~/models/AppRespone';
 import AccountVerificationRequestService from '~/services/account_verification_request.service';
 import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
@@ -12,7 +14,7 @@ class AccountVerificationRequestController {
     const result = await this.accountVerificationRequestService.getAllByQuery(query);
     const appResponse: AppResponse = {
       status: 'success',
-      code: 200,
+      code: ServerCodes.CommomCode.Success,
       message: 'Get all account verification requests successfully',
       num_of_pages: result.num_of_pages,
       result: result.data,
@@ -26,18 +28,18 @@ class AccountVerificationRequestController {
     await this.accountVerificationRequestService.updateRequest(id, is_verified, rejected_info);
     const appResponse: AppResponse = {
       status: 'success',
-      code: 200,
+      code: ServerCodes.CommomCode.Success,
       message: 'Update account verification request successfully',
     };
     res.status(200).json(appResponse);
   });
 
-  public readonly sendRequest = wrapRequestHandler(async (req, res) => {
-    const { id } = req.params;
-    await this.accountVerificationRequestService.createRequest(id, req.body);
+  public readonly sendRequest = wrapRequestHandler(async (req: Request, res: Response) => {
+    const user_id = req.user!.id;
+    await this.accountVerificationRequestService.createRequest(user_id, req.body);
     const appResponse: AppResponse = {
       status: 'success',
-      code: 200,
+      code: ServerCodes.CommomCode.Success,
       message: 'Send account verification request successfully',
     };
     res.status(200).json(appResponse);

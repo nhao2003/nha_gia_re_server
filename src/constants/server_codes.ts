@@ -45,6 +45,7 @@ const ServerCodes = {
     UserNotFound: 301,
     UserNotUpdate: 302,
     UserAlreadyVerified: 303,
+    UserAlreadySentRequest: 304,
   },
   AdminCode: {
     Success: 400,

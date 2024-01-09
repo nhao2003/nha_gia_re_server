@@ -9,6 +9,7 @@ import reportRoutes from '../routes/report.routes';
 import conversationRoutes from '../routes/conversation.routes';
 import notificationRoutes from '../routes/notification.routes';
 import projectRoutes from '../routes/project.routes';
+import accountVerificationRequestRoutes from '../routes/account-verification-request.routes';
 import { Request, Response } from 'express';
 import { User } from '~/domain/databases/entity/User';
 import { errorHandler } from '~/middlewares/error.middleware';
@@ -47,6 +48,8 @@ export function initApp(): Express {
   app.use('/api/v1/conversations', conversationRoutes);
   app.use('/api/v1/notifications', notificationRoutes);
   app.use('/api/v1/projects', projectRoutes);
+  app.use('/api/v1/account-verification-request', accountVerificationRequestRoutes);
+  
   app.get('/', (req, res) => {
     User.find()
       .then((units) => {

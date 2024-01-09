@@ -83,11 +83,13 @@ class AccountVerificationRequestService extends CommonServices {
     delete data.request_date;
     const checkExsist = await this.accountVerificationRequestRepository
       .createQueryBuilder()
-      .where({ user_id, is_verified: true })
+      .where({ user_id })
+      .orderBy('request_date', 'DESC')
       .getOne();
-    if (checkExsist) {
-      // throw new AppError('User already verified', 400);
+    if (checkExsist !== null && checkExsist.is_verified === true) {
       throw AppError.badRequest(ServerCodes.UserCode.UserAlreadyVerified, 'User already verified');
+    } else if (checkExsist !== null && checkExsist.is_verified === null) {
+      throw AppError.badRequest(ServerCodes.UserCode.UserAlreadySentRequest, 'User already sent request');
     }
     return await this.accountVerificationRequestRepository.save({ user_id, ...data });
   }
