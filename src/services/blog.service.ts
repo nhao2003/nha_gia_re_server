@@ -38,9 +38,14 @@ class BlogService extends CommonServices {
     };
   }
 
-  // Count blog 
+  // Count blog
   async countBlog() {
-    return await this.repository.count();
+    return await (this.repository as Repository<Blog>)
+      .createQueryBuilder()
+      .where({
+        is_active: true,
+      })
+      .getCount();
   }
 }
 

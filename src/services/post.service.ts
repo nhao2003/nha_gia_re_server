@@ -298,10 +298,23 @@ class PostServices {
   }
 
   async countPostByStatus() {
+    // const result = await this.postRepository
+    //   .createQueryBuilder()
+    //   .select('status')
+    //   .addSelect('COUNT(*)', 'total_posts_by_status')
+    //   .groupBy('status')
+    //   .orderBy('status')
+    //   .getRawMany();
+
+    // Add where is_active = true
+    // REturn total_posts_by_status = 0 if no post
     const result = await this.postRepository
       .createQueryBuilder()
       .select('status')
       .addSelect('COUNT(*)', 'total_posts_by_status')
+      .where({
+        is_active: true,
+      })
       .groupBy('status')
       .orderBy('status')
       .getRawMany();
