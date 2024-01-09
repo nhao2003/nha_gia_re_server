@@ -21,7 +21,7 @@ class Notification extends BaseEntity implements INotification {
   @PrimaryColumn(PostgresDataType.uuid)
   id!: string;
 
-  @Column({ type: PostgresDataType.uuid, name: 'user_id' })
+  @Column({ type: PostgresDataType.uuid, name: 'user_id', nullable: true })
   user_id?: string;
 
   @Column({ type: PostgresDataType.varchar, length: 255, enum: NotificationType })

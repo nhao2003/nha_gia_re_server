@@ -6,15 +6,19 @@ import { BaseQuery } from '~/models/PostQuery';
 import AppConfig from '~/constants/configs';
 import { AppError } from '~/models/Error';
 import { User } from '~/domain/databases/entity/User';
-import { App } from '@onesignal/node-onesignal';
 import ServerCodes from '~/constants/server_codes';
+import { NotificationService } from './nofitication.service';
+import { NotificationType } from '~/constants/enum';
+import e from 'express';
 @Service()
 class AccountVerificationRequestService extends CommonServices {
   private accountVerificationRequestRepository: Repository<AccountVerificationRequest>;
   private userRepository: Repository<User>;
-  constructor(dataSource: DataSource) {
+  private notificationService: NotificationService;
+  constructor(dataSource: DataSource, notificationService: NotificationService) {
     super(AccountVerificationRequest, dataSource);
     this.accountVerificationRequestRepository = this.repository as Repository<AccountVerificationRequest>;
+    this.notificationService = notificationService;
     this.userRepository = dataSource.getRepository(User);
   }
 
@@ -60,16 +64,41 @@ class AccountVerificationRequestService extends CommonServices {
         'rejected_info must be null when is_verified is true',
       );
     }
+    const request = await this.accountVerificationRequestRepository
+      .createQueryBuilder()
+      .where({ id })
+      .andWhere('is_verified IS NULL')
+      .andWhere('reviewed_at IS NULL')
+      .getOne();
+
+    if (!request) {
+      throw AppError.notFound({
+        message: 'Account verification request not found',
+      });
+    }
+
+    if (request.is_verified !== null) {
+      throw AppError.badRequest(ServerCodes.CommomCode.BadRequest, 'Account verification request already reviewed');
+    }
 
     if (is_verified) {
-      //   await this.userRepository.update({ id }, { is_identity_verified: true });
-      //   return await this.accountVerificationRequestRepository.save({ id, is_verified });
       await Promise.all([
-        this.userRepository.update({ id }, { is_identity_verified: true }),
+        this.userRepository.update({ id: request.user_id }, { is_identity_verified: true }),
         this.accountVerificationRequestRepository.update({ id }, { is_verified, reviewed_at: new Date() }),
       ]);
+      this.createNotification(request.user_id, is_verified, rejected_info)
+        .then(() => {})
+        .catch((err) => console.log(err));
     } else {
-      await this.accountVerificationRequestRepository.save({ id, is_verified, rejected_info, reviewed_at: new Date() });
+      await this.accountVerificationRequestRepository.save({
+        id: request.user_id,
+        is_verified,
+        rejected_info,
+        reviewed_at: new Date(),
+      });
+      this.createNotification(request.user_id, is_verified, rejected_info)
+        .then(() => {})
+        .catch((err) => console.log(err));
     }
   }
 
@@ -121,6 +150,30 @@ class AccountVerificationRequestService extends CommonServices {
         rejected_info: res.rejected_info,
       };
     }
+  }
+
+  private async createNotification(user_id: string, is_verified: boolean, rejected_info: string | null) {
+    await this.notificationService.createNotification({
+      type: NotificationType.accept_account_verification_request,
+      headings: {
+        en: is_verified
+          ? 'Your account verification request has been accepted'
+          : 'Your account verification request has been rejected',
+        vi: is_verified
+          ? 'Yêu cầu xác thực tài khoản của bạn đã được chấp nhận'
+          : 'Yêu cầu xác thực tài khoản của bạn đã bị từ chối',
+      },
+      content: {
+        en: is_verified
+          ? 'Your account verification request has been accepted. You can see your verified status in your profile'
+          : 'Your account verification request has been rejected. Reason: ' + rejected_info,
+        vi: is_verified
+          ? 'Yêu cầu xác thực tài khoản của bạn đã được chấp nhận. Bạn có thể xem trạng thái xác thực của mình trong trang cá nhân'
+          : 'Yêu cầu xác thực tài khoản của bạn đã bị từ chối. Lý do: ' + rejected_info,
+      },
+      data: undefined,
+      include_external_user_ids: [user_id],
+    });
   }
 }
 

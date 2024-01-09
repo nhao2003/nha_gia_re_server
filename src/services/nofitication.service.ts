@@ -16,7 +16,7 @@ interface NotificationData {
     en?: string;
     vi?: string;
   };
-  data: any;
+  data?: any;
   include_external_user_ids?: string[];
   big_picture?: string;
   name?: string;
