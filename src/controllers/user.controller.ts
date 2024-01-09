@@ -72,8 +72,9 @@ class UserController {
     const userFollow = await this.userServices.followOrUnfollowUser(user_id, follow_id);
     const appRes: AppResponse = {
       status: 'success',
-      code: ServerCodes.UserCode.Success,
+      code: ServerCodes.CommomCode.Success,
       message: userFollow ? 'Followed successfully' : 'Unfollowed successfully',
+      result: userFollow,
     };
     res.status(200).json(appRes);
   });
@@ -94,6 +95,7 @@ class UserController {
       res.status(200).json(appRes);
     },
   );
+  
 }
 
 export default UserController;
