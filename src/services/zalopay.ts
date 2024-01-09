@@ -1,12 +1,12 @@
 import AppConfig from '../constants/configs';
 import crypto from 'crypto';
 type Order = {
-    app_trans_id: string;
-    app_user: string;
-    app_time: string;
-    item: string;
-    embed_data: string;
-    amount: number;
+  app_trans_id: string;
+  app_user: string;
+  app_time: string;
+  item: string;
+  embed_data: string;
+  amount: number;
 };
 class ZaloPayServices {
   private app_id: number;
@@ -22,7 +22,6 @@ class ZaloPayServices {
     this.sandboxUrl = 'https://sb-openapi.zalopay.vn/v2/create'; // URL của môi trường Sandbox
   }
 
-
   // Hàm tạo mã giao dịch (app_trans_id)
   generateAppTransId() {
     const date = new Date();
@@ -30,7 +29,7 @@ class ZaloPayServices {
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
 
-    var prefix = `${year}${month}${day}_`;
+    let prefix = `${year}${month}${day}_`;
     while (prefix.length < 20) {
       prefix += Math.floor(Math.random() * 10);
     }
@@ -40,7 +39,6 @@ class ZaloPayServices {
 
     return prefix;
   }
-
 
   // Hàm tạo thông tin chứng thực (mac)
   generateMac(order: Order) {
@@ -58,12 +56,9 @@ class ZaloPayServices {
       order.embed_data +
       '|' +
       order.item;
-    console.log("A0: ", data);
-    console.log("A2: ", this.key1);
-    const mac = crypto
-      .createHmac('sha256', this.key1)
-      .update(data)
-      .digest('hex');
+    console.log('A0: ', data);
+    console.log('A2: ', this.key1);
+    const mac = crypto.createHmac('sha256', this.key1).update(data).digest('hex');
     return mac;
   }
 
@@ -89,28 +84,14 @@ class ZaloPayServices {
     };
     try {
       order.description = 'Nhà giá rẻ - Thanh toán gói';
-      const data =
-        config.app_id +
-        '|' +
-        order.app_trans_id +
-        '|' +
-        order.app_user +
-        '|' +
-        order.amount +
-        '|' +
-        order.app_time +
-        '|' +
-        order.embed_data +
-        '|' +
-        order.item;
-    const orderMac: Order = {
+      const orderMac: Order = {
         app_trans_id: order.app_trans_id,
         app_user: order.app_user,
         app_time: order.app_time,
         item: order.item,
         embed_data: order.embed_data,
         amount: order.amount,
-    };
+      };
       order.mac = this.generateMac(orderMac);
       const params = new URLSearchParams();
       params.set('appid', order.app_id);
@@ -130,13 +111,13 @@ class ZaloPayServices {
         body: params.toString(),
       };
       const res = await fetch(config.endpoint, requestOptions);
-        const result = await res.json();
-        console.log(result);
-        return result;
+      const result = await res.json();
+      console.log(result);
+      return result;
     } catch (error) {
-        console.log(error);
+      console.log(error);
+    }
   }
-}
 }
 // Test
 const zaloPayServices = new ZaloPayServices();

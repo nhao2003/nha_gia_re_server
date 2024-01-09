@@ -22,13 +22,16 @@ class AdminService {
   async approvePost(id: string) {
     const post = await this.postRepo
       .createQueryBuilder()
+      .setParameters({ current_user_id: null })
       .where('id = :id', { id })
       .andWhere('is_active = true')
-      .setParameters({ current_user_id: null })
       .getOne();
-    post!.status = PostStatus.approved;
-    post!.info_message = null;
-    await this.postRepo.save(post!);
+    await this.postRepo
+      .createQueryBuilder()
+      .update()
+      .set({ status: PostStatus.approved, info_message: null })
+      .where('id = :id', { id })
+      .execute();
 
     await this.notificationService.createNotification({
       type: NotificationType.info,
@@ -57,9 +60,13 @@ class AdminService {
       .andWhere('is_active = true')
       .setParameters({ current_user_id: null })
       .getOne();
-    post!.status = PostStatus.rejected;
-    post!.info_message = reason;
-    await this.postRepo.save(post!);
+
+    await this.postRepo
+      .createQueryBuilder()
+      .update()
+      .set({ status: PostStatus.rejected, info_message: reason })
+      .where('id = :id', { id })
+      .execute();
 
     await this.notificationService.createNotification({
       type: NotificationType.info,
@@ -73,7 +80,6 @@ class AdminService {
       },
       data: {
         post_id: id,
-        
       },
       big_picture: post!.images[0],
       include_external_user_ids: [post!.user_id],
@@ -88,8 +94,8 @@ class AdminService {
       .andWhere('is_active = true')
       .setParameters({ current_user_id: null })
       .getOne();
-    post!.is_active = false;
-    await this.postRepo.save(post!);
+
+    await this.postRepo.createQueryBuilder().update().set({ is_active: false }).where('id = :id', { id }).execute();
 
     await this.notificationService.createNotification({
       type: NotificationType.info,

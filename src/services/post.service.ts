@@ -192,7 +192,7 @@ class PostServices {
 
     // const total = ;
     // const data = query.skip(skip).take(take).getMany();
-    console.log(query.getSql());
+    // console.log(query.getSql());
     const result = await Promise.all([query.getCount(), query.skip(skip).take(take).getMany()]);
     return {
       numberOfPages: Math.ceil(result[0] / 10),
