@@ -14,6 +14,7 @@ import { Service } from 'typedi';
 import AppConfig from '~/constants/configs';
 import ServerCodes from '~/constants/server_codes';
 import { NotificationService } from './nofitication.service';
+import StringUtils from '~/utils/string_utils';
 @Service()
 class PostServices {
   postRepository: Repository<RealEstatePost>;
@@ -176,15 +177,23 @@ class PostServices {
 
     let { search } = postQuery;
     if (search) {
-      search = search.replace(/ /g, ' | ');
+      // Unaccent search
+      search = StringUtils.toSearchString(search);
       query = query.andWhere(`"RealEstatePost".document @@ to_tsquery('simple', unaccent('${search}'))`);
-      query = query.orderBy(`ts_rank(document, to_tsquery('simple', unaccent('${search}')))`, 'DESC');
+      // query = query.addOrderBy(`ts_rank(document, to_tsquery('simple', unaccent('${search}')))`, 'DESC');
+      const ts_rank: string = `ts_rank("RealEstatePost".document, to_tsquery('simple', unaccent('${search}')))`;
+      query = query.addSelect(ts_rank, 'search_rank');
+      postQuery.order = {
+        search_rank: 'DESC',
+        ...postQuery.order,
+      };
     }
     query = query.orderBy(postQuery.order);
 
-    const total = query.getCount();
-    const data = query.skip(skip).take(take).getMany();
-    const result = await Promise.all([total, data]);
+    // const total = ;
+    // const data = query.skip(skip).take(take).getMany();
+    console.log(query.getSql());
+    const result = await Promise.all([query.getCount(), query.skip(skip).take(take).getMany()]);
     return {
       numberOfPages: Math.ceil(result[0] / 10),
       data: result[1],

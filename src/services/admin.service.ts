@@ -73,6 +73,7 @@ class AdminService {
       },
       data: {
         post_id: id,
+        
       },
       big_picture: post!.images[0],
       include_external_user_ids: [post!.user_id],

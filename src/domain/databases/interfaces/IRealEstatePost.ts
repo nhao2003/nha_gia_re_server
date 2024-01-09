@@ -24,5 +24,7 @@ interface IRealEstatePost {
   post_approval_priority_point: number;
   update_count: number;
   is_active: boolean;
+  // ts vector document
+  document: string;
 }
 export default IRealEstatePost;
