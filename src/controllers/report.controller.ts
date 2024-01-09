@@ -5,6 +5,7 @@ import { buildBaseQuery } from '~/utils/build_query';
 import AppResponse from '~/models/AppRespone';
 import { Service } from 'typedi';
 import ServerCodes from '~/constants/server_codes';
+import { ReportStatus } from '~/constants/enum';
 
 @Service()
 class ReportController {
@@ -41,6 +42,7 @@ class ReportController {
     const data = {
       reporter_id: req.user!.id,
       ...req.body,
+      status: ReportStatus.pending,
     };
     const report = await this.reportService.create(data);
     const appRes: AppResponse = {
