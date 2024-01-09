@@ -23,8 +23,8 @@ class AppConfig {
 
   public readonly PASSWORD_SECRET_KEY = process.env.PASSWORD_SECRET_KEY;
   public readonly JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
-  public readonly JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
-  public readonly JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN;
+  public readonly JWT_TOKEN_EXPIRES_IN = process.env.JWT_TOKEN_EXPIRES_IN;
+  public readonly JWT_REFRESH_TOKEN_EXPIRES_IN = process.env.JWT_REFRESH_TOKEN_EXPIRES_IN;
   public readonly CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
   public readonly CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
   public readonly CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
@@ -32,11 +32,14 @@ class AppConfig {
   public readonly RECOVERY_PASSWORD_EXPIRES_IN = process.env.RECOVERY_PASSWORD_EXPIRES_IN as string;
   public readonly RECOVERY_PASSWORD_SERECT_KEY = process.env.RECOVERY_PASSWORD_SERECT_KEY as string;
 
+  public readonly OTP_EXPIRES_IN = process.env.OTP_EXPIRES_IN as string;
+  public readonly OTP_SECRET_KEY = process.env.OTP_SECRET_KEY as string;
+
   public readonly ResultPerPage = 10;
   public readonly OneSignal = {
     userKey: process.env.ONESIGNAL_USER_KEY,
     appKey: process.env.ONESIGNAL_APP_KEY,
     appId: process.env.ONESIGNAL_APP_ID,
-  }
+  };
 }
 export default new AppConfig();

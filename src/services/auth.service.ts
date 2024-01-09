@@ -75,24 +75,24 @@ class AuthServices {
   private generateAccessToken(user_id: string, session_id: string): Promise<string> {
     return signToken({
       payload: { user_id, session_id },
-      expiresIn: process.env.JWT_TOKEN_EXPIRES_IN as string,
+      expiresIn: AppConfig.JWT_TOKEN_EXPIRES_IN as string,
     });
   }
 
   private async generateRefreshToken(user_id: string, session_id: string): Promise<string> {
     return await signToken({
       payload: { user_id, session_id },
-      expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string,
+      expiresIn: AppConfig.JWT_REFRESH_TOKEN_EXPIRES_IN as string,
     });
   }
 
   public async generateOTPCode(
     type: string,
     user_id: string,
-    expiration_time: string = process.env.OTP_EXPIRES_IN as string,
+    expiration_time: string = AppConfig.OTP_EXPIRES_IN as string,
   ): Promise<string> {
     const otp_code = Math.floor(100000 + Math.random() * 900000).toString();
-    const token = hashString((otp_code + process.env.OTP_SECRET_KEY + type) as string);
+    const token = hashString((otp_code + AppConfig.OTP_SECRET_KEY + type) as string);
     // Save OTP code to database
     await this.otpRepository.insert({
       type,
@@ -125,7 +125,7 @@ class AuthServices {
     const session = await this.sessionRepository.insert({
       user_id,
       expiration_date: new Date(
-        Date.now() + parseTimeToMilliseconds(process.env.JWT_REFRESH_TOKEN_EXPIRES_IN as string),
+        Date.now() + parseTimeToMilliseconds(AppConfig.JWT_REFRESH_TOKEN_EXPIRES_IN as string),
       ),
     });
     const refresh_token = await this.generateRefreshToken(user_id, session.identifiers[0].id);
@@ -156,7 +156,7 @@ class AuthServices {
   }
 
   public async getOTP(user_id: string, otp_code: string, type: string): Promise<OTP | null> {
-    const token = hashString((otp_code + process.env.OTP_SECRET_KEY + type) as string);
+    const token = hashString((otp_code + AppConfig.OTP_SECRET_KEY + type) as string);
     const otp = await this.otpRepository.findOne({
       where: {
         user_id,

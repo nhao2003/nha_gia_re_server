@@ -8,6 +8,8 @@ import ProjectController from '~/controllers/project.controller';
 import BlogController from '~/controllers/blog.controller';
 import ReportController from '~/controllers/report.controller';
 import AccountVerificationRequestController from '~/controllers/account_verification_request.controller';
+import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
+import appConfig from '~/constants/configs';
 const router = Router();
 const adminController = DependencyInjection.get<AdminController>(AdminController);
 const adminValidation = DependencyInjection.get<AdminValidation>(AdminValidation);
@@ -76,5 +78,15 @@ router.route('/blogs/:id/view').get(blogController.viewBlog);
 // Account Verification Requests
 router.route('/account-verification-requests').get(accountVerificationRequestController.getAllByQuery);
 router.route('/account-verification-requests/:id').patch(accountVerificationRequestController.updateRequest);
+router.route('/config').get(
+  wrapRequestHandler(async (req: any, res: any) => {
+    res.status(200).json({
+      status: 'success',
+      code: 200,
+      message: 'Get config successfully',
+      result: appConfig,
+    });
+  }),
+);
 
 export default router;
