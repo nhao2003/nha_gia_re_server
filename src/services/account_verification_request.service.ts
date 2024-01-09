@@ -90,12 +90,16 @@ class AccountVerificationRequestService extends CommonServices {
         .then(() => {})
         .catch((err) => console.log(err));
     } else {
-      await this.accountVerificationRequestRepository.save({
-        id: request.user_id,
-        is_verified,
-        rejected_info,
-        reviewed_at: new Date(),
-      });
+      // await this.accountVerificationRequestRepository.save({
+      //   id: request.user_id,
+      //   is_verified,
+      //   rejected_info,
+      //   reviewed_at: new Date(),
+      // });
+      await this.accountVerificationRequestRepository.update(
+        { id },
+        { is_verified, rejected_info, reviewed_at: new Date() },
+      );
       this.createNotification(request.user_id, is_verified, rejected_info)
         .then(() => {})
         .catch((err) => console.log(err));
