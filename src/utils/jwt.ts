@@ -1,7 +1,7 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import ServerCodes from '~/constants/server_codes';
 import { AppError } from '~/models/Error';
-
+import appConfig from '~/constants/configs';
 export interface UserPayload extends JwtPayload {
   user_id: string;
   session_id: string;
@@ -15,7 +15,7 @@ export interface VerifyResult {
 export const signToken = ({
   payload,
   expiresIn,
-  secretKey = process.env.JWT_SECRET_KEY as string,
+  secretKey = appConfig.JWT_SECRET_KEY as string,
 }: {
   payload: string | Buffer | object;
   expiresIn: string | number;
@@ -42,7 +42,7 @@ export const signToken = ({
   });
 };
 
-export function verifyToken(token: string, secretKey: string = process.env.JWT_SECRET_KEY as string) {
+export function verifyToken(token: string, secretKey: string = appConfig.JWT_SECRET_KEY as string) {
   return new Promise<VerifyResult>((resolve) => {
     jwt.verify(token, secretKey, (error, payload) => {
       resolve({ payload: payload, expired: error?.name === 'TokenExpiredError' });

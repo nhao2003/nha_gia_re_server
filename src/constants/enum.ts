@@ -139,6 +139,7 @@ export enum NotificationType {
   post_rejected = 'post_rejected',
   post_warning_expired = 'post_warning_expired',
   accept_account_verification_request = 'accept_account_verification_request',
+  reject_account_verification_request = 'reject_account_verification_request',
   post_deleted = 'post_deleted',
   follow = 'follow',
   news = 'news',

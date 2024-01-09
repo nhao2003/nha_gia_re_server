@@ -158,7 +158,9 @@ class AccountVerificationRequestService extends CommonServices {
 
   private async createNotification(user_id: string, is_verified: boolean, rejected_info: string | null) {
     await this.notificationService.createNotification({
-      type: NotificationType.accept_account_verification_request,
+      type: is_verified
+        ? NotificationType.accept_account_verification_request
+        : NotificationType.reject_account_verification_request,
       headings: {
         en: is_verified
           ? 'Your account verification request has been accepted'

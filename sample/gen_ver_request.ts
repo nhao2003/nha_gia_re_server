@@ -24,7 +24,7 @@ const userIds = [
 ];
 
 for (let i = 0; i < 100; i++) {
-  let random = 123456789102;
+  const random = 123456789102;
   const is_verified = Math.random() > 0.9;
   const user_id = userIds[Math.floor(Math.random() * userIds.length)];
   const request: IAccountVerificationRequest = {

@@ -4,6 +4,7 @@ import { wrapRequestHandler } from '~/utils/wrapRequestHandler';
 import { buildBaseQuery } from '~/utils/build_query';
 import AppResponse from '~/models/AppRespone';
 import { Service } from 'typedi';
+import ServerCodes from '~/constants/server_codes';
 
 @Service()
 class ReportController {
@@ -16,7 +17,7 @@ class ReportController {
     const reports = await this.reportService.getAllByQuery(query);
     const appRes: AppResponse = {
       status: 'success',
-      code: 200,
+      code: ServerCodes.CommomCode.Success,
       message: 'Get all reports successfully',
       num_of_pages: reports.num_of_pages,
       result: reports.data,
@@ -29,8 +30,23 @@ class ReportController {
     const report = await this.reportService.updateReportStatus(id, req.body.status);
     const appRes: AppResponse = {
       status: 'success',
-      code: 200,
+      code: ServerCodes.CommomCode.Success,
       message: 'Update report successfully',
+      result: report,
+    };
+    res.json(appRes);
+  });
+
+  public readonly sendReport = wrapRequestHandler(async (req: Request, res: Response) => {
+    const data = {
+      reporter_id: req.user!.id,
+      ...req.body,
+    };
+    const report = await this.reportService.create(data);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.CommomCode.Success,
+      message: 'Send report successfully',
       result: report,
     };
     res.json(appRes);

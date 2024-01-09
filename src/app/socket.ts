@@ -39,7 +39,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
   // Conversations namespace
   const chatNamespace = io.of('/conversations');
   chatNamespace.on('connection', async (socket: Socket) => {
-    var conversations: Conversation[] = [];
+    let conversations: Conversation[] = [];
     const token = getTokenFromSocket(socket);
     if (!token) {
       handleInvalidUserId(socket);
@@ -58,12 +58,12 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
       return;
     }
 
-    console.log('User connected: ', user_id);
-    console.log(socket.handshake.query);
+    // console.log('User connected: ', user_id);
+    // console.log(socket.handshake.query);
     socket.join(user_id);
     try {
       conversations = await conversationService.getConversations(user_id);
-      console.log(conversations);
+      // console.log(conversations);
       chatNamespace.to(user_id).emit('conversations', {
         type: SocketEvent.Init,
         data: conversations,
@@ -72,7 +72,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
       handleSocketError(socket, error);
     }
     socket.on('get_or_create_conversation', async (arg) => {
-      console.log('Get_or_create_conversation: ', arg);
+      // console.log('Get_or_create_conversation: ', arg);
       try {
         const other_user_id = arg.other_user_id;
         const { conversation, isExist } = await conversationService.getOrCreateConversation(user_id, other_user_id);
@@ -94,7 +94,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
 
     socket.on('init_chat', async (arg) => {
       const {conversation_id} = arg ?? null;
-      console.log('Init chat: ', conversation_id);
+      // console.log('Init chat: ', conversation_id);
       try {
         const conversation = await conversationService.getConversationByUserIdAndConversationId(
           user_id,
@@ -105,7 +105,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
           return;
         }
         socket.join(conversation_id);
-        console.log('Join conversation: ', conversation_id);
+        // console.log('Join conversation: ', conversation_id);
 
         const messages = await conversationService.getMessages(conversation_id);
         chatNamespace.to(conversation_id).emit('messages', {
@@ -124,8 +124,8 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
         const content = arg.content;
         const conversation_id = arg.conversation_id;
         const type = arg.type;
-        var conversation_param: string | Conversation = conversation_id as string;
-        for (var i = 0; i < conversations.length; i++) {
+        let conversation_param: string | Conversation = conversation_id as string;
+        for (let i = 0; i < conversations.length; i++) {
           if (conversations[i].id === conversation_id) {
             conversation_param = conversations[i];
             break;
@@ -138,7 +138,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
           content,
         );
 
-        for (var i = 0; i < conversations.length; i++) {
+        for (let i = 0; i < conversations.length; i++) {
           if (conversations[i].id === conversation_id) {
             conversations[i] = conversation!;
             break;

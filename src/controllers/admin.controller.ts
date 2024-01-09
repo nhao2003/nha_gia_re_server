@@ -121,7 +121,7 @@ class AdminController {
       num_of_pages: users.num_of_pages,
       result: users.users as any,
     };
-    console.log(appRes);
+    // console.log(appRes);
     res.status(200).json(appRes);
   });
 
