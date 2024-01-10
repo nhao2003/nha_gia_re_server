@@ -101,7 +101,7 @@ export enum ReportStatus {
 export enum ReportType {
   user = 'user',
   post = 'post',
-  conversation = 'conversation',
+  // conversation = 'conversation',
 }
 
 export enum ReportContentType {
