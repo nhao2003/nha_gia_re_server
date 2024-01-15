@@ -14,7 +14,6 @@ class PaymentController {
 
   public readonly createOrderMemberShipPayment = wrapRequestHandler(async (req: Request, res: Response) => {
     const { user_id, membership_package_id, num_of_subscription_month, discount_code, redirect_url } = req.body;
-
     if (!user_id || !membership_package_id || !num_of_subscription_month) {
       res.status(400).json({
         status: 'fail',
