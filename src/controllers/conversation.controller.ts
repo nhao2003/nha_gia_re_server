@@ -10,8 +10,8 @@ class ConversationController {
     this.conversationService = conversationService;
   }
   public getOrCreateConversation = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { user_id, other_user_id } = req.body;
-    const conversation = await this.conversationService.getOrCreateConversation(user_id, other_user_id);
+    const { id } = req.params;
+    const conversation = await this.conversationService.getOrCreateConversation(req.user!.id, id);
     const appResponse: AppResponse = {
       status: 'success',
       code: 200,

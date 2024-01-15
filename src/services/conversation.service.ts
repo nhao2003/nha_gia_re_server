@@ -13,10 +13,12 @@ class ConversationService {
   private conversationRepository: Repository<Conversation>;
   private messageRepository: Repository<Message>;
   private participantRepository: Repository<Participant>;
+  private userRepository: Repository<User>;
   constructor(dataSource: DataSource) {
     this.conversationRepository = dataSource.getRepository(Conversation);
     this.messageRepository = dataSource.getRepository(Message);
     this.participantRepository = dataSource.getRepository(Participant);
+    this.userRepository = dataSource.getRepository(User);
   }
   public createConversation = async (user_id: string, other_user_id: string) => {
     const conversation = await this.conversationRepository.save(new Conversation());
@@ -35,6 +37,14 @@ class ConversationService {
     if (user_id === other_user_id) {
       throw AppError.badRequest(ServerCodes.ConversationCode.CanNotChatWithYourself, 'Can not chat with yourself');
     }
+    const user = await this.userRepository.findOne({ where: { id: other_user_id } });
+
+    if (!user) {
+      throw AppError.notFound({
+        message: 'User not found',
+      });
+    }
+
     const conversation = await this.conversationRepository
       .createQueryBuilder('conversation')
       .innerJoinAndSelect('conversation.participants', 'participant')

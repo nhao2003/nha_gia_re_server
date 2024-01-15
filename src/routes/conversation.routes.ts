@@ -5,7 +5,7 @@ import AuthValidation from '~/middlewares/auth.middleware';
 const router = Router();
 const conversationController = DependencyInjection.get<ConversationController>(ConversationController);
 const authValidation = DependencyInjection.get<AuthValidation>(AuthValidation);
-router.post('/', conversationController.getOrCreateConversation);
+router.post('/:id', authValidation.accessTokenValidation, conversationController.getOrCreateConversation);
 router.delete('/', conversationController.deleteConversation);
 router.get('/', conversationController.getConversations);
 router.get('/id', conversationController.getConversationById);

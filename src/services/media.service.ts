@@ -3,6 +3,11 @@ import ConcurrentQueue from '~/utils/queue';
 import { v4 as uuidv4 } from 'uuid';
 import AppConfig from '../constants/configs';
 import { Service } from 'typedi';
+
+interface UpLoadFileOptions {
+  publicId?: string;
+  onFileUploaded?: (url: string) => void;
+}
 @Service()
 class MediaServices {
   private queue: ConcurrentQueue;
@@ -14,23 +19,31 @@ class MediaServices {
       api_secret: AppConfig.CLOUDINARY_API_SECRET as string,
       secure: true,
     });
-    this.queue = new ConcurrentQueue(1);
+    this.queue = new ConcurrentQueue(10);
   }
 
-  public upload(file: Express.Multer.File, folder: string, publicId: string = uuidv4()) {
+  public upload(file: Express.Multer.File, folder: string, options: UpLoadFileOptions): string {
     const resourceType = file.mimetype.startsWith('image/') ? 'image' : 'video';
-    const options: UploadApiOptions = {
-      public_id: publicId,
+    options.publicId = options.publicId || uuidv4();
+    const uploadOptions: UploadApiOptions = {
+      public_id: options.publicId,
       folder,
       allowed_formats: ['jpg', 'jpeg', 'mp4', 'png'],
       resource_type: resourceType,
     };
+    const url = cloudinary.url(folder + '/' + options.publicId, {
+      resource_type: resourceType,
+      type: 'upload',
+    });
     this.queue.add({
       execute: async () => {
-        await cloudinary.uploader
-          .upload_stream(options, (err, res) => {
+        cloudinary.uploader
+          .upload_stream(uploadOptions, (err, res) => {
             if (err) {
               console.error(err);
+            }
+            if (options.onFileUploaded) {
+              options.onFileUploaded(url);
             }
             console.log(res);
           })
@@ -40,10 +53,6 @@ class MediaServices {
         console.log('Error uploading file to Cloudinary');
         console.error(err);
       },
-    });
-    const url = cloudinary.url(folder + '/' + publicId, {
-      resource_type: resourceType,
-      type: 'upload',
     });
     return url;
   }

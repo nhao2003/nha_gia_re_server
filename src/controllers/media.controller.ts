@@ -17,6 +17,8 @@ class MediaController {
 
   public upload = wrapRequestHandler(async (req: Request, res: Response) => {
     try {
+      const isAsync = req.query.async === 'true';
+
       const multiFileUploadMiddleware = this.uploadMiddleware.array('files', 12); // 'files' is the field name
       multiFileUploadMiddleware(req, res, async (err: any) => {
         if (err) {
@@ -42,7 +44,7 @@ class MediaController {
         const uploadedFiles = req.files as Express.Multer.File[];
 
         const fileUrls: string[] = [];
-
+        let fileCount = 0;
         for (const file of uploadedFiles) {
           if (!allowedMimeTypes.includes(file.mimetype)) {
             return res.status(400).json({
@@ -60,17 +62,38 @@ class MediaController {
           }
           const isImage = file.mimetype.startsWith('image/');
           const subdirectory = isImage ? 'images' : 'videos';
-          const url = this.mediaServices.upload(file, subdirectory);
-          fileUrls.push(url);
-        }
 
-        const appRes: AppResponse = {
-          status: 'success',
-          message: 'File(s) uploaded successfully.',
-          code: 200,
-          result: fileUrls,
-        };
-        return res.json(appRes);
+          const url = this.mediaServices.upload(file, subdirectory, {
+            onFileUploaded: (url: string) => {
+              fileCount++;
+              if (isAsync) {
+                fileUrls.push(url);
+              }
+              if (isAsync && fileCount === uploadedFiles.length) {
+                const appRes: AppResponse = {
+                  status: 'success',
+                  message: 'File(s) uploaded successfully.',
+                  code: 200,
+                  result: fileUrls,
+                };
+                return res.json(appRes);
+              }
+            },
+          });
+          // fileUrls.push(url);
+          if (!isAsync) {
+            fileUrls.push(url);
+          }
+        }
+        if (!isAsync) {
+          const appRes: AppResponse = {
+            status: 'success',
+            message: 'File(s) uploaded successfully.',
+            code: 200,
+            result: fileUrls,
+          };
+          return res.json(appRes);
+        }
       });
     } catch (error) {
       console.log('error', error);
