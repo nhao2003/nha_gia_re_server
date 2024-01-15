@@ -17,8 +17,9 @@ import { TransactionStatus } from '~/constants/enum';
 import { TransactionService } from './transaction.service';
 import { App } from '@onesignal/node-onesignal';
 import ServerCodes from '~/constants/server_codes';
-
+import { v4 as uuidv4 } from 'uuid';
 type OrderMembershipPackageRequest = {
+  id?: string;
   user_id: string;
   package_id: string;
   discount_id?: string | null;
@@ -98,6 +99,7 @@ class PaymentServices {
     package_id: string;
     num_of_subscription_month: number;
     discount_code?: string | null;
+    redirect_url?: string | null;
   }): Promise<OrderMembershipPackageResponse> => {
     const checkUserHasSubscription = await this.subscriptionServices.checkUserHasSubscription(orderRequest.user_id);
     if (checkUserHasSubscription) {
@@ -125,6 +127,7 @@ class PaymentServices {
     const discount_amount = amount * discount_percent;
     const total_amount = amount - discount_amount;
     const starting_date = new Date();
+    const transaction_id = uuidv4();
     const zalopayResponse: ZaloPayOrderResponse = await this.zalopayServices.createOrder({
       app_user: user_id,
       amount: total_amount,
@@ -133,6 +136,7 @@ class PaymentServices {
       embed_data: {
         package_id,
         user_id,
+        redirecturl: orderRequest.redirect_url?.replace(':id', transaction_id),
       },
       bank_code: 'zalopayapp',
       app_time: starting_date,
@@ -144,6 +148,7 @@ class PaymentServices {
       throw AppError.internalServerError();
     }
     const create: OrderMembershipPackageRequest = {
+      id: transaction_id,
       amount: total_amount,
       num_of_subscription_month,
       user_id,

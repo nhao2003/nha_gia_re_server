@@ -13,7 +13,7 @@ class PaymentController {
   }
 
   public readonly createOrderMemberShipPayment = wrapRequestHandler(async (req: Request, res: Response) => {
-    const { user_id, membership_package_id, num_of_subscription_month, discount_code } = req.body;
+    const { user_id, membership_package_id, num_of_subscription_month, discount_code, redirect_url } = req.body;
 
     if (!user_id || !membership_package_id || !num_of_subscription_month) {
       res.status(400).json({
@@ -28,6 +28,7 @@ class PaymentController {
       package_id: membership_package_id,
       num_of_subscription_month,
       discount_code,
+      redirect_url
     });
     const appRessponse: AppResponse = {
       status: 'success',
@@ -121,7 +122,7 @@ class PaymentController {
     res.status(200).json(appRessponse);
   });
 
-  public readonly getTransactions = wrapRequestHandler (async (req: Request, res: Response) => {
+  public readonly getTransactions = wrapRequestHandler(async (req: Request, res: Response) => {
     const user_id = req.user!.id;
     const result = await this.paymentServices.getAllTransactionByUser(user_id as string, req.query);
     const appRessponse: AppResponse = {

@@ -10,7 +10,11 @@ const membership_packageController =
 const paymentController = DependencyInjection.get<PaymentController>(PaymentController);
 const authValiation = DependencyInjection.get<AuthValidation>(AuthValidation);
 routes.get('/', membership_packageController.getMembershipPackages);
-routes.get('/current-subscription', authValiation.accessTokenValidation, membership_packageController.getCurrentUserMembershipPackage);
+routes.get(
+  '/current-subscription',
+  authValiation.accessTokenValidation,
+  membership_packageController.getCurrentUserMembershipPackage,
+);
 routes.get('/user-with-subscription', membership_packageController.getUserWithSubscriptionPackage);
 routes.get('/transactions', authValiation.accessTokenValidation, paymentController.getTransactions);
 // unsubscription

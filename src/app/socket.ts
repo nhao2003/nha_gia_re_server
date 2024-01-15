@@ -39,6 +39,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
   // Conversations namespace
   const chatNamespace = io.of('/conversations');
   chatNamespace.on('connection', async (socket: Socket) => {
+    console.log('User connected');
     let conversations: Conversation[] = [];
     const token = getTokenFromSocket(socket);
     if (!token) {
@@ -94,7 +95,7 @@ export async function createSocketServer(server: HttpServer | HttpsServer) {
 
     socket.on('init_chat', async (arg) => {
       const {conversation_id} = arg ?? null;
-      // console.log('Init chat: ', conversation_id);
+      console.log('Init chat: ', conversation_id);
       try {
         const conversation = await conversationService.getConversationByUserIdAndConversationId(
           user_id,
