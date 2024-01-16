@@ -135,6 +135,7 @@ class ConversationService {
         media: content,
       };
     }
+    message.sent_at = new Date();
     return await this.messageRepository.save(message);
   };
 
