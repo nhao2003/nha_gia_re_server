@@ -298,7 +298,7 @@ class AuthValidation {
 
   changePasswordValidation = validate(
     checkSchema({
-      newPassword: {
+      new_password: {
         in: ['body'],
         isLength: {
           errorMessage: APP_MESSAGES.PASSWORD_LENGTH_MUST_BE_AT_LEAST_8_CHARS_AND_LESS_THAN_32_CHARS,

@@ -9,10 +9,14 @@ const authValidation = DependencyInjection.get<AuthValidation>(AuthValidation);
 const router = Router();
 router.route('/sign-up').post(authValidation.signUpValidation, authController.signUp);
 router.route('/active-account').get(authValidation.acctiveAccountValidation, authController.activeAccount);
-router.route('/resend-activation-code').post(authValidation.resendActivationCodeValidation, authController.resendActivationCode);
+router
+  .route('/resend-activation-code')
+  .post(authValidation.resendActivationCodeValidation, authController.resendActivationCode);
 router.route('/sign-in').post(authValidation.signInValidation, authController.signIn);
 router.route('/refresh-token').get(authValidation.refreshTokenValidation, authController.refreshToken);
-router.route('/change-password').post(authValidation.accessTokenValidation, authValidation.changePasswordValidation ,authController.changePassword);
+router
+  .route('/change-password')
+  .post(authValidation.accessTokenValidation, authValidation.changePasswordValidation, authController.changePassword);
 router.route('/forgot-password').post(authValidation.forgotPasswordValidation, authController.forgotPassword);
 router
   .route('/verify-forgot-password-otp')
