@@ -374,5 +374,20 @@ class PostServices {
       };
     }
   }
+
+  private searchSuggestionUrl =
+    'https://gateway.chotot.com/v2/public/search-suggestion/search?keywords[KEYWORDS]=&site_id=3';
+  async getSearchSuggestion(query: string): Promise<string[]> {
+    try {
+      const res = await fetch(this.searchSuggestionUrl.replace('[KEYWORDS]', query));
+      const json = await res.json();
+      const results = (json['results'] || []).map((item: any) => {
+        return item.formal;
+      });
+      return results;
+    } catch (error) {
+      return [];
+    }
+  }
 }
 export default PostServices;

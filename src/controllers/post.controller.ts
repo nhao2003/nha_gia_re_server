@@ -187,6 +187,18 @@ class PostController {
     };
     res.status(200).json(appRes);
   });
+
+  public readonly getSearchSuggestion = wrapRequestHandler(async (req: any, res: any) => {
+    const { keyword } = req.query;
+    const suggestions = await this.postServices.getSearchSuggestion(keyword);
+    const appRes: AppResponse = {
+      status: 'success',
+      code: ServerCodes.PostCode.Success,
+      message: 'Get search suggestion successfully',
+      result: suggestions,
+    };
+    res.status(200).json(appRes);
+  });
 }
 
 export default PostController;

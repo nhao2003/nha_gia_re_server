@@ -8,6 +8,10 @@ const router = Router();
 const postController = DependencyInjection.get<PostController>(PostController);
 const postValidation = DependencyInjection.get<PostValidation>(PostValidation);
 const authValidation = DependencyInjection.get<AuthValidation>(AuthValidation);
+
+// Get search suggestion
+router.route('/search-suggestion').get(postController.getSearchSuggestion);
+
 //Mark read post
 router
   .route('/mark-read/:id')
