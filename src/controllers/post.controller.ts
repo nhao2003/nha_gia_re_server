@@ -189,7 +189,8 @@ class PostController {
   });
 
   public readonly getSearchSuggestion = wrapRequestHandler(async (req: any, res: any) => {
-    const { keyword } = req.query;
+    let { keyword } = req.query;
+    keyword = decodeURIComponent(keyword);
     const suggestions = await this.postServices.getSearchSuggestion(keyword);
     const appRes: AppResponse = {
       status: 'success',
